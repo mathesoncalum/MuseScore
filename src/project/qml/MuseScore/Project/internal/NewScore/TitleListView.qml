@@ -86,8 +86,22 @@ Item {
         width: parent.width
     }
 
+    StyledTextLabel {
+        id: noResultsFoundHint
+
+        anchors.centerIn: parent
+
+        font: ui.theme.bodyBoldFont
+
+        text: "No results found."
+
+        visible: view.numItems < 1
+    }
+
     StyledListView {
         id: view
+
+        property int numItems: count
 
         anchors.top: searchEnabled ? searchField.bottom : title.bottom
         anchors.topMargin: 16
