@@ -22,13 +22,18 @@
 import QtQuick 2.15
 import MuseScore.Ui 1.0
 import MuseScore.UiComponents 1.0
+import MuseScore.Inspector 1.0
 import "../../../common"
 
 Column {
     id: root
 
+    property PropertyItem arrangeOrderProperty: null
+
+    property string navigationName: "Arrange"
     property NavigationPanel navigationPanel: null
     property int navigationRowStart: 0
+    property int buttonNavigationRow: navigationRowStart
     property int navigationRowEnd: toBackButton.navigation.row
 
     signal pushBackwardsRequested()
@@ -46,10 +51,27 @@ Column {
 
         spacing: 8
 
-        StyledTextLabel {
+        Item {
+            height: childrenRect.height
             width: parent.width
-            text: qsTrc("inspector", "Arrange")
-            horizontalAlignment: Text.AlignLeft
+
+            StyledTextLabel {
+                width: parent.width
+                text: qsTrc("inspector", "Arrange")
+                horizontalAlignment: Text.AlignLeft
+            }
+
+            PropertyResetButton {
+                anchors.top: parent.top
+                anchors.right: parent.right
+
+                navigation.name: root.navigationName + "Reset"
+                navigation.panel: root.navigationPanel
+                navigation.row: root.buttonNavigationRow
+                navigation.accessible.name: qsTrc("inspector", "Reset order to default value")
+
+                propertyItem: root.arrangeOrderProperty
+            }
         }
 
         Item {
