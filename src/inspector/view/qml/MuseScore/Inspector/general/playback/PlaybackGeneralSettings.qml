@@ -47,62 +47,115 @@ Item {
 
         spacing: 12
 
+        property var fullModel: [
+            { typeRole: Inspector.TYPE_NOTE, componentRole: noteSection },
+            { typeRole: Inspector.TYPE_ARPEGGIO, componentRole: arpeggioSection },
+            { typeRole: Inspector.TYPE_FERMATA, componentRole: fermataSection },
+            { typeRole: Inspector.TYPE_BREATH, componentRole: pausesSection },
+            { typeRole: Inspector.TYPE_GLISSANDO, componentRole: glissandoSection },
+            { typeRole: Inspector.TYPE_GRADUAL_TEMPO_CHANGE, componentRole: tempoChangeSection }
+        ]
+
+        function getVisibleModel() {
+            var visibleModel = [];
+            var currType = null;
+            for (let i = 0; i < fullModel.length; i++) {
+                currType = root.proxyModel ? root.proxyModel.modelByType(fullModel[i].typeRole) : null;
+                if (Boolean(currType) && !currType.isEmpty) {
+                    visibleModel.push(fullModel[i]);
+                }
+            }
+            return visibleModel;
+        }
+
+        Repeater {
+            id: repeater
+
+            model: contentColumn.getVisibleModel()
+
+            delegate: Column {
+                id: itemColumn
+
+                width: parent.width
+                height: childrenRect.height
+
+                spacing: contentColumn.spacing
+
+                visible: expandableLoader.active
+
+                SeparatorLine {
+                    anchors.margins: -12
+                    visible: model.index>0
+                }
+
+                Loader {
+                    id: expandableLoader
+
+                    property var itemModel: root.proxyModel ?  proxyModel.modelByType(modelData.typeRole) : null
+
+                    width: parent.width
+
+                    sourceComponent: modelData["componentRole"]
+
+                    onLoaded: {
+                        expandableLoader.item.model = expandableLoader.itemModel
+                    }
+                }
+            }
+        }
+    }
+
+    Component {
+        id: noteSection
+
         NoteExpandableBlank {
-            id: noteSection
             navigation.panel: root.navigationPanel
             navigation.row: root.navigationRowStart
-
-            model: proxyModel ? proxyModel.modelByType(Inspector.TYPE_NOTE) : null
         }
+    }
 
-        SeparatorLine { anchors.margins: -12 }
+    Component {
+        id: arpeggioSection
 
         ArpeggioExpandableBlank {
-            id:arpeggioSection
             navigation.panel: root.navigationPanel
-            navigation.row: noteSection.navigationRowEnd + 1
-
-            model: proxyModel ? proxyModel.modelByType(Inspector.TYPE_ARPEGGIO) : null
+            navigation.row: root.navigationRowStart + 1000
         }
+    }
 
-        SeparatorLine { anchors.margins: -12 }
+    Component {
+        id: fermataSection
 
         FermataExpandableBlank {
-            id: fermataSection
             navigation.panel: root.navigationPanel
-            navigation.row: arpeggioSection.navigationRowEnd + 1
-
-            model: proxyModel ? proxyModel.modelByType(Inspector.TYPE_FERMATA) : null
+            navigation.row: root.navigationRowStart + 2000
         }
+    }
 
-        SeparatorLine { anchors.margins: -12 }
+    Component {
+        id: pausesSection
 
         PausesExpandableBlank {
-            id: pausesSection
             navigation.panel: root.navigationPanel
-            navigation.row: fermataSection.navigationRowEnd + 1
-
-            model: proxyModel ? proxyModel.modelByType(Inspector.TYPE_BREATH) : null
+            navigation.row: root.navigationRowStart + 3000
         }
+    }
 
-        SeparatorLine { anchors.margins: -12 }
+    Component {
+        id: glissandoSection
 
         GlissandoExpandableBlank {
-            id: glissandoSection
             navigation.panel: root.navigationPanel
-            navigation.row: pausesSection.navigationRowEnd + 1
-
-            model: proxyModel ? proxyModel.modelByType(Inspector.TYPE_GLISSANDO) : null
+            navigation.row: root.navigationRowStart + 4000
         }
+    }
 
-        SeparatorLine { anchors.margins: -12 }
+    Component {
+        id: tempoChangeSection
 
         GradualTempoChangeBlank {
             navigation.panel: root.navigationPanel
-            navigation.row: glissandoSection.navigationRowEnd + 1
-
-            model: proxyModel ? proxyModel.modelByType(Inspector.TYPE_GRADUAL_TEMPO_CHANGE) : null
+            navigation.row: root.navigationRowStart + 5000
         }
     }
 }
-
