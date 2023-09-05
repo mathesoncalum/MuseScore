@@ -44,14 +44,6 @@ void GeneralPreferencesModel::load()
     languagesService()->needRestartToApplyLanguageChangeChanged().onReceive(this, [this](bool need) {
         setIsNeedRestart(need);
     });
-
-    projectConfiguration()->autoSaveEnabledChanged().onReceive(this, [this](bool enabled) {
-        emit autoSaveEnabledChanged(enabled);
-    });
-
-    projectConfiguration()->autoSaveIntervalChanged().onReceive(this, [this](int minutes) {
-        emit autoSaveIntervalChanged(minutes);
-    });
 }
 
 void GeneralPreferencesModel::checkUpdateForCurrentLanguage()
@@ -121,16 +113,6 @@ QString GeneralPreferencesModel::currentKeyboardLayout() const
     return shortcutsConfiguration()->currentKeyboardLayout();
 }
 
-bool GeneralPreferencesModel::isAutoSaveEnabled() const
-{
-    return projectConfiguration()->isAutoSaveEnabled();
-}
-
-int GeneralPreferencesModel::autoSaveInterval() const
-{
-    return projectConfiguration()->autoSaveIntervalMinutes();
-}
-
 bool GeneralPreferencesModel::isOSCRemoteControl() const
 {
     return false;
@@ -159,26 +141,6 @@ void GeneralPreferencesModel::setCurrentKeyboardLayout(const QString& keyboardLa
 
     shortcutsConfiguration()->setCurrentKeyboardLayout(keyboardLayout);
     emit currentKeyboardLayoutChanged();
-}
-
-void GeneralPreferencesModel::setAutoSaveEnabled(bool enabled)
-{
-    if (enabled == isAutoSaveEnabled()) {
-        return;
-    }
-
-    projectConfiguration()->setAutoSaveEnabled(enabled);
-    emit autoSaveEnabledChanged(enabled);
-}
-
-void GeneralPreferencesModel::setAutoSaveInterval(int minutes)
-{
-    if (minutes == autoSaveInterval()) {
-        return;
-    }
-
-    projectConfiguration()->setAutoSaveInterval(minutes);
-    emit autoSaveIntervalChanged(minutes);
 }
 
 void GeneralPreferencesModel::setIsOSCRemoteControl(bool isOSCRemoteControl)

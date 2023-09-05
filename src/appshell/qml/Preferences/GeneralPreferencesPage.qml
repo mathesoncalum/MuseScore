@@ -42,6 +42,10 @@ PreferencesPage {
         }
     }
 
+    ProgrammeStartPreferencesModel {
+        id: programmeStartModel
+    }
+
     Column {
         width: parent.width
         spacing: root.sectionsSpacing
@@ -67,6 +71,27 @@ PreferencesPage {
 
         SeparatorLine { }
 
+        ProgrammeStartSection {
+            startupModes: programmeStartModel.startupModes
+            scorePathFilter: programmeStartModel.scorePathFilter()
+            panels: programmeStartModel.panels
+
+            navigation.section: root.navigationSection
+            navigation.order: root.navigationOrderStart + 2
+
+            onCurrentStartupModesChanged: function(index) {
+                programmeStartModel.setCurrentStartupMode(index)
+            }
+
+            onStartupScorePathChanged: function(path) {
+                programmeStartModel.setStartupScorePath(path)
+            }
+
+            onPanelsVisibleChanged: function(panelIndex, visible) {
+                programmeStartModel.setPanelVisible(panelIndex, visible)
+            }
+        }
+
         /*
          * TODO: https://github.com/musescore/MuseScore/issues/9807
         KeyboardLayoutsSection {
@@ -83,22 +108,6 @@ PreferencesPage {
 
         SeparatorLine { }
         */
-
-        AutoSaveSection {
-            isAutoSaveEnabled: preferencesModel.isAutoSaveEnabled
-            autoSaveInterval: preferencesModel.autoSaveInterval
-
-            navigation.section: root.navigationSection
-            navigation.order: root.navigationOrderStart + 3
-
-            onAutoSaveEnabledChanged: function(enabled) {
-                preferencesModel.isAutoSaveEnabled = enabled
-            }
-
-            onIntervalChanged: function(minutes) {
-                preferencesModel.autoSaveInterval = minutes
-            }
-        }
 
         /*
          * TODO: https://github.com/musescore/MuseScore/issues/9807

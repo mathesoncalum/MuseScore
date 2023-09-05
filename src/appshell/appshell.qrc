@@ -28,7 +28,6 @@
         <file>qml/Preferences/PreferencesPage.qml</file>
         <file>qml/Preferences/GeneralPreferencesPage.qml</file>
         <file>qml/Preferences/UpdatePreferencesPage.qml</file>
-        <file>qml/Preferences/ProgrammeStartPreferencesPage.qml</file>
         <file>qml/Preferences/NoteInputPreferencesPage.qml</file>
         <file>qml/Preferences/AppearancePreferencesPage.qml</file>
         <file>qml/Preferences/FoldersPreferencesPage.qml</file>
@@ -39,7 +38,7 @@
         <file>qml/Preferences/ImportPreferencesPage.qml</file>
         <file>qml/Preferences/MidiDeviceMappingPreferencesPage.qml</file>
         <file>qml/Preferences/IOPreferencesPage.qml</file>
-        <file>qml/Preferences/CloudPreferencesPage.qml</file>
+        <file>qml/Preferences/SaveAndPublishPreferencesPage.qml</file>
         <file>qml/Preferences/PreferencesDialog.qml</file>
         <file>qml/Preferences/internal/PreferencesButtonsPanel.qml</file>
         <file>qml/Preferences/internal/PreferencesMenu.qml</file>

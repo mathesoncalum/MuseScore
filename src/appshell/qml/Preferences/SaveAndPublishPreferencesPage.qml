@@ -5,7 +5,7 @@
  * MuseScore
  * Music Composition & Notation
  *
- * Copyright (C) 2021 MuseScore BVBA and others
+ * Copyright (C) 2023 MuseScore BVBA and others
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -20,43 +20,50 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import QtQuick 2.15
-
-import MuseScore.Ui 1.0
-import MuseScore.UiComponents 1.0
 import MuseScore.Preferences 1.0
+import MuseScore.UiComponents 1.0
 
 import "internal"
 
 PreferencesPage {
     id: root
 
-    ProgrammeStartPreferencesModel {
-        id: programmeStartModel
+    Component.onCompleted: {
+        preferencesModel.load()
+    }
+
+    SaveAndPublishPreferencesModel {
+        id: preferencesModel
     }
 
     Column {
         width: parent.width
         spacing: root.sectionsSpacing
 
-        ProgrammeStartSection {
-            startupModes: programmeStartModel.startupModes
-            scorePathFilter: programmeStartModel.scorePathFilter()
-            panels: programmeStartModel.panels
+        AutoSaveSection {
+            isAutoSaveEnabled: preferencesModel.isAutoSaveEnabled
+            autoSaveInterval: preferencesModel.autoSaveInterval
 
             navigation.section: root.navigationSection
             navigation.order: root.navigationOrderStart + 1
 
-            onCurrentStartupModesChanged: function(index) {
-                programmeStartModel.setCurrentStartupMode(index)
+            onAutoSaveEnabledChanged: function(enabled) {
+                preferencesModel.isAutoSaveEnabled = enabled
             }
 
-            onStartupScorePathChanged: function(path) {
-                programmeStartModel.setStartupScorePath(path)
-            }
-
-            onPanelsVisibleChanged: function(panelIndex, visible) {
-                programmeStartModel.setPanelVisible(panelIndex, visible)
+            onIntervalChanged: function(minutes) {
+                preferencesModel.autoSaveInterval = minutes
             }
         }
+
+        SeparatorLine { }
+
+        AudioGenerationSection {
+            navigation.section: root.navigationSection
+            navigation.order: root.navigationOrderStart + 2
+        }
+
+        // TODO: "Always prompt..." check-box goes here.
+        // https://github.com/musescore/MuseScore/issues/19115
     }
 }

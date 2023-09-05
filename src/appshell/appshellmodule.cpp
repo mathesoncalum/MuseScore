@@ -52,6 +52,7 @@
 #include "view/preferences/noteinputpreferencesmodel.h"
 #include "view/preferences/advancedpreferencesmodel.h"
 #include "view/preferences/canvaspreferencesmodel.h"
+#include "view/preferences/saveandpublishpreferencesmodel.h"
 #include "view/preferences/scorepreferencesmodel.h"
 #include "view/preferences/importpreferencesmodel.h"
 #include "view/preferences/iopreferencesmodel.h"
@@ -158,6 +159,7 @@ void AppShellModule::registerUiTypes()
     qmlRegisterType<NoteInputPreferencesModel>("MuseScore.Preferences", 1, 0, "NoteInputPreferencesModel");
     qmlRegisterType<AdvancedPreferencesModel>("MuseScore.Preferences", 1, 0, "AdvancedPreferencesModel");
     qmlRegisterType<CanvasPreferencesModel>("MuseScore.Preferences", 1, 0, "CanvasPreferencesModel");
+    qmlRegisterType<SaveAndPublishPreferencesModel>("MuseScore.Preferences", 1, 0, "SaveAndPublishPreferencesModel");
     qmlRegisterType<ScorePreferencesModel>("MuseScore.Preferences", 1, 0, "ScorePreferencesModel");
     qmlRegisterType<ImportPreferencesModel>("MuseScore.Preferences", 1, 0, "ImportPreferencesModel");
     qmlRegisterType<IOPreferencesModel>("MuseScore.Preferences", 1, 0, "IOPreferencesModel");

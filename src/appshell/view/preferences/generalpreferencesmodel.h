@@ -44,7 +44,6 @@ class GeneralPreferencesModel : public QObject, public async::Asyncable
     INJECT(languages::ILanguagesConfiguration, languagesConfiguration)
     INJECT(languages::ILanguagesService, languagesService)
     INJECT(shortcuts::IShortcutsConfiguration, shortcutsConfiguration)
-    INJECT(project::IProjectConfiguration, projectConfiguration)
 
     Q_PROPERTY(QVariantList languages READ languages NOTIFY languagesChanged)
     Q_PROPERTY(QString currentLanguageCode READ currentLanguageCode WRITE setCurrentLanguageCode NOTIFY currentLanguageCodeChanged)
@@ -52,8 +51,6 @@ class GeneralPreferencesModel : public QObject, public async::Asyncable
     Q_PROPERTY(QStringList keyboardLayouts READ keyboardLayouts CONSTANT)
     Q_PROPERTY(QString currentKeyboardLayout READ currentKeyboardLayout WRITE setCurrentKeyboardLayout NOTIFY currentKeyboardLayoutChanged)
 
-    Q_PROPERTY(bool isAutoSaveEnabled READ isAutoSaveEnabled WRITE setAutoSaveEnabled NOTIFY autoSaveEnabledChanged)
-    Q_PROPERTY(int autoSaveInterval READ autoSaveInterval WRITE setAutoSaveInterval NOTIFY autoSaveIntervalChanged)
     Q_PROPERTY(bool isOSCRemoteControl READ isOSCRemoteControl WRITE setIsOSCRemoteControl NOTIFY isOSCRemoteControlChanged)
     Q_PROPERTY(int oscPort READ oscPort WRITE setOscPort NOTIFY oscPortChanged)
 
@@ -71,8 +68,6 @@ public:
     QStringList keyboardLayouts() const;
     QString currentKeyboardLayout() const;
 
-    bool isAutoSaveEnabled() const;
-    int autoSaveInterval() const;
     bool isOSCRemoteControl() const;
     int oscPort() const;
     bool isNeedRestart() const;
@@ -80,8 +75,6 @@ public:
 public slots:
     void setCurrentLanguageCode(const QString& currentLanguageCode);
     void setCurrentKeyboardLayout(const QString& keyboardLayout);
-    void setAutoSaveEnabled(bool enabled);
-    void setAutoSaveInterval(int minutes);
     void setIsOSCRemoteControl(bool isOSCRemoteControl);
     void setOscPort(int oscPort);
     void setIsNeedRestart(bool newIsNeedRestart);
@@ -90,8 +83,6 @@ signals:
     void languagesChanged(QVariantList languages);
     void currentLanguageCodeChanged(QString currentLanguageCode);
     void currentKeyboardLayoutChanged();
-    void autoSaveEnabledChanged(bool enabled);
-    void autoSaveIntervalChanged(int minutes);
     void isOSCRemoteControlChanged(bool isOSCRemoteControl);
     void oscPortChanged(int oscPort);
 
