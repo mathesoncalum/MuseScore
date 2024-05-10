@@ -359,6 +359,7 @@ private:
     void moveStringSelection(MoveDirection d);
 
     EngravingItem* dropTarget(mu::engraving::EditData& ed) const;
+    bool dragStandardElement(const muse::PointF& pos, Qt::KeyboardModifiers modifiers);
     bool dragMeasureAnchorElement(const muse::PointF& pos);
     bool dragTimeAnchorElement(const muse::PointF& pos);
     bool dropCanvas(EngravingItem* e);
@@ -439,6 +440,9 @@ private:
     muse::async::Notification m_dropChanged;
 
     muse::async::Channel<ScoreConfigType> m_scoreConfigChanged;
+
+    engraving::BspTree m_droppableTree;
+    Page* m_currentDropPage = nullptr;
 
     mu::engraving::Lasso* m_lasso = nullptr;
 
