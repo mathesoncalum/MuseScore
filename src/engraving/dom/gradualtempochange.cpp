@@ -25,6 +25,7 @@
 #include "measure.h"
 #include "score.h"
 #include "segment.h"
+#include "tempo.h"
 
 #include "log.h"
 
@@ -132,6 +133,31 @@ double GradualTempoChange::tempoChangeFactor() const
     }
 
     return muse::value(DEFAULT_FACTORS_MAP, m_tempoChangeType, 1.0);
+}
+
+double GradualTempoChange::minTempoChangeFactor() const
+{
+    if (!score() || !startSegment()) {
+        return 0.01;
+    }
+
+    // The min/max permissable values for tempo change factors are contextual (they depend on what the
+    // tempo is at the start tick). For example, with a global "MIN_TEMPO" of 5 BPM, if the tempo at the
+    // start tick is 10 BPM, then the minimum permissable change factor is 0.5 (any lower than this and
+    // we would end up with a tempo lower than 5 BPM after the tempo change).
+    double currBPS = score()->tempomap()->tempo(startSegment()->tick().ticks()).val;
+    return MIN_TEMPO / currBPS;
+}
+
+double GradualTempoChange::maxTempoChangeFactor() const
+{
+    if (!score() || !startSegment()) {
+        return 10.00;
+    }
+
+    //! NOTE: Calculation explained in GradualTempoChange::minTempoChangeFactor
+    double currBPS = score()->tempomap()->tempo(startSegment()->tick().ticks()).val;
+    return MAX_TEMPO / currBPS;
 }
 
 PropertyValue GradualTempoChange::getProperty(Pid id) const

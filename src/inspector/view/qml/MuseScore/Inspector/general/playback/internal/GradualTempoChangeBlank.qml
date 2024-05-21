@@ -50,8 +50,8 @@ ExpandableBlank {
             titleText: qsTrc("inspector", "Amount")
             propertyItem: root.model ? root.model.tempoChangeFactor : null
 
-            minValue: 0
-            maxValue: 1000
+            minValue: root.model ? root.model.tempoChangeFactorRange().min : 1
+            maxValue: root.model ? root.model.tempoChangeFactorRange().max : 1000
             decimals: 0
             step: 1
             measureUnitsSymbol: "%"

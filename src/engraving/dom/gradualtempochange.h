@@ -47,6 +47,8 @@ public:
     void setTempoChangeType(const GradualTempoChangeType type);
 
     double tempoChangeFactor() const;
+    double minTempoChangeFactor() const;
+    double maxTempoChangeFactor() const;
 
     PropertyValue getProperty(Pid id) const override;
     bool setProperty(Pid id, const PropertyValue& val) override;

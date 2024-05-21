@@ -31,6 +31,9 @@
 #include "types/flags.h"
 
 namespace mu::engraving {
+static constexpr double MIN_TEMPO = 5.0 / 60;
+static constexpr double MAX_TEMPO = 999.0 / 60;
+
 enum class TempoType : char {
     INVALID = 0x0, PAUSE = 0x1, FIX = 0x2, RAMP = 0x4
 };

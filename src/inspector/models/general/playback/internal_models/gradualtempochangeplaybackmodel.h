@@ -39,6 +39,7 @@ public:
     PropertyItem* tempoEasingMethod() const;
 
     Q_INVOKABLE QVariantList possibleEasingMethods() const;
+    Q_INVOKABLE QVariantMap tempoChangeFactorRange() const;
 
 protected:
     void createProperties() override;

@@ -23,9 +23,13 @@
 #include "gradualtempochangeplaybackmodel.h"
 
 #include "engraving/types/types.h"
+#include "dom/gradualtempochange.h"
 
 using namespace mu::inspector;
 using namespace mu::engraving;
+
+static const QString MIN_KEY("min");
+static const QString MAX_KEY("max");
 
 GradualTempoChangePlaybackModel::GradualTempoChangePlaybackModel(QObject* parent, IElementRepositoryService* repository)
     : AbstractInspectorModel(parent, repository, ElementType::GRADUAL_TEMPO_CHANGE)
@@ -55,6 +59,29 @@ QVariantList GradualTempoChangePlaybackModel::possibleEasingMethods() const
     };
 
     return methods;
+}
+
+QVariantMap GradualTempoChangePlaybackModel::tempoChangeFactorRange() const
+{
+    //! NOTE: See GradualTempoChange::minTempoChangeFactor
+    // There may be multiple gradual tempo changes in our selection - ensure that we limit user input to the
+    // "highest minimum" and "lowest maximum" factors to prevent tempos outwith our desired range.
+    double currentMin = 0;
+    double currentMax = std::numeric_limits<double>::max();
+    for (const EngravingItem* element : m_elementList) {
+        if (element->isGradualTempoChange()) {
+            const GradualTempoChange* gtc = toGradualTempoChange(element);
+            if (gtc->minTempoChangeFactor() > currentMin) {
+                currentMin = gtc->minTempoChangeFactor();
+            }
+            if (gtc->maxTempoChangeFactor() < currentMax) {
+                currentMax = gtc->maxTempoChangeFactor();
+            }
+        }
+    }
+    int min = static_cast<int>(muse::DataFormatter::roundDouble(currentMin * 100.0));
+    int max = static_cast<int>(muse::DataFormatter::roundDouble(currentMax * 100.0));
+    return QVariantMap { { MIN_KEY, min }, { MAX_KEY, max } };
 }
 
 void GradualTempoChangePlaybackModel::createProperties()
