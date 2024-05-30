@@ -43,7 +43,7 @@ void ShortcutsInstanceModel::init()
     doLoadShortcuts();
 }
 
-QStringList ShortcutsInstanceModel::shortcuts() const
+QVariantList ShortcutsInstanceModel::shortcuts() const
 {
     return m_shortcuts;
 }
@@ -53,9 +53,9 @@ bool ShortcutsInstanceModel::active() const
     return shortcutsRegister()->active();
 }
 
-void ShortcutsInstanceModel::activate(const QString& key)
+void ShortcutsInstanceModel::activate(const QString& seq)
 {
-    doActivate(key);
+    doActivate(seq);
 }
 
 void ShortcutsInstanceModel::doLoadShortcuts()
@@ -65,12 +65,14 @@ void ShortcutsInstanceModel::doLoadShortcuts()
     const ShortcutList& shortcuts = shortcutsRegister()->shortcuts();
     for (const Shortcut& sc : shortcuts) {
         for (const std::string& seq : sc.sequences) {
-            QString sequence = QString::fromStdString(seq);
+            QVariantMap shortcut;
+            shortcut["seq"] = QString::fromStdString(seq);
+            shortcut["autorepeat"] = sc.autoRepeat;
 
             //! NOTE There may be several identical shortcuts for different contexts.
             //! We only need a list of unique ones.
-            if (!m_shortcuts.contains(sequence)) {
-                m_shortcuts << sequence;
+            if (!m_shortcuts.contains(shortcut)) {
+                m_shortcuts << shortcut;
             }
         }
     }
@@ -78,7 +80,7 @@ void ShortcutsInstanceModel::doLoadShortcuts()
     emit shortcutsChanged();
 }
 
-void ShortcutsInstanceModel::doActivate(const QString& key)
+void ShortcutsInstanceModel::doActivate(const QString& seq)
 {
-    controller()->activate(key.toStdString());
+    controller()->activate(seq.toStdString());
 }

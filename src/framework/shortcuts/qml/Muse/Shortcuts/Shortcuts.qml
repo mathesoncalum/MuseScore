@@ -44,7 +44,7 @@ QtObject {
 
             for (var i = 0; i < shortcutsModel.shortcuts.length; ++i) {
                 var sh = shortcutsModel.shortcuts[i]
-                var obj = shortcutComponent.createObject(root, {sequence: sh})
+                var obj = shortcutComponent.createObject(root, {sequence: sh["seq"], autoRepeat: sh["autorepeat"]})
                 root.objects.push(obj)
             }
         }

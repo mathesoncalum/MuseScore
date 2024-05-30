@@ -702,6 +702,7 @@
   <SC>
     <key>toggle-mixer</key>
     <seq>F10</seq>
+    <autorepeat>0</autorepeat>
     </SC>
   <SC>
     <key>toggle-braille-panel</key>
@@ -746,6 +747,8 @@
   <SC>
     <key>play</key>
     <seq>Space</seq>
+    <!-- NOTE Results in an ambiguous shortcut (see ShortcutsController::eventFilter) -->
+    <autorepeat>0</autorepeat>
     </SC>
   <SC>
     <key>play-prev-chord</key>

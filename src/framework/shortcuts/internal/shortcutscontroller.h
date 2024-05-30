@@ -34,7 +34,7 @@
 #include "shortcutcontext.h"
 
 namespace muse::shortcuts {
-class ShortcutsController : public IShortcutsController, public async::Asyncable
+class ShortcutsController : public QObject, public IShortcutsController, public async::Asyncable
 {
     INJECT(IShortcutsRegister, shortcutsRegister)
     INJECT(muse::actions::IActionsDispatcher, dispatcher)
@@ -54,7 +54,11 @@ public:
     bool isRegistered(const std::string& sequence) const override;
 
 private:
+    bool eventFilter(QObject* watched, QEvent* event) override;
+
     muse::actions::ActionCode resolveAction(const std::string& sequence) const;
+
+    bool m_autoRepeatLock = false; // TODO: A bit hacky...
 };
 }
 

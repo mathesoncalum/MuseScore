@@ -365,11 +365,15 @@ void MacOSShortcutsInstanceModel::doLoadShortcuts()
                 QKeySequence keySeq(key);
                 QString seqStr = keySeq.toString(QKeySequence::PortableText);
 
+                QVariantMap shortcut;
+                shortcut["seq"] = seqStr;
+                shortcut["autorepeat"] = sc.autoRepeat;
+
                 //! NOTE There may be several identical shortcuts for different contexts.
                 //! We only need a list of unique ones.
-                if (!m_shortcuts.contains(seqStr)) {
-                    m_shortcuts << seqStr;
+                if (!m_shortcuts.contains(shortcut)) {
                     m_shortcutMap.insert(seqStr, sequence);
+                    m_shortcuts << shortcut;
                 }
             }
         }
@@ -378,7 +382,7 @@ void MacOSShortcutsInstanceModel::doLoadShortcuts()
     emit shortcutsChanged();
 }
 
-void MacOSShortcutsInstanceModel::doActivate(const QString& key)
+void MacOSShortcutsInstanceModel::doActivate(const QString& seq)
 {
-    ShortcutsInstanceModel::doActivate(m_shortcutMap.value(key));
+    ShortcutsInstanceModel::doActivate(m_shortcutMap.value(seq));
 }

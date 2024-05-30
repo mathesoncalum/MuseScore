@@ -21,6 +21,9 @@
  */
 #include "shortcutscontroller.h"
 
+#include <QApplication>
+#include <QShortcutEvent>
+
 #include "log.h"
 
 using namespace muse::shortcuts;
@@ -28,10 +31,40 @@ using namespace muse::actions;
 
 void ShortcutsController::init()
 {
+    qApp->installEventFilter(this);
+
     interactiveProvider()->currentUri().ch.onReceive(this, [this](const Uri&) {
         //! NOTE: enable process shortcuts only for non-widget objects
         shortcutsRegister()->setActive(!interactiveProvider()->topWindowIsWidget());
     });
+}
+
+bool ShortcutsController::eventFilter(QObject* watched, QEvent* event)
+{
+    if (event->type() == QEvent::KeyRelease && m_autoRepeatLock) {
+        m_autoRepeatLock = false; // TODO: A bit hacky...
+    }
+
+    if (event->type() == QEvent::Shortcut) {
+        QShortcutEvent* shortcutEvent = static_cast<QShortcutEvent*>(event);
+
+        // Ambiguous shortcuts are caused by different autoRepeat values for the same sequence depending on
+        // the context. In this case we'll receive repeated shortcut events even if the desired action has an
+        // autoRepeat value of false, so we need to resolve the action and manually enforce autoRepeat.
+        if (shortcutEvent->isAmbiguous() && !m_autoRepeatLock) {
+            QString seqStr = shortcutEvent->key().toString(QKeySequence::PortableText);
+            ActionCode actionCode = resolveAction(seqStr.toStdString());
+            const Shortcut& shortcut = shortcutsRegister()->shortcut(actionCode);
+
+            m_autoRepeatLock = !shortcut.autoRepeat; // TODO: A bit hacky...
+
+            activate(seqStr.toStdString());
+
+            event->setAccepted(true);
+            return true;
+        }
+    }
+    return QObject::eventFilter(watched, event);
 }
 
 void ShortcutsController::activate(const std::string& sequence)
