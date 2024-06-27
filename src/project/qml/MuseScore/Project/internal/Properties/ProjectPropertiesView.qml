@@ -64,6 +64,9 @@ StyledListView {
 
         index: root.navigationColumnStart + model.index
         propertyName: model.propertyName
+
+        useTextArea: model.useTextArea
+
         propertyValue: model.propertyValue
         isStandardProperty: model.isStandardProperty
         isFileInfoPanelProperty: false

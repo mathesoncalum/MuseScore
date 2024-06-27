@@ -66,7 +66,7 @@ FocusScope {
         }
     }
 
-    implicitHeight: parent.height
+    implicitHeight: 90
     implicitWidth: parent.width
 
     opacity: root.enabled ? 1.0 : ui.theme.itemOpacityDisabled

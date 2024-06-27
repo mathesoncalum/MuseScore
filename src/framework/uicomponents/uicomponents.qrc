@@ -92,5 +92,6 @@
         <file>qml/Muse/UiComponents/StyledToolBarView.qml</file>
         <file>qml/Muse/UiComponents/StyledToolBarItem.qml</file>
         <file>qml/Muse/UiComponents/TextInputArea.qml</file>
+        <file>qml/Muse/UiComponents/VariableTextInputLoader.qml</file>
     </qresource>
 </RCC>

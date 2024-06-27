@@ -39,6 +39,8 @@ RowLayout {
     property bool isFileInfoPanelProperty: false
     property bool valueFillWidth: false
 
+    property bool useTextArea: false
+
     signal scrollIntoViewRequested()
     signal deletePropertyRequested()
 
@@ -52,6 +54,8 @@ RowLayout {
 
     StyledTextLabel {
         Layout.preferredWidth: root.propertyNameWidth
+        Layout.topMargin: root.useTextArea ? propertyNameField.textSidePadding : 0;
+        Layout.alignment: root.useTextArea ? Qt.AlignTop : Qt.AlignHCenter
 
         text: root.propertyName ? root.propertyName : ""
         font: ui.theme.bodyBoldFont
@@ -60,6 +64,8 @@ RowLayout {
     }
 
     TextInputField {
+        id: propertyNameField
+
         Layout.preferredWidth: root.propertyNameWidth
 
         currentText: root.propertyName ? root.propertyName : ""
@@ -80,22 +86,28 @@ RowLayout {
         }
     }
 
-    TextInputField {
+    VariableTextInputLoader {
+        id: variableInputLoader
+
+        property string pv: root.propertyValue ? root.propertyValue : ""
+
         Layout.fillWidth: true
 
-        currentText: root.propertyValue ? root.propertyValue : ""
-        hint: root.isStandardProperty ? "" : qsTrc("project/properties", "Value")
         visible: !root.isFileInfoPanelProperty
 
-        navigation.name: root.propertyName + "PropertyValue"
-        navigation.panel: root.navigationPanel
-        navigation.column: prv.navigationStartIndex + 1
-        accessible.name: root.propertyName + " " + currentText
-        navigation.onActiveChanged: {
-            if (navigation.active && !root.isFileInfoPanelProperty) {
-                root.scrollIntoViewRequested()
-            }
-        }
+        useTextArea: root.useTextArea
+        defaultText: root.isStandardProperty ? pv : qsTrc("project/properties", "Value")
+
+        navigationPanel: root.navigationPanel
+        navigationColumn: prv.navigationStartIndex + 1
+        navigationAccessibleName: root.propertyName + " " + variableInputLoader.currentText
+
+        // TODO:
+        // navigation.onActiveChanged: {
+        //     if (navigation.active && !root.isFileInfoPanelProperty) {
+        //         root.scrollIntoViewRequested()
+        //     }
+        // }
 
         onTextChanged: function(newValue) {
             root.propertyValue = newValue

@@ -89,8 +89,6 @@ Item {
             navigationPanel.order: 1
         }
 
-        SeparatorLine {}
-
         GeneralInfoView {
             id: generalInfo
 

@@ -65,12 +65,14 @@ private:
     enum Roles {
         PropertyName = Qt::UserRole + 1,
         PropertyValue,
-        IsStandardProperty
+        IsStandardProperty,
+        UseTextArea
     };
 
     struct Property {
         QString key, name, value;
         bool isStandardProperty = false;
+        bool useTextArea = false;
     };
 
     project::ProjectMeta m_projectMetaInfo;

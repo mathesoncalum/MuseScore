@@ -28,9 +28,14 @@ Column {
     id: root
 
     property string title: ""
-    property alias info: textField.hint
 
-    property alias navigation: textField.navigation
+    property alias useTextArea: loader.useTextArea
+
+    property alias info: loader.currentText
+    property alias defaultText: loader.defaultText
+
+    property alias navigationPanel: loader.navigationPanel
+    property alias navigationColumn: loader.navigationColumn
 
     spacing: 10
 
@@ -43,14 +48,9 @@ Column {
         text: title
     }
 
-    TextInputField {
-        id: textField
+    VariableTextInputLoader {
+        id: loader
 
-        navigation.accessible.name: root.title + " " + currentText
-
-        onTextChanged: function(newTextValue) {
-            root.info = newTextValue
-        }
+        navigationAccessibleName: root.title + " " + root.info
     }
 }
-
