@@ -90,13 +90,15 @@ void Page::appendSystem(System* s)
 
 Text* Page::layoutHeaderFooter(int area, const String& ss) const
 {
-    String s = replaceTextMacros(ss);
-    if (s.isEmpty()) {
+    bool isHeader = area < MAX_HEADERS;
+
+    TextBlock tb = replaceTextMacros(isHeader, ss);
+    if (tb.fragmentsWithoutEmpty().empty()) {
         return nullptr;
     }
 
     Text* text;
-    if (area < MAX_HEADERS) {
+    if (isHeader) {
         text = score()->headerText(area);
         if (!text) {
             text = Factory::createText((Page*)this, TextStyleType::HEADER);
@@ -131,9 +133,33 @@ Text* Page::layoutHeaderFooter(int area, const String& ss) const
     case 5: align = { AlignH::RIGHT, AlignV::BOTTOM };
         break;
     }
+    text->mutldata()->blocks = { tb };
+
+    // TextBase properties
     text->setAlign(align);
-    text->setXmlText(s);
+    text->setTextLineSpacing(style().styleD(isHeader ? Sid::headerLineSpacing : Sid::footerLineSpacing));
+    text->setColor(style().styleV(isHeader ? Sid::headerColor : Sid::footerColor).value<Color>());
+
+    const bool spatiumDependent = style().styleB(isHeader ? Sid::headerFontSpatiumDependent : Sid::footerFontSpatiumDependent);
+    const double factor = spatiumDependent ? SPATIUM20 : DPMM;
+    const PointF p = style().styleV(isHeader ? Sid::headerOffset : Sid::footerOffset).value<PointF>();
+    const PointF pointScaled = { p.x() * factor, p.y() * factor };
+    text->setOffset(pointScaled);
+
+    // Frame properties...
+    text->setFrameType(style().styleV(isHeader ? Sid::headerFrameType : Sid::footerFrameType).value<FrameType>());
+    text->setFrameColor(style().styleV(isHeader ? Sid::headerFrameFgColor : Sid::footerFrameFgColor).value<Color>());
+    text->setBgColor(style().styleV(isHeader ? Sid::headerFrameBgColor : Sid::footerFrameBgColor).value<Color>());
+    text->setFrameWidth(style().styleV(isHeader ? Sid::headerFrameWidth : Sid::footerFrameWidth).value<Spatium>());
+    text->setPaddingWidth(style().styleV(isHeader ? Sid::headerFramePadding : Sid::footerFramePadding).value<Spatium>());
+    text->setFrameRound(style().styleI(isHeader ? Sid::headerFrameRound : Sid::footerFrameRound));
+
+    // Generates text from ldata, ensures newlines are formatted properly...
+    text->genText();
+    text->createBlocks();
+
     renderer()->layoutItem(text);
+
     return text;
 }
 
@@ -326,10 +352,14 @@ void Page::doRebuildBspTree()
 //       workTitle
 //---------------------------------------------------------
 
-String Page::replaceTextMacros(const String& s) const
+TextBlock Page::replaceTextMacros(bool isHeader, const String& s) const
 {
-    String d;
+    std::list<TextFragment> fragments(1);
     for (size_t i = 0, n = s.size(); i < n; ++i) {
+        // Header / footer style by default...
+        fragments.back().format.setStyle(style().styleV(isHeader ? Sid::headerFontStyle : Sid::footerFontStyle).value<FontStyle>());
+        fragments.back().format.setFontSize(style().styleD(isHeader ? Sid::headerFontSize : Sid::footerFontSize));
+        fragments.back().format.setFontFamily(style().styleSt(isHeader ? Sid::headerFontFace : Sid::footerFontFace));
         Char c = s.at(i);
         if (c == '$' && (i < (n - 1))) {
             Char nc = s.at(i + 1);
@@ -348,12 +378,17 @@ String Page::replaceTextMacros(const String& s) const
             {
                 int no = static_cast<int>(m_no) + 1 + score()->pageNumberOffset();
                 if (no > 0) {
-                    d += String::number(no);
+                    TextFragment pageNumberFragment(String::number(no));
+                    pageNumberFragment.format.setStyle(style().styleV(Sid::pageNumberFontStyle).value<FontStyle>());
+                    pageNumberFragment.format.setFontSize(style().styleD(Sid::pageNumberFontSize));
+                    pageNumberFragment.format.setFontFamily(style().styleSt(Sid::pageNumberFontFace));
+                    fragments.emplace_back(pageNumberFragment);
+                    fragments.emplace_back(TextFragment()); // Start next fragment
                 }
             }
             break;
             case 'n':
-                d += String::number(score()->npages() + score()->pageNumberOffset());
+                fragments.back().text += String::number(score()->npages() + score()->pageNumberOffset());
                 break;
             case 'i': // not on first page
                 if (!m_no) {
@@ -361,39 +396,43 @@ String Page::replaceTextMacros(const String& s) const
                 }
             // FALLTHROUGH
             case 'I':
-                d += score()->metaTag(u"partName").toXmlEscaped();
+                fragments.back().text += score()->metaTag(u"partName").toXmlEscaped();
                 break;
             case 'f':
-                d += masterScore()->fileInfo()->fileName(false).toString().toXmlEscaped();
+                fragments.back().text += masterScore()->fileInfo()->fileName(false).toString().toXmlEscaped();
                 break;
             case 'F':
-                d += masterScore()->fileInfo()->path().toString().toXmlEscaped();
+                fragments.back().text += masterScore()->fileInfo()->path().toString().toXmlEscaped();
                 break;
             case 'd':
-                d += muse::Date::currentDate().toString(muse::DateFormat::ISODate);
+                fragments.back().text += muse::Date::currentDate().toString(muse::DateFormat::ISODate);
                 break;
             case 'D':
             {
                 String creationDate = score()->metaTag(u"creationDate");
                 if (creationDate.isEmpty()) {
-                    d += masterScore()->fileInfo()->birthTime().date().toString(muse::DateFormat::ISODate);
+                    fragments.back().text += masterScore()->fileInfo()->birthTime().date().toString(
+                        muse::DateFormat::ISODate);
                 } else {
-                    d += muse::Date::fromStringISOFormat(creationDate).toString(muse::DateFormat::ISODate);
+                    fragments.back().text += muse::Date::fromStringISOFormat(creationDate).toString(
+                        muse::DateFormat::ISODate);
                 }
             }
             break;
             case 'm':
                 if (score()->dirty() || !masterScore()->saved()) {
-                    d += muse::Time::currentTime().toString(muse::DateFormat::ISODate);
+                    fragments.back().text += muse::Time::currentTime().toString(muse::DateFormat::ISODate);
                 } else {
-                    d += masterScore()->fileInfo()->lastModified().time().toString(muse::DateFormat::ISODate);
+                    fragments.back().text += masterScore()->fileInfo()->lastModified().time().toString(
+                        muse::DateFormat::ISODate);
                 }
                 break;
             case 'M':
                 if (score()->dirty() || !masterScore()->saved()) {
-                    d += muse::Date::currentDate().toString(muse::DateFormat::ISODate);
+                    fragments.back().text += muse::Date::currentDate().toString(muse::DateFormat::ISODate);
                 } else {
-                    d += masterScore()->fileInfo()->lastModified().date().toString(muse::DateFormat::ISODate);
+                    fragments.back().text += masterScore()->fileInfo()->lastModified().date().toString(
+                        muse::DateFormat::ISODate);
                 }
                 break;
             case 'C': // only on first page
@@ -402,29 +441,36 @@ String Page::replaceTextMacros(const String& s) const
                 }
             // FALLTHROUGH
             case 'c':
-                d += score()->metaTag(u"copyright").toXmlEscaped();
-                break;
+            {
+                TextFragment copyrightFragment(score()->metaTag(u"copyright").toXmlEscaped());
+                copyrightFragment.format.setStyle(style().styleV(Sid::copyrightFontStyle).value<FontStyle>());
+                copyrightFragment.format.setFontSize(style().styleD(Sid::copyrightFontSize));
+                copyrightFragment.format.setFontFamily(style().styleSt(Sid::copyrightFontFace));
+                fragments.emplace_back(copyrightFragment);
+                fragments.emplace_back(TextFragment()); // Start next fragment
+            }
+            break;
             case 'v':
                 if (score()->dirty()) {
-                    d += score()->appVersion();
+                    fragments.back().text += score()->appVersion();
                 } else {
-                    d += score()->mscoreVersion();
+                    fragments.back().text += score()->mscoreVersion();
                 }
                 break;
             case 'r':
                 if (score()->dirty()) {
-                    d += revision;
+                    fragments.back().text += revision;
                 } else {
                     int rev = score()->mscoreRevision();
                     if (rev > 99999) { // MuseScore 1.3 is decimal 5702, 2.0 and later uses a 7-digit hex SHA
-                        d += String::number(rev, 16);
+                        fragments.back().text += String::number(rev, 16);
                     } else {
-                        d += String::number(rev, 10);
+                        fragments.back().text += String::number(rev, 10);
                     }
                 }
                 break;
             case '$':
-                d += '$';
+                fragments.back().text += '$';
                 break;
             case ':':
             {
@@ -437,24 +483,27 @@ String Page::replaceTextMacros(const String& s) const
                     tag += s.at(k);
                 }
                 if (k != n) {       // found ':' ?
-                    d += score()->metaTag(tag).toXmlEscaped();
+                    fragments.back().text += score()->metaTag(tag).toXmlEscaped();
                     i = k - 1;
                 }
             }
             break;
             default:
-                d += '$';
-                d += nc;
+                fragments.back().text += '$';
+                fragments.back().text += nc;
                 break;
             }
             ++i;
         } else if (c == '&') {
-            d += u"&amp;";
+            fragments.back().text += u"&amp;";
         } else {
-            d += c;
+            fragments.back().text += c;
         }
     }
-    return d;
+
+    TextBlock tb;
+    tb.fragments() = fragments;
+    return tb;
 }
 
 //---------------------------------------------------------
