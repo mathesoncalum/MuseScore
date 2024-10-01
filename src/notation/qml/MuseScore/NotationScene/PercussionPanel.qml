@@ -160,12 +160,27 @@ Item {
                     PercussionPanelPad {
                         anchors.centerIn: parent
 
+                        dragParent: root
+
                         width: parent.width - padGrid.spacing
                         height: parent.height - padGrid.spacing
 
                         padModel: model.padModelRole
                         panelMode: percModel.currentPanelMode
                         useNotationPreview: percModel.useNotationPreview
+
+                        onDragStarted: {
+                            padGrid.model.startDrag(index)
+                        }
+                        onEntered: {
+                            padGrid.model.setDropIndex(index)
+                        }
+                        onExited: {
+                            padGrid.model.clearDropIndex()
+                        }
+                        onDropped: {
+                            padGrid.model.endDrag()
+                        }
                     }
                 }
             }

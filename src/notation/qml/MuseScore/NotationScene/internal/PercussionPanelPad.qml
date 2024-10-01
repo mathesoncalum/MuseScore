@@ -25,7 +25,7 @@ import Muse.Ui 1.0
 import Muse.UiComponents 1.0
 import MuseScore.NotationScene 1.0
 
-Rectangle {
+DropArea {
     id: root
 
     property var padModel: null
@@ -33,48 +33,110 @@ Rectangle {
     property int panelMode: -1
     property bool useNotationPreview: false
 
-    radius: root.width / 6
+    property var dragParent: null
+    signal dragStarted()
+    signal dropped()
 
-    color: root.useNotationPreview ? "white" : ui.theme.backgroundSecondaryColor
-
-    border.color: root.panelMode === PanelMode.EDIT_LAYOUT ? ui.theme.accentColor : "transparent"
-    border.width: 2
-
-    Item {
-        id: contentArea
+    Rectangle {
+        id: background
 
         anchors.fill: parent
 
-        visible: Boolean(root.padModel) ? !root.padModel.isEmptySlot : false
+        radius: root.width / 6
 
-        StyledTextLabel {
-            id: instrumentNameLabel
+        color: ui.theme.backgroundSecondaryColor
 
-            visible: !root.useNotationPreview
+        border.color: root.panelMode === PanelMode.EDIT_LAYOUT ? ui.theme.accentColor : "transparent"
+        border.width: 2
 
-            anchors.centerIn: parent
-            anchors.margins: 5
+        Rectangle {
+            id: contentArea
 
-            width: parent.width
+            width: background.width
+            height: background.height
 
-            wrapMode: Text.WordWrap
+            visible: Boolean(root.padModel) ? !root.padModel.isEmptySlot : false
 
-            text: Boolean(root.padModel) ? root.padModel.instrumentName : ""
-        }
+            radius: background.radius
 
-        StyledTextLabel {
-            // placeholder component - reflects the current state of the pad/panel
-            id: modeLabel
+            color: root.useNotationPreview ? "white" : ui.theme.accentColor
+            opacity: ui.theme.buttonOpacityNormal
 
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.bottom: parent.bottom
-            anchors.margins: 5
+            border.color: background.border.color
+            border.width: background.border.width
 
-            width: parent.width
+            DragHandler {
+                id: dragHandler
+                target: contentArea
+                enabled: root.panelMode === PanelMode.EDIT_LAYOUT
+                onActiveChanged: {
+                    dragHandler.active ? root.dragStarted() : root.dropped()
+                }
+            }
 
-            color: root.useNotationPreview ? "black" : "white"
+            Drag.active: dragHandler.active
+            Drag.hotSpot: dragHandler.centroid.position
 
-            wrapMode: Text.WordWrap
+            StyledTextLabel {
+                id: instrumentNameLabel
+
+                visible: !root.useNotationPreview
+
+                anchors.centerIn: parent
+                anchors.margins: 5
+
+                width: parent.width
+
+                font: ui.theme.bodyBoldFont
+                wrapMode: Text.WordWrap
+
+                text: Boolean(root.padModel) ? root.padModel.instrumentName : ""
+            }
+
+            StyledTextLabel {
+                // placeholder component - reflects the current state of the pad/panel
+                id: modeLabel
+
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.bottom: parent.bottom
+                anchors.margins: 5
+
+                width: parent.width
+
+                color: root.useNotationPreview ? "black" : "white"
+
+                wrapMode: Text.WordWrap
+            }
+
+            states: [
+                State {
+                    name: "DRAGGED"
+                    when: dragHandler.active
+                    ParentChange {
+                        target: contentArea
+                        parent: root.dragParent
+                    }
+                    AnchorChanges {
+                        target: contentArea
+                        anchors.horizontalCenter: undefined
+                        anchors.verticalCenter: undefined
+                    }
+                    PropertyChanges {
+                        target: contentArea
+                        opacity: 1.0
+                    }
+                },
+                //! NOTE: Workaround for a bug in Qt 6.2.4 - see PR #24106 comment
+                // https://bugreports.qt.io/browse/QTBUG-99436
+                State {
+                    name: "DROPPED"
+                    when: !dragHandler.active
+                    ParentChange {
+                        target: contentArea
+                        parent: root
+                    }
+                }
+            ]
         }
     }
 

@@ -79,15 +79,26 @@ void PercussionPanelPadListModel::startDrag(int startIndex)
     m_dragStartIndex = startIndex;
 }
 
-void PercussionPanelPadListModel::endDrag(int endIndex)
+void PercussionPanelPadListModel::setDropIndex(int dropIndex)
 {
-    movePad(m_dragStartIndex, endIndex);
-    m_dragStartIndex = -1;
+    m_dropIndex = dropIndex;
 }
 
-bool PercussionPanelPadListModel::isDragActive() const
+void PercussionPanelPadListModel::clearDropIndex()
 {
-    return m_dragStartIndex > -1;
+    m_dropIndex = -1;
+}
+
+void PercussionPanelPadListModel::endDrag()
+{
+    if (m_dragStartIndex > -1 && m_dropIndex > -1) {
+        movePad(m_dragStartIndex, m_dropIndex);
+    } else {
+        emit layoutChanged();
+    }
+
+    m_dragStartIndex = -1;
+    m_dropIndex = -1;
 }
 
 void PercussionPanelPadListModel::resetLayout()

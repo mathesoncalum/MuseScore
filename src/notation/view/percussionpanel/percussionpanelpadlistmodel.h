@@ -48,8 +48,11 @@ public:
     Q_INVOKABLE void deleteRow(int row);
 
     Q_INVOKABLE void startDrag(int startIndex);
-    Q_INVOKABLE void endDrag(int endIndex);
-    Q_INVOKABLE bool isDragActive() const;
+
+    Q_INVOKABLE void setDropIndex(int dropIndex);
+    Q_INVOKABLE void clearDropIndex();
+
+    Q_INVOKABLE void endDrag();
 
     int numColumns() const { return NUM_COLUMNS; }
     int numPads() const { return m_padModels.count(); }
@@ -70,4 +73,5 @@ private:
     QList<PercussionPanelPadModel*> m_padModels;
 
     int m_dragStartIndex = -1;
+    int m_dropIndex = -1;
 };
