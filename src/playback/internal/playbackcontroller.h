@@ -135,7 +135,7 @@ private:
     bool loopBoundariesSet() const;
 
     void onNotationChanged();
-    void onPartChanged(const engraving::Part* part);
+    void onPartChanged(const engraving::Part* part, bool newlyAdded);
 
     void onSelectionChanged();
     void seekListSelection();

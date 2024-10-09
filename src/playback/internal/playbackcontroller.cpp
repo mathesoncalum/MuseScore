@@ -508,29 +508,51 @@ void PlaybackController::onNotationChanged()
     });
 }
 
-void PlaybackController::onPartChanged(const Part* part)
+void PlaybackController::onPartChanged(const Part* part, bool newlyAdded)
 {
     if (!m_notation->hasVisibleParts()) {
         pause();
     }
     m_isPlayAllowedChanged.notify();
 
-    if (!configuration()->muteHiddenInstruments()) {
+    if (!m_masterNotation || (!configuration()->muteHiddenInstruments() && !newlyAdded)) {
         return;
     }
 
-    for (const InstrumentTrackId& instrumentTrackId : part->instrumentTrackIdList()) {
-        auto soloMuteState = trackSoloMuteState(instrumentTrackId);
-        soloMuteState.mute = !part->show();
-        setTrackSoloMuteState(instrumentTrackId, soloMuteState);
+    const auto updatePartSoloMuteState = [this, part, newlyAdded](const notation::INotationPtr& notation) {
+        for (const InstrumentTrackId& instrumentTrackId : part->instrumentTrackIdList()) {
+            auto soloMuteState = notation->soloMuteState()->trackSoloMuteState(instrumentTrackId);
+
+            bool shouldBeMuted = newlyAdded && notation != m_masterNotation->notation();
+            //! NOTE: Part::show can be true even if the part isn't visible/included in an excerpt...
+            soloMuteState.mute = shouldBeMuted || !part->show();
+
+            notation->soloMuteState()->setTrackSoloMuteState(instrumentTrackId, soloMuteState);
+        }
+
+        if (part->hasChordSymbol()) {
+            InstrumentTrackId chordSymbolsTrackId = notationPlayback()->chordSymbolsTrackId(part->id());
+            auto chordsSoloMuteState = notation->soloMuteState()->trackSoloMuteState(chordSymbolsTrackId);
+
+            bool shouldBeMuted = newlyAdded && notation != m_masterNotation->notation();
+            chordsSoloMuteState.mute = shouldBeMuted || !part->show();
+
+            notation->soloMuteState()->setTrackSoloMuteState(chordSymbolsTrackId, chordsSoloMuteState);
+        }
+    };
+
+    // If a part is newly added, we need to update the mute state for all excerpts...
+    if (newlyAdded) {
+        for (const IExcerptNotationPtr& excerpt : m_masterNotation->excerpts()) {
+            if (const INotationPtr& notation = excerpt->notation()) {
+                updatePartSoloMuteState(notation);
+            }
+        }
+        return;
     }
 
-    if (part->hasChordSymbol()) {
-        InstrumentTrackId chordSymbolsTrackId = notationPlayback()->chordSymbolsTrackId(part->id());
-        auto chordsSoloMuteState = trackSoloMuteState(chordSymbolsTrackId);
-        chordsSoloMuteState.mute = !part->show();
-        setTrackSoloMuteState(chordSymbolsTrackId, chordsSoloMuteState);
-    }
+    // Otherwise just update the mute state for the current notation...
+    updatePartSoloMuteState(m_notation);
 }
 
 void PlaybackController::onSelectionChanged()
@@ -1571,11 +1593,15 @@ void PlaybackController::setNotation(notation::INotationPtr notation)
     NotifyList<const Part*> partList = notationParts->partList();
 
     partList.onItemAdded(this, [this](const Part* part) {
-        onPartChanged(part);
+        //! NOTE: We need to know if the Part is newly added, but this is also notified if a Part was shown in an excerpt. The only
+        //! way we can say for certain that the Part is "truly new" is to check whether this was notified while the current notation
+        //! is the master notation (somewhat related to issue #17250).
+        bool newlyAdded = m_masterNotation && m_masterNotation->notation() == m_notation;
+        onPartChanged(part, newlyAdded);
     });
 
     partList.onItemChanged(this, [this](const Part* part) {
-        onPartChanged(part);
+        onPartChanged(part, /*newlyAdded*/ false);
     });
 
     notationPlayback()->loopBoundariesChanged().onNotify(this, [this]() {
