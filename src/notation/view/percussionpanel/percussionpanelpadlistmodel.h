@@ -35,6 +35,8 @@ class PercussionPanelPadListModel : public QAbstractListModel
     Q_PROPERTY(int numColumns READ numColumns CONSTANT)
     Q_PROPERTY(int numPads READ numPads NOTIFY numPadsChanged)
 
+    Q_PROPERTY(bool isDragInProgress READ isDragInProgress NOTIFY isDragInProgressChanged)
+
 public:
     explicit PercussionPanelPadListModel(QObject* parent = nullptr);
 
@@ -51,6 +53,8 @@ public:
     Q_INVOKABLE void startDrag(int startIndex);
     Q_INVOKABLE void endDrag(int endIndex);
 
+    bool isDragInProgress() const { return indexIsValid(m_dragStartIndex); }
+
     int numColumns() const { return NUM_COLUMNS; }
     int numPads() const { return m_padModels.count(); }
 
@@ -59,6 +63,8 @@ public:
 signals:
     void numPadsChanged();
     void rowIsEmptyChanged(int row, bool empty);
+
+    void isDragInProgressChanged();
 
 private:
     enum Roles {

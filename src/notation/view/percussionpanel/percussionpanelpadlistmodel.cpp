@@ -82,6 +82,7 @@ bool PercussionPanelPadListModel::rowIsEmpty(int row) const
 void PercussionPanelPadListModel::startDrag(int startIndex)
 {
     m_dragStartIndex = startIndex;
+    emit isDragInProgressChanged();
 }
 
 void PercussionPanelPadListModel::endDrag(int endIndex)
@@ -92,6 +93,7 @@ void PercussionPanelPadListModel::endDrag(int endIndex)
         emit layoutChanged();
     }
     m_dragStartIndex = -1;
+    emit isDragInProgressChanged();
 }
 
 void PercussionPanelPadListModel::resetLayout()

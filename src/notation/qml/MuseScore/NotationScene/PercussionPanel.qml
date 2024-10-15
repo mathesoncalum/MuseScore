@@ -182,6 +182,9 @@ Item {
                         panelMode: percModel.currentPanelMode
                         useNotationPreview: percModel.useNotationPreview
 
+                        showEditOutline: percModel.currentPanelMode === PanelMode.EDIT_LAYOUT
+                                         && (!Boolean(padGrid.model.isDragInProgress) || pad.containsDrag)
+
                         dragParent: root
 
                         onDragStarted: {
