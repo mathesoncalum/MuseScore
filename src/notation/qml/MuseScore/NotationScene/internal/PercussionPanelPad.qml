@@ -39,6 +39,9 @@ DropArea {
     property alias totalBorderWidth: padLoader.anchors.margins
 
     property var dragParent: null
+    property alias isDragged: dragHandler.active
+    property alias draggableArea: draggableArea
+
     signal dragStarted()
     signal dragCancelled()
 

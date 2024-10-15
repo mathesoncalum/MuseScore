@@ -143,6 +143,9 @@ Item {
                 readonly property int numColumns: model.numColumns
                 readonly property int spacing: 20
 
+                // might be able to do this with Drag property - worth investigating
+                property Item dragOriginPad: null
+
                 Layout.alignment: Qt.AlignTop
                 Layout.fillHeight: true
 
@@ -173,7 +176,8 @@ Item {
                     PercussionPanelPad {
                         id: pad
 
-                        anchors.centerIn: parent
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.verticalCenter: parent.verticalCenter
 
                         width: parent.width + pad.totalBorderWidth - padGrid.spacing
                         height: parent.height + pad.totalBorderWidth - padGrid.spacing
@@ -188,10 +192,12 @@ Item {
                         dragParent: root
 
                         onDragStarted: {
+                            padGrid.dragOriginPad = pad
                             padGrid.model.startDrag(index)
                         }
 
                         onDropped: function(dropEvent) {
+                            padGrid.dragOriginPad = null
                             padGrid.model.endDrag(index)
                             dropEvent.accepted = true
                         }
@@ -199,6 +205,22 @@ Item {
                         onDragCancelled: {
                             padGrid.model.endDrag(-1)
                         }
+
+                        states: [
+                            State {
+                                name: "DRAG_TARGET"
+                                when: Boolean(padGrid.dragOriginPad) && pad.containsDrag && !pad.isDragged
+                                ParentChange {
+                                    target: pad.draggableArea
+                                    parent: padGrid.dragOriginPad
+                                }
+                                AnchorChanges {
+                                    target: pad.draggableArea
+                                    anchors.verticalCenter: padGrid.dragOriginPad.verticalCenter
+                                    anchors.horizontalCenter: padGrid.dragOriginPad.horizontalCenter
+                                }
+                            }
+                        ]
                     }
                 }
             }
