@@ -139,6 +139,8 @@ Item {
                 readonly property int numColumns: model.numColumns
                 readonly property int spacing: 20
 
+                property Item dragOriginPad: null
+
                 Layout.alignment: Qt.AlignTop
                 Layout.fillHeight: true
 
@@ -169,20 +171,46 @@ Item {
                         panelMode: percModel.currentPanelMode
                         useNotationPreview: percModel.useNotationPreview
 
+                        // think
+                        showEditOutline: percModel.currentPanelMode === PanelMode.EDIT_LAYOUT
+                                         && (!Boolean(padGrid.dragOriginPad) || (pad.containsDrag && (pad.isEmptySlot || pad.isDragged)))
+
                         dragParent: root
 
                         onDragStarted: {
+                            padGrid.dragOriginPad = pad
                             padGrid.model.startDrag(index)
                         }
 
                         onDropped: function(dropEvent) {
+                            padGrid.dragOriginPad = null
                             padGrid.model.endDrag(index)
                             dropEvent.accepted = true
                         }
 
                         onDragCancelled: {
+                            padGrid.dragOriginPad = null
                             padGrid.model.endDrag(-1)
                         }
+
+                        states: [
+                            // If this is the drop target - move the draggable area to the source of the drag (preview the drop)
+                            State {
+                                name: "DROP_TARGET"
+                                when: Boolean(padGrid.dragOriginPad) && pad.containsDrag && !pad.isDragged && !pad.isEmptySlot
+
+                                ParentChange {
+                                    target: pad.draggableArea
+                                    parent: padGrid.dragOriginPad
+                                }
+
+                                AnchorChanges {
+                                    target: pad.draggableArea
+                                    anchors.verticalCenter: padGrid.dragOriginPad.verticalCenter
+                                    anchors.horizontalCenter: padGrid.dragOriginPad.horizontalCenter
+                                }
+                            }
+                        ]
                     }
                 }
             }

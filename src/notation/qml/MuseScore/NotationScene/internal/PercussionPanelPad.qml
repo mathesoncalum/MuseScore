@@ -31,19 +31,21 @@ DropArea {
 
     property var padModel: null
 
+    readonly property bool isEmptySlot: Boolean(root.padModel) ? root.padModel.isEmptySlot : true
+
     property int panelMode: -1
     property bool useNotationPreview: false
+    property bool showEditOutline: false
 
     property alias totalBorderWidth: padLoader.anchors.margins
 
     property var dragParent: null
+
+    property alias isDragged: dragHandler.active
+    property alias draggableArea: draggableArea
+
     signal dragStarted()
     signal dragCancelled()
-
-    QtObject {
-        id: prv
-        readonly property bool isEmptySlot: Boolean(root.padModel) ? root.padModel.isEmptySlot : true
-    }
 
     Rectangle {
         id: draggableArea
@@ -56,14 +58,14 @@ DropArea {
 
         color: ui.theme.backgroundPrimaryColor
 
-        border.color: root.panelMode === PanelMode.EDIT_LAYOUT ? ui.theme.accentColor : "transparent"
+        border.color: root.showEditOutline ? ui.theme.accentColor : "transparent"
         border.width: 2
 
         DragHandler {
             id: dragHandler
 
             target: draggableArea
-            enabled: root.panelMode === PanelMode.EDIT_LAYOUT && !prv.isEmptySlot
+            enabled: root.panelMode === PanelMode.EDIT_LAYOUT && !root.isEmptySlot
 
             dragThreshold: 0 // prevents the flickable from stealing drag events
 
@@ -78,7 +80,7 @@ DropArea {
             }
         }
 
-        Drag.active: dragHandler.active
+        Drag.active: root.isDragged
         Drag.hotSpot.x: root.width / 2
         Drag.hotSpot.y: root.height / 2
 
@@ -100,7 +102,7 @@ DropArea {
                 }
             }
 
-            sourceComponent: prv.isEmptySlot ? emptySlotComponent : padContentComponent
+            sourceComponent: root.isEmptySlot ? emptySlotComponent : padContentComponent
 
             Component {
                 id: padContentComponent
@@ -109,7 +111,7 @@ DropArea {
                     padModel: root.padModel
                     panelMode: root.panelMode
                     useNotationPreview: root.useNotationPreview
-                    dragActive: dragHandler.active
+                    dragActive: root.isDragged
                 }
             }
 
@@ -127,7 +129,7 @@ DropArea {
         states: [
             State {
                 name: "DRAGGED"
-                when: dragHandler.active
+                when: root.isDragged
                 ParentChange {
                     target: draggableArea
                     parent: root.dragParent
@@ -142,7 +144,7 @@ DropArea {
             // https://bugreports.qt.io/browse/QTBUG-99436
             State {
                 name: "DROPPED"
-                when: !dragHandler.active
+                when: !root.isDragged
                 ParentChange {
                     target: draggableArea
                     parent: root
@@ -152,7 +154,7 @@ DropArea {
     }
 
     Rectangle {
-        id: dragSourceBackground
+        id: dragBackground
 
         anchors.fill: parent
 
@@ -163,14 +165,16 @@ DropArea {
 
         color: draggableArea.color
 
-        // This spawns behind a pad when it is dragged away from the source position
-        visible: dragHandler.active
+        // When a pad becomes a drop target, its draggableArea is "previewed" in a new position (see the DROP_TARGET state
+        // in PercussionPanel.qml). This component appears in place of the re-positioned drop target, in order to highlight
+        // the drop area. This component also appears in place of an actively dragged pad...
+        visible: root.containsDrag || root.isDragged
 
         Loader {
             anchors.fill: parent
             anchors.margins: padLoader.anchors.margins
 
-            active: dragHandler.active
+            active: dragBackground.visible
 
             layer.enabled: padLoader.layer.enabled
             layer.effect: padLoader.layer.effect
