@@ -328,22 +328,24 @@ void MasterNotation::applyOptions(mu::engraving::MasterScore* score, const Score
 {
     TRACEFUNC;
 
-    mu::engraving::VBox* nvb = nullptr;
+    mu::engraving::VBox* newVBox = nullptr;
 
     if (createdFromTemplate) {
-        mu::engraving::MeasureBase* mb = score->first();
-        if (mb && mb->isVBox()) {
-            mu::engraving::VBox* tvb = toVBox(mb);
-            nvb = Factory::createTitleVBox(score->dummy()->system());
-            nvb->setBoxHeight(tvb->boxHeight());
-            nvb->setBoxWidth(tvb->boxWidth());
-            nvb->setTopGap(tvb->topGap());
-            nvb->setBottomGap(tvb->bottomGap());
-            nvb->setTopMargin(tvb->topMargin());
-            nvb->setBottomMargin(tvb->bottomMargin());
-            nvb->setLeftMargin(tvb->leftMargin());
-            nvb->setRightMargin(tvb->rightMargin());
-            nvb->setAutoSizeEnabled(tvb->isAutoSizeEnabled());
+        // We're about to clear all measures in the score, which includes the title VBox. If there is a title VBox, we should store its
+        // settings so that we can restore them later on...
+        mu::engraving::MeasureBase* firstMeasure = score->first();
+        if (firstMeasure && firstMeasure->isVBox()) {
+            mu::engraving::VBox* originalVBox = toVBox(firstMeasure);
+            newVBox = Factory::createTitleVBox(score->dummy()->system());
+            newVBox->setBoxHeight(originalVBox->boxHeight());
+            newVBox->setBoxWidth(originalVBox->boxWidth());
+            newVBox->setTopGap(originalVBox->topGap());
+            newVBox->setBottomGap(originalVBox->bottomGap());
+            newVBox->setTopMargin(originalVBox->topMargin());
+            newVBox->setBottomMargin(originalVBox->bottomMargin());
+            newVBox->setLeftMargin(originalVBox->leftMargin());
+            newVBox->setRightMargin(originalVBox->rightMargin());
+            newVBox->setAutoSizeEnabled(originalVBox->isAutoSizeEnabled());
         }
 
         clearMeasures(score);
@@ -369,16 +371,16 @@ void MasterNotation::applyOptions(mu::engraving::MasterScore* score, const Score
         QString lyricist = score->metaTag(u"lyricist");
 
         if (!title.isEmpty() || !subtitle.isEmpty() || !composer.isEmpty() || !lyricist.isEmpty()) {
-            mu::engraving::MeasureBase* measure = score->measures()->first();
-            if (measure->type() != ElementType::VBOX) {
-                mu::engraving::MeasureBase* nm = nvb ? nvb : Factory::createTitleVBox(score->dummy()->system());
-                nm->setTick(mu::engraving::Fraction(0, 1));
-                nm->setExcludeFromOtherParts(false);
-                nm->setNext(measure);
-                score->measures()->add(nm);
-                measure = nm;
-            } else if (nvb) {
-                delete nvb;
+            mu::engraving::MeasureBase* firstMeasure = score->measures()->first();
+            if (firstMeasure->type() != ElementType::VBOX) {
+                mu::engraving::MeasureBase* newMeasure = newVBox ? newVBox : Factory::createTitleVBox(score->dummy()->system());
+                newMeasure->setTick(mu::engraving::Fraction(0, 1));
+                newMeasure->setExcludeFromOtherParts(false);
+                newMeasure->setNext(firstMeasure);
+                score->measures()->add(newMeasure);
+                firstMeasure = newMeasure;
+            } else if (newVBox) {
+                delete newVBox;
             }
 
             auto setText = [score](mu::engraving::TextStyleType textItemId, const QString& text) {
@@ -405,8 +407,8 @@ void MasterNotation::applyOptions(mu::engraving::MasterScore* score, const Score
             if (!lyricist.isEmpty()) {
                 setText(mu::engraving::TextStyleType::LYRICIST, lyricist);
             }
-        } else if (nvb) {
-            delete nvb;
+        } else if (newVBox) {
+            delete newVBox;
         }
     }
 
