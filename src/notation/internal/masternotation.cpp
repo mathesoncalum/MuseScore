@@ -365,10 +365,10 @@ void MasterNotation::applyOptions(mu::engraving::MasterScore* score, const Score
     createMeasures(score, scoreOptions);
 
     {
-        QString title = score->metaTag(u"workTitle");
-        QString subtitle = score->metaTag(u"subtitle");
-        QString composer = score->metaTag(u"composer");
-        QString lyricist = score->metaTag(u"lyricist");
+        const QString title = score->metaTag(u"workTitle");
+        const QString subtitle = score->metaTag(u"subtitle");
+        const QString composer = score->metaTag(u"composer");
+        const QString lyricist = score->metaTag(u"lyricist");
 
         if (!title.isEmpty() || !subtitle.isEmpty() || !composer.isEmpty() || !lyricist.isEmpty()) {
             mu::engraving::MeasureBase* firstMeasure = score->measures()->first();
@@ -383,29 +383,36 @@ void MasterNotation::applyOptions(mu::engraving::MasterScore* score, const Score
                 delete newVBox;
             }
 
-            auto setText = [score](mu::engraving::TextStyleType textItemId, const QString& text) {
-                mu::engraving::TextBase* textItem = score->getText(textItemId);
+            for (auto s : score->scoreList()) {
+                auto setText = [s](mu::engraving::TextStyleType textItemId, const QString& text) {
+                    mu::engraving::TextBase* textItem = s->getText(textItemId);
 
-                if (!textItem) {
-                    textItem = score->addText(textItemId);
+                    if (!textItem) {
+                        textItem = s->addText(textItemId);
+                    }
+
+                    if (textItem) {
+                        textItem->setPlainText(text);
+                    }
+                };
+
+                if (!title.isEmpty()) {
+                    setText(mu::engraving::TextStyleType::TITLE, title);
+                }
+                if (!subtitle.isEmpty()) {
+                    setText(mu::engraving::TextStyleType::SUBTITLE, subtitle);
+                }
+                if (!composer.isEmpty()) {
+                    setText(mu::engraving::TextStyleType::COMPOSER, composer);
+                }
+                if (!lyricist.isEmpty()) {
+                    setText(mu::engraving::TextStyleType::LYRICIST, lyricist);
                 }
 
-                if (textItem) {
-                    textItem->setPlainText(text);
+                const QString partName = s->metaTag(u"partName");
+                if (!partName.isEmpty()) {
+                    setText(mu::engraving::TextStyleType::INSTRUMENT_EXCERPT, partName);
                 }
-            };
-
-            if (!title.isEmpty()) {
-                setText(mu::engraving::TextStyleType::TITLE, title);
-            }
-            if (!subtitle.isEmpty()) {
-                setText(mu::engraving::TextStyleType::SUBTITLE, subtitle);
-            }
-            if (!composer.isEmpty()) {
-                setText(mu::engraving::TextStyleType::COMPOSER, composer);
-            }
-            if (!lyricist.isEmpty()) {
-                setText(mu::engraving::TextStyleType::LYRICIST, lyricist);
             }
         } else if (newVBox) {
             delete newVBox;
