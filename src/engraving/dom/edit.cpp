@@ -703,11 +703,14 @@ TextBase* Score::addText(TextStyleType type, EngravingItem* destinationElement)
             for (Score* score : scoreList()) {
                 MeasureBase* titleFrame = score->first();
                 if (!titleFrame || !titleFrame->isVBox()) {
-                    titleFrame = score->insertBox(ElementType::VBOX, titleFrame);
+                    InsertMeasureOptions options;
+                    // since we're handling linking ourselves in this method...
+                    options.cloneBoxToAllParts = false;
+                    titleFrame = score->insertBox(ElementType::VBOX, titleFrame, options);
                 }
                 if (!linkedFrame) {
                     linkedFrame = titleFrame;
-                } else {
+                } else if (!titleFrame->isLinked(linkedFrame)) {
                     score->undo(new Link(titleFrame, linkedFrame));
                 }
                 if (score == this->score()) {
