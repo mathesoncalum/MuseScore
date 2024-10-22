@@ -28,6 +28,10 @@
 
 static constexpr int NUM_COLUMNS(8);
 
+namespace mu::engraving {
+class Drumset;
+}
+
 class PercussionPanelPadListModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -42,7 +46,7 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     QHash<int, QByteArray> roleNames() const override;
 
-    Q_INVOKABLE void load();
+    Q_INVOKABLE void init();
 
     Q_INVOKABLE void addRow();
     Q_INVOKABLE void deleteRow(int row);
@@ -54,6 +58,7 @@ public:
     int numColumns() const { return NUM_COLUMNS; }
     int numPads() const { return m_padModels.count(); }
 
+    void setDrumset(const mu::engraving::Drumset* drumset);
     void resetLayout();
 
 signals:
@@ -65,27 +70,12 @@ private:
         PadModelRole = Qt::UserRole + 1,
     };
 
-    //! NOTE: Probably a placeholder struct...
-    struct PadInfo {
-        QString instrumentName;
-
-        QString keyboardShortcut;
-        QString midiNote;
-
-        bool isEmptySlot = true;
-
-        bool isValid() const
-        {
-            return !instrumentName.isEmpty() && !keyboardShortcut.isEmpty() && !midiNote.isEmpty();
-        }
-    };
-
     bool indexIsValid(int index) const;
     void movePad(int fromIndex, int toIndex);
 
     int numEmptySlotsAtRow(int row) const;
 
-    QList<PercussionPanelPadModel*> createDefaultItems();
+    const mu::engraving::Drumset* m_drumset;
     QList<PercussionPanelPadModel*> m_padModels;
 
     int m_dragStartIndex = -1;
