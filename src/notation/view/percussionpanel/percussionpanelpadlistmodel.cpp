@@ -21,7 +21,6 @@
  */
 
 #include "global/utils.h"
-#include "engraving/dom/drumset.h"
 #include "percussionpanelpadlistmodel.h"
 
 PercussionPanelPadListModel::PercussionPanelPadListModel(QObject* parent)
@@ -128,6 +127,10 @@ void PercussionPanelPadListModel::resetLayout()
 
         const QString midiNote = QString::fromStdString(muse::pitchToString(pitch));
         model->setMidiNote(midiNote);
+
+        model->padTriggered().onNotify(this, [this, pitch]() {
+            m_triggeredChannel.send(pitch);
+        });
 
         model->setIsEmptySlot(false);
 

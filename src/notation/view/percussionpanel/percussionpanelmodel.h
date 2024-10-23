@@ -26,8 +26,10 @@
 
 #include "modularity/ioc.h"
 #include "async/asyncable.h"
+
 #include "context/iglobalcontext.h"
-#include "notation/inotationconfiguration.h"
+#include "playback/iplaybackcontroller.h"
+
 #include "percussionpanelpadlistmodel.h"
 
 class PanelMode
@@ -43,9 +45,10 @@ public:
     Q_ENUM(Mode)
 };
 
-class PercussionPanelModel : public QObject, public muse::async::Asyncable
+class PercussionPanelModel : public QObject, public muse::Injectable, public muse::async::Asyncable
 {
-    INJECT_STATIC(context::IGlobalContext, globalContext)
+    muse::Inject<context::IGlobalContext> globalContext = { this };
+    muse::Inject<playback::IPlaybackController> playbackController = { this };
 
     Q_OBJECT
 
@@ -82,6 +85,14 @@ signals:
 
 private:
     void setupConnections();
+
+    void writePitch(int pitch);
+    void previewPitch(int pitch);
+
+    const mu::notation::INotationPtr notation();
+    const mu::notation::INotationInteractionPtr interaction();
+
+    mu::engraving::Score* score();
 
     PanelMode::Mode m_currentPanelMode = PanelMode::Mode::WRITE;
     PanelMode::Mode m_panelModeToRestore = PanelMode::Mode::WRITE;
