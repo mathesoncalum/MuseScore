@@ -32,6 +32,8 @@ add_compile_definitions($<$<CONFIG:Debug>:QT_QML_DEBUG>)
 add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:NDEBUG>)
 add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG>)
 
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
+
 # String debug hack
 if(MUSE_COMPILE_STRING_DEBUG_HACK AND CC_IS_CLANG)
     add_compile_definitions($<$<CONFIG:Debug>:MUSE_STRING_DEBUG_HACK>)
