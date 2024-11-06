@@ -39,11 +39,11 @@
        <property name="allColumnsShowFocus">
         <bool>true</bool>
        </property>
-       <attribute name="headerDefaultSectionSize">
-        <number>56</number>
-       </attribute>
        <attribute name="headerMinimumSectionSize">
         <number>20</number>
+       </attribute>
+       <attribute name="headerDefaultSectionSize">
+        <number>56</number>
        </attribute>
        <column>
         <property name="text">
@@ -309,59 +309,6 @@
              <property name="alignment">
               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
-             <property name="buddy">
-              <cstring>shortcut</cstring>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QComboBox" name="shortcut">
-             <property name="minimumSize">
-              <size>
-               <width>50</width>
-               <height>0</height>
-              </size>
-             </property>
-             <item>
-              <property name="text">
-               <string notr="true">A</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string notr="true">B</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string notr="true">C</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string notr="true">D</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string notr="true">E</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string notr="true">F</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string notr="true">G</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string notr="true">--</string>
-              </property>
-             </item>
             </widget>
            </item>
            <item row="3" column="0">
@@ -402,6 +349,13 @@
              </item>
             </widget>
            </item>
+           <item row="2" column="1">
+            <widget class="QPushButton" name="shortcut">
+             <property name="text">
+              <string>--</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </item>
         </layout>
@@ -430,6 +384,12 @@
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
        </property>
       </spacer>
      </item>
@@ -466,7 +426,6 @@
   <tabstop>doubleWholeCmb</tabstop>
   <tabstop>voice</tabstop>
   <tabstop>staffLine</tabstop>
-  <tabstop>shortcut</tabstop>
   <tabstop>stemDirection</tabstop>
   <tabstop>loadButton</tabstop>
   <tabstop>saveButton</tabstop>

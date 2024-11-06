@@ -57,6 +57,7 @@ private slots:
     void itemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous);
     void nameChanged(const QString&);
     void shortcutChanged();
+    void editShortcut();
     void valueChanged();
     void load();
     void save();

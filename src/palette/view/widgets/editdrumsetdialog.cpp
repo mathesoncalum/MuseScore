@@ -185,7 +185,7 @@ EditDrumsetDialog::EditDrumsetDialog(QWidget* parent)
     connect(staffLine, &QSpinBox::valueChanged, this, &EditDrumsetDialog::valueChanged);
     connect(voice, &QComboBox::currentIndexChanged, this, &EditDrumsetDialog::valueChanged);
     connect(stemDirection, &QComboBox::currentIndexChanged, this, &EditDrumsetDialog::valueChanged);
-    connect(shortcut, &QComboBox::currentIndexChanged, this, &EditDrumsetDialog::shortcutChanged);
+    connect(shortcut, &QPushButton::clicked, this, &EditDrumsetDialog::editShortcut);
     connect(loadButton, &QPushButton::clicked, this, &EditDrumsetDialog::load);
     connect(saveButton, &QPushButton::clicked, this, &EditDrumsetDialog::save);
     pitchList->setColumnWidth(0, 40);
@@ -360,41 +360,41 @@ void EditDrumsetDialog::nameChanged(const QString& n)
 
 void EditDrumsetDialog::shortcutChanged()
 {
-    QTreeWidgetItem* item = pitchList->currentItem();
-    if (!item) {
-        return;
-    }
+    // QTreeWidgetItem* item = pitchList->currentItem();
+    // if (!item) {
+    //     return;
+    // }
 
-    int pitch = item->data(Column::PITCH, Qt::UserRole).toInt();
-    int index = shortcut->currentIndex();
-    bool invalidIndex = index < 0 || index >= static_cast<int>(POSSIBLE_SHORTCUTS.size());
-    int sc;
+    // int pitch = item->data(Column::PITCH, Qt::UserRole).toInt();
+    // int index = shortcut->currentIndex();
+    // bool invalidIndex = index < 0 || index >= static_cast<int>(POSSIBLE_SHORTCUTS.size());
+    // int sc;
 
-    if (invalidIndex) {
-        sc = 0;
-    } else {
-        sc = POSSIBLE_SHORTCUTS[index];
-    }
+    // if (invalidIndex) {
+    //     sc = 0;
+    // } else {
+    //     sc = POSSIBLE_SHORTCUTS[index];
+    // }
 
-    if (QString(QChar(m_editedDrumset.drum(pitch).shortcut)) != shortcut->currentText()) {
-        //
-        // remove conflicting shortcuts
-        //
-        for (int i = 0; i < DRUM_INSTRUMENTS; ++i) {
-            if (i == pitch) {
-                continue;
-            }
-            if (m_editedDrumset.drum(i).shortcut == sc) {
-                m_editedDrumset.drum(i).shortcut = 0;
-            }
-        }
-        m_editedDrumset.drum(pitch).shortcut = sc;
-        if (invalidIndex) {
-            item->setText(Column::SHORTCUT, "");
-        } else {
-            item->setText(Column::SHORTCUT, shortcut->currentText());
-        }
-    }
+    // if (QString(QChar(m_editedDrumset.drum(pitch).shortcut)) != shortcut->currentText()) {
+    //     //
+    //     // remove conflicting shortcuts
+    //     //
+    //     for (int i = 0; i < DRUM_INSTRUMENTS; ++i) {
+    //         if (i == pitch) {
+    //             continue;
+    //         }
+    //         if (m_editedDrumset.drum(i).shortcut == sc) {
+    //             m_editedDrumset.drum(i).shortcut = 0;
+    //         }
+    //     }
+    //     m_editedDrumset.drum(pitch).shortcut = sc;
+    //     if (invalidIndex) {
+    //         item->setText(Column::SHORTCUT, "");
+    //     } else {
+    //         item->setText(Column::SHORTCUT, shortcut->currentText());
+    //     }
+    // }
 }
 
 //---------------------------------------------------------
@@ -496,7 +496,7 @@ void EditDrumsetDialog::itemChanged(QTreeWidgetItem* current, QTreeWidgetItem* p
 
         m_editedDrumset.drum(pitch).line          = staffLine->value();
         m_editedDrumset.drum(pitch).voice         = voice->currentIndex();
-        int index = shortcut->currentIndex();
+        int index = 0; /*shortcut->currentIndex();*/
 
         if (index < 0 || index >= static_cast<int>(POSSIBLE_SHORTCUTS.size())) {
             m_editedDrumset.drum(pitch).shortcut = 0;
@@ -529,11 +529,11 @@ void EditDrumsetDialog::itemChanged(QTreeWidgetItem* current, QTreeWidgetItem* p
     noteHead->setCurrentIndex(noteHead->findData(int(nh)));
     fillNoteheadsComboboxes(isCustomGroup, pitch);
 
-    if (m_editedDrumset.shortcut(pitch) == 0) {
-        shortcut->setCurrentIndex(7);
-    } else {
-        shortcut->setCurrentIndex(m_editedDrumset.shortcut(pitch) - 'A');
-    }
+    // if (m_editedDrumset.shortcut(pitch) == 0) {
+    //     shortcut->setCurrentIndex(7);
+    // } else {
+    //     shortcut->setCurrentIndex(m_editedDrumset.shortcut(pitch) - 'A');
+    // }
 
     staffLine->blockSignals(false);
     voice->blockSignals(false);
@@ -553,6 +553,11 @@ void EditDrumsetDialog::setCustomNoteheadsGUIEnabled(bool enabled)
     if (enabled) {
         noteHead->setCurrentIndex(noteHead->findData(int(NoteHeadGroup::HEAD_CUSTOM)));
     }
+}
+
+void EditDrumsetDialog::editShortcut()
+{
+    //
 }
 
 //---------------------------------------------------------
@@ -577,13 +582,13 @@ void EditDrumsetDialog::valueChanged()
     m_editedDrumset.drum(pitch).line          = staffLine->value();
     m_editedDrumset.drum(pitch).voice         = voice->currentIndex();
     m_editedDrumset.drum(pitch).stemDirection = DirectionV(stemDirection->currentIndex());
-    if (QString(QChar(m_editedDrumset.drum(pitch).shortcut)) != shortcut->currentText()) {
-        if (shortcut->currentText().isEmpty()) {
-            m_editedDrumset.drum(pitch).shortcut = 0;
-        } else {
-            m_editedDrumset.drum(pitch).shortcut = shortcut->currentText().at(0).toLatin1();
-        }
-    }
+    // if (QString(QChar(m_editedDrumset.drum(pitch).shortcut)) != shortcut->currentText()) {
+    //     if (shortcut->currentText().isEmpty()) {
+    //         m_editedDrumset.drum(pitch).shortcut = 0;
+    //     } else {
+    //         m_editedDrumset.drum(pitch).shortcut = shortcut->currentText().at(0).toLatin1();
+    //     }
+    // }
     updateExample();
 
     m_notation->parts()->replaceDrumset(m_instrumentKey, m_editedDrumset);
