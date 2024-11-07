@@ -86,7 +86,7 @@ QString DrumsetPanelView::pitchName() const
     return m_pitchName;
 }
 
-void DrumsetPanelView::editDrumset()
+void DrumsetPanelView::customizeKit()
 {
     dispatcher()->dispatch("edit-drumset");
 }

@@ -656,7 +656,7 @@ void NotationParts::replaceDrumset(const InstrumentKey& instrumentKey, const Dru
     }
 
     if (undoable) {
-        startEdit(TranslatableString("undoableAction", "Edit drumset"));
+        startEdit(TranslatableString("undoableAction", "Customize kit"));
         score()->undo(new mu::engraving::ChangeDrumset(instrument, &newDrumset, part));
         apply();
     } else {

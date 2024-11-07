@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>EditDrumsetDialog</class>
- <widget class="QDialog" name="EditDrumsetDialog">
+ <class>CustomizeKitDialog</class>
+ <widget class="QDialog" name="CustomizeKitDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Edit Drumset</string>
+   <string>Customize Kit</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -39,11 +39,11 @@
        <property name="allColumnsShowFocus">
         <bool>true</bool>
        </property>
-       <attribute name="headerDefaultSectionSize">
-        <number>56</number>
-       </attribute>
        <attribute name="headerMinimumSectionSize">
         <number>20</number>
+       </attribute>
+       <attribute name="headerDefaultSectionSize">
+        <number>56</number>
        </attribute>
        <column>
         <property name="text">
@@ -431,6 +431,12 @@
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
       </spacer>
      </item>
      <item>
@@ -476,7 +482,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>EditDrumsetDialog</receiver>
+   <receiver>CustomizeKitDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -492,7 +498,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>EditDrumsetDialog</receiver>
+   <receiver>CustomizeKitDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

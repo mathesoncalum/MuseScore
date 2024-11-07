@@ -223,7 +223,7 @@ void MasterNotationParts::replaceDrumset(const InstrumentKey& instrumentKey, con
 {
     TRACEFUNC;
 
-    startGlobalEdit(TranslatableString("undoableAction", "Edit drumset"));
+    startGlobalEdit(TranslatableString("undoableAction", "Customize kit"));
 
     NotationParts::replaceDrumset(instrumentKey, newDrumset, undoable);
 
