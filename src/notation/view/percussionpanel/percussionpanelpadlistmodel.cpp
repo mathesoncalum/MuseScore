@@ -20,7 +20,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "global/utils.h"
 #include "percussionpanelpadlistmodel.h"
 
 #include "notation/utilities/engravingitempreviewpainter.h"
@@ -137,8 +136,7 @@ void PercussionPanelPadListModel::resetLayout()
         const QString shortcut = m_drumset->shortcut(pitch) ? QChar(m_drumset->shortcut(pitch)) : QString("-");
         model->setKeyboardShortcut(shortcut);
 
-        const QString midiNote = QString::fromStdString(muse::pitchToString(pitch));
-        model->setMidiNote(midiNote);
+        model->setPitch(pitch);
 
         model->padTriggered().onNotify(this, [this, pitch]() {
             m_triggeredChannel.send(pitch);
@@ -146,7 +144,31 @@ void PercussionPanelPadListModel::resetLayout()
 
         model->setNotationPreviewItem(PercussionUtilities::getDrumNoteForPreview(m_drumset, pitch));
 
-        m_padModels.append(model);
+        const int panelRow = m_drumset->panelRow(pitch);
+        const int panelColumn = m_drumset->panelColumn(pitch);
+
+        IF_ASSERT_FAILED(panelRow > -1 && panelColumn > -1 && panelColumn < NUM_COLUMNS) {
+            LOGE() << "Percussion panel - invalid row/column data for drum: " << m_drumset->name(pitch);
+            m_padModels.clear();
+            return;
+        }
+
+        const int modelIndex = panelRow * NUM_COLUMNS + panelColumn;
+
+        if (modelIndex < m_padModels.size()) {
+            IF_ASSERT_FAILED(!m_padModels.at(modelIndex)) {
+                LOGE() << "Percussion panel - layout conflict at row " << panelRow << ", column " << panelColumn;
+                m_padModels.clear();
+                return;
+            }
+        }
+
+        // Note - probably use a different data structure here
+        if (modelIndex >= m_padModels.size()) {
+            m_padModels.resize(modelIndex + 1);
+        }
+
+        m_padModels.insert(modelIndex, model);
     }
 
     // Fill the remainder of the column with empty pads...

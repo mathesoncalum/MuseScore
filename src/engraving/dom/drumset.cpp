@@ -184,6 +184,25 @@ void Drumset::load(XmlReader& e)
             e.unknown();
         }
     }
+    if (layoutIsValid()) {
+        return;
+    }
+
+    LOGW() << "drumset has missing row/column tags, falling back to chromatic layout";
+
+    int lowestValidPitch = -1;
+    // Fallback: if rows/column tags are missing from XML, determine panel positions chromatically
+    for (int pitch = 0; pitch < DRUM_INSTRUMENTS; ++pitch) {
+        if (!isValid(pitch)) {
+            continue;
+        }
+        if (lowestValidPitch < 0) {
+            lowestValidPitch = pitch;
+        }
+        // TODO: Prefer to use NUM_COLUMNS here somehow
+        m_drum[pitch].panelRow = (pitch - lowestValidPitch) / 8;
+        m_drum[pitch].panelColumn = (pitch - lowestValidPitch) % 8;
+    }
 }
 
 //---------------------------------------------------------
@@ -303,5 +322,21 @@ void Drumset::initDrumset()
     smDrumset->drum(56) = DrumInstrument(TConv::userName(DrumNum(56)), NoteHeadGroup::HEAD_TRIANGLE_DOWN, 1, DirectionV::UP);
     smDrumset->drum(57) = DrumInstrument(TConv::userName(DrumNum(57)), NoteHeadGroup::HEAD_CROSS,   -3, DirectionV::UP);
     smDrumset->drum(59) = DrumInstrument(TConv::userName(DrumNum(59)), NoteHeadGroup::HEAD_CROSS,    2, DirectionV::UP);
+}
+
+//---------------------------------------------------------
+//   layoutIsValid
+//---------------------------------------------------------
+bool Drumset::layoutIsValid() const
+{
+    for (int pitch = 0; pitch < DRUM_INSTRUMENTS; ++pitch) {
+        if (!isValid(pitch)) {
+            continue;
+        }
+        if (m_drum[pitch].panelRow < 0 || m_drum[pitch].panelColumn < 0) {
+            return false;
+        }
+    }
+    return true;
 }
 }
