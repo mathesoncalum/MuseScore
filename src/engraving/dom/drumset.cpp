@@ -51,7 +51,7 @@ String Drumset::translatedName(int pitch) const
 
 void Drumset::save(XmlWriter& xml) const
 {
-    for (int i = 0; i < 128; ++i) {
+    for (int i = 0; i < DRUM_INSTRUMENTS; ++i) {
         if (!isValid(i)) {
             continue;
         }
@@ -107,6 +107,8 @@ void Drumset::save(XmlWriter& xml) const
             }
             xml.endElement();
         }
+        xml.tag("panelRow", panelRow(i));
+        xml.tag("panelColumn", panelColumn(i));
         xml.endElement();
     }
 }
@@ -161,6 +163,10 @@ bool Drumset::readProperties(XmlReader& e, int pitch)
                 m_drum[pitch].addVariant(div);
             }
         }
+    } else if (tag == "panelRow") {
+        m_drum[pitch].panelRow = e.readInt();
+    } else if (tag == "panelColumn") {
+        m_drum[pitch].panelColumn = e.readInt();
     } else {
         return false;
     }
@@ -174,7 +180,7 @@ bool Drumset::readProperties(XmlReader& e, int pitch)
 void Drumset::load(XmlReader& e)
 {
     int pitch = e.intAttribute("pitch", -1);
-    if (pitch < 0 || pitch > 127) {
+    if (pitch < 0 || pitch > DRUM_INSTRUMENTS - 1) {
         LOGD("load drumset: invalid pitch %d", pitch);
         return;
     }
@@ -184,6 +190,20 @@ void Drumset::load(XmlReader& e)
             e.unknown();
         }
     }
+    if (layoutIsValid()) {
+        return;
+    }
+
+    LOGW() << "drumset has missing row/column tags, falling back to chromatic layout";
+
+    // Fallback: if rows/column tags are missing from XML, determine panel positions chromatically
+    for (int pitch = 0; pitch < DRUM_INSTRUMENTS; ++pitch) {
+        if (!isValid(pitch)) {
+            continue;
+        }
+        m_drum[pitch].panelRow = pitch / PERCUSSION_PANEL_NUM_COLUMNS;
+        m_drum[pitch].panelColumn = pitch % PERCUSSION_PANEL_NUM_COLUMNS;
+    }
 }
 
 //---------------------------------------------------------
@@ -192,11 +212,13 @@ void Drumset::load(XmlReader& e)
 
 void Drumset::clear()
 {
-    for (int i = 0; i < 128; ++i) {
+    for (int i = 0; i < DRUM_INSTRUMENTS; ++i) {
         m_drum[i].name = u"";
         m_drum[i].notehead = NoteHeadGroup::HEAD_INVALID;
         m_drum[i].shortcut = 0;
         m_drum[i].variants.clear();
+        m_drum[i].panelRow = -1;
+        m_drum[i].panelColumn = -1;
     }
 }
 
@@ -206,7 +228,7 @@ void Drumset::clear()
 
 int Drumset::nextPitch(int ii) const
 {
-    for (int i = ii + 1; i < 127; ++i) {
+    for (int i = ii + 1; i < DRUM_INSTRUMENTS - 1; ++i) {
         if (isValid(i)) {
             return i;
         }
@@ -230,7 +252,7 @@ int Drumset::prevPitch(int ii) const
             return i;
         }
     }
-    for (int i = 127; i >= ii; --i) {
+    for (int i = DRUM_INSTRUMENTS - 1; i >= ii; --i) {
         if (isValid(i)) {
             return i;
         }
@@ -273,12 +295,14 @@ DrumInstrumentVariant Drumset::findVariant(int p, const std::vector<Articulation
 void Drumset::initDrumset()
 {
     smDrumset = new Drumset;
-    for (int i = 0; i < 128; ++i) {
+    for (int i = 0; i < DRUM_INSTRUMENTS; ++i) {
         smDrumset->drum(i).notehead = NoteHeadGroup::HEAD_INVALID;
         smDrumset->drum(i).line     = 0;
         smDrumset->drum(i).shortcut = 0;
         smDrumset->drum(i).voice    = 0;
         smDrumset->drum(i).stemDirection = DirectionV::UP;
+        smDrumset->drum(i).panelRow = i / PERCUSSION_PANEL_NUM_COLUMNS;
+        smDrumset->drum(i).panelColumn = i % PERCUSSION_PANEL_NUM_COLUMNS;
     }
     smDrumset->drum(35) = DrumInstrument(TConv::userName(DrumNum(35)), NoteHeadGroup::HEAD_NORMAL,   8, DirectionV::DOWN, 1);
     smDrumset->drum(36) = DrumInstrument(TConv::userName(DrumNum(36)), NoteHeadGroup::HEAD_NORMAL,   7, DirectionV::DOWN, 1, Key_B);
@@ -303,5 +327,22 @@ void Drumset::initDrumset()
     smDrumset->drum(56) = DrumInstrument(TConv::userName(DrumNum(56)), NoteHeadGroup::HEAD_TRIANGLE_DOWN, 1, DirectionV::UP);
     smDrumset->drum(57) = DrumInstrument(TConv::userName(DrumNum(57)), NoteHeadGroup::HEAD_CROSS,   -3, DirectionV::UP);
     smDrumset->drum(59) = DrumInstrument(TConv::userName(DrumNum(59)), NoteHeadGroup::HEAD_CROSS,    2, DirectionV::UP);
+}
+
+//---------------------------------------------------------
+//   layoutIsValid
+//---------------------------------------------------------
+
+bool Drumset::layoutIsValid() const
+{
+    for (int pitch = 0; pitch < DRUM_INSTRUMENTS; ++pitch) {
+        if (!isValid(pitch)) {
+            continue;
+        }
+        if (m_drum[pitch].panelRow < 0 || m_drum[pitch].panelColumn < 0) {
+            return false;
+        }
+    }
+    return true;
 }
 }

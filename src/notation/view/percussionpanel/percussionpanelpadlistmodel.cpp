@@ -65,7 +65,7 @@ void PercussionPanelPadListModel::init()
 
 void PercussionPanelPadListModel::addRow()
 {
-    for (size_t i = 0; i < NUM_COLUMNS; ++i) {
+    for (size_t i = 0; i < engraving::PERCUSSION_PANEL_NUM_COLUMNS; ++i) {
         m_padModels.append(new PercussionPanelPadModel(this));
     }
     emit layoutChanged();
@@ -74,14 +74,14 @@ void PercussionPanelPadListModel::addRow()
 
 void PercussionPanelPadListModel::deleteRow(int row)
 {
-    m_padModels.remove(row * NUM_COLUMNS, NUM_COLUMNS);
+    m_padModels.remove(row * engraving::PERCUSSION_PANEL_NUM_COLUMNS, engraving::PERCUSSION_PANEL_NUM_COLUMNS);
     emit layoutChanged();
     emit numPadsChanged();
 }
 
 bool PercussionPanelPadListModel::rowIsEmpty(int row) const
 {
-    return numEmptySlotsAtRow(row) == NUM_COLUMNS;
+    return numEmptySlotsAtRow(row) == engraving::PERCUSSION_PANEL_NUM_COLUMNS;
 }
 
 void PercussionPanelPadListModel::startDrag(int startIndex)
@@ -141,11 +141,28 @@ void PercussionPanelPadListModel::resetLayout()
 
         model->setIsEmptySlot(false);
 
-        m_padModels.append(model);
+        const int panelRow = m_drumset->panelRow(pitch);
+        const int panelColumn = m_drumset->panelColumn(pitch);
+
+        IF_ASSERT_FAILED(panelRow > -1 && panelColumn > -1 && panelColumn < engraving::PERCUSSION_PANEL_NUM_COLUMNS) {
+            LOGE() << "Percussion panel - invalid row/column data for drum: " << m_drumset->name(pitch);
+            m_padModels.clear();
+            return;
+        }
+
+        const int modelIndex = panelRow * engraving::PERCUSSION_PANEL_NUM_COLUMNS + panelColumn;
+
+        IF_ASSERT_FAILED(!m_padModels.at(modelIndex)) {
+            LOGE() << "Percussion panel - layout conflict at row " << panelRow << ", column " << panelColumn;
+            m_padModels.clear();
+            return;
+        }
+
+        m_padModels.insert(modelIndex, model);
     }
 
     // Fill the remainder of the column with empty pads...
-    while (m_padModels.size() % NUM_COLUMNS > 0) {
+    while (m_padModels.size() % engraving::PERCUSSION_PANEL_NUM_COLUMNS > 0) {
         m_padModels.append(new PercussionPanelPadModel(this));
     }
 
@@ -161,11 +178,11 @@ bool PercussionPanelPadListModel::indexIsValid(int index) const
 
 void PercussionPanelPadListModel::movePad(int fromIndex, int toIndex)
 {
-    const int fromRow = fromIndex / NUM_COLUMNS;
-    const int toRow = toIndex / NUM_COLUMNS;
+    const int fromRow = fromIndex / engraving::PERCUSSION_PANEL_NUM_COLUMNS;
+    const int toRow = toIndex / engraving::PERCUSSION_PANEL_NUM_COLUMNS;
 
     // fromRow will become empty if there's only 1 "occupied" slot, toRow will no longer be empty if it was previously...
-    const bool fromRowEmptyChanged = numEmptySlotsAtRow(fromRow) == NUM_COLUMNS - 1;
+    const bool fromRowEmptyChanged = numEmptySlotsAtRow(fromRow) == engraving::PERCUSSION_PANEL_NUM_COLUMNS - 1;
     const bool toRowEmptyChanged = rowIsEmpty(toRow);
 
     m_padModels.swapItemsAt(fromIndex, toIndex);
@@ -183,8 +200,8 @@ void PercussionPanelPadListModel::movePad(int fromIndex, int toIndex)
 int PercussionPanelPadListModel::numEmptySlotsAtRow(int row) const
 {
     int count = 0;
-    const size_t rowStartIdx = row * NUM_COLUMNS;
-    for (size_t i = rowStartIdx; i < rowStartIdx + NUM_COLUMNS; ++i) {
+    const size_t rowStartIdx = row * engraving::PERCUSSION_PANEL_NUM_COLUMNS;
+    for (size_t i = rowStartIdx; i < rowStartIdx + engraving::PERCUSSION_PANEL_NUM_COLUMNS; ++i) {
         const PercussionPanelPadModel* model = m_padModels.at(i);
         if (model && model->isEmptySlot()) {
             ++count;

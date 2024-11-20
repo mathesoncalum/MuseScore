@@ -55,7 +55,7 @@ public:
     Q_INVOKABLE void startDrag(int startIndex);
     Q_INVOKABLE void endDrag(int endIndex);
 
-    int numColumns() const { return NUM_COLUMNS; }
+    int numColumns() const { return engraving::PERCUSSION_PANEL_NUM_COLUMNS; }
     int numPads() const { return m_padModels.count(); }
 
     void setDrumset(const mu::engraving::Drumset* drumset);
@@ -70,8 +70,6 @@ signals:
     void rowIsEmptyChanged(int row, bool empty);
 
 private:
-    static constexpr int NUM_COLUMNS = 8;
-
     enum Roles {
         PadModelRole = Qt::UserRole + 1,
     };
