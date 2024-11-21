@@ -98,7 +98,7 @@ void PercussionPanelPadListModel::endDrag(int endIndex)
     m_dragStartIndex = -1;
 }
 
-void PercussionPanelPadListModel::setDrumset(const mu::engraving::Drumset* drumset)
+void PercussionPanelPadListModel::setDrumset(mu::engraving::Drumset* drumset)
 {
     if (drumset == m_drumset) {
         return;
@@ -125,6 +125,7 @@ void PercussionPanelPadListModel::resetLayout()
         return;
     }
 
+    QSet<PercussionPanelPadModel*> modelsToAppend; // these are models with no pre-defined row.column...
     for (int pitch = 0; pitch < mu::engraving::DRUM_INSTRUMENTS; ++pitch) {
         if (!m_drumset->isValid(pitch)) {
             continue;
@@ -147,14 +148,21 @@ void PercussionPanelPadListModel::resetLayout()
         const int panelRow = m_drumset->panelRow(pitch);
         const int panelColumn = m_drumset->panelColumn(pitch);
 
-        IF_ASSERT_FAILED(panelRow > -1 && panelColumn > -1 && panelColumn < NUM_COLUMNS) {
-            LOGE() << "Percussion panel - invalid row/column data for drum: " << m_drumset->name(pitch);
+        // Sometimes a drum won't have a defined row/column - for example if we freshly added a new drum. In this case
+        // we should add it after the last pad...
+        if (panelRow < 0 || panelColumn < 0) {
+            modelsToAppend.insert(model);
+            continue;
+        }
+
+        IF_ASSERT_FAILED(panelColumn < NUM_COLUMNS) {
             m_padModels.clear();
             return;
         }
 
         const int modelIndex = panelRow * NUM_COLUMNS + panelColumn;
 
+        // Note - probably use a different data structure here
         if (modelIndex < m_padModels.size()) {
             IF_ASSERT_FAILED(!m_padModels.at(modelIndex)) {
                 LOGE() << "Percussion panel - layout conflict at row " << panelRow << ", column " << panelColumn;
@@ -168,7 +176,15 @@ void PercussionPanelPadListModel::resetLayout()
             m_padModels.resize(modelIndex + 1);
         }
 
-        m_padModels.insert(modelIndex, model);
+        m_padModels.replace(modelIndex, model);
+    }
+
+    for (PercussionPanelPadModel* modelToAppend : modelsToAppend) {
+        const int row = m_padModels.size() / NUM_COLUMNS;
+        const int column = m_padModels.size() % NUM_COLUMNS;
+        m_drumset->drum(modelToAppend->pitch()).panelRow = row;
+        m_drumset->drum(modelToAppend->pitch()).panelColumn = column;
+        m_padModels.append(modelToAppend);
     }
 
     // Fill the remainder of the column with empty pads...
@@ -189,11 +205,26 @@ bool PercussionPanelPadListModel::indexIsValid(int index) const
 void PercussionPanelPadListModel::movePad(int fromIndex, int toIndex)
 {
     const int fromRow = fromIndex / NUM_COLUMNS;
+    const int fromColumn = fromIndex % NUM_COLUMNS;
+
     const int toRow = toIndex / NUM_COLUMNS;
+    const int toColumn = toIndex % NUM_COLUMNS;
 
     // fromRow will become empty if there's only 1 "occupied" slot, toRow will no longer be empty if it was previously...
     const bool fromRowEmptyChanged = numEmptySlotsAtRow(fromRow) == NUM_COLUMNS - 1;
     const bool toRowEmptyChanged = rowIsEmpty(toRow);
+
+    if (const PercussionPanelPadModel* fromModel = m_padModels.at(fromIndex)) {
+        const int fromPitch = fromModel->pitch();
+        m_drumset->drum(fromPitch).panelRow = toRow;
+        m_drumset->drum(fromPitch).panelColumn = toColumn;
+    }
+
+    if (const PercussionPanelPadModel* toModel = m_padModels.at(toIndex)) {
+        const int toPitch = toModel->pitch();
+        m_drumset->drum(toPitch).panelRow = fromRow;
+        m_drumset->drum(toPitch).panelColumn = fromColumn;
+    }
 
     m_padModels.swapItemsAt(fromIndex, toIndex);
     emit layoutChanged();

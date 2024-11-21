@@ -173,7 +173,7 @@ void PercussionPanelModel::customizeKit()
 
 void PercussionPanelModel::setUpConnections()
 {
-    const auto updatePadModels = [this](const mu::engraving::Drumset* drumset) {
+    const auto updatePadModels = [this](mu::engraving::Drumset* drumset) {
         if (drumset == m_padListModel->drumset()) {
             return;
         }

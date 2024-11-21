@@ -216,6 +216,8 @@ void Drumset::clear()
         m_drum[i].notehead = NoteHeadGroup::HEAD_INVALID;
         m_drum[i].shortcut = 0;
         m_drum[i].variants.clear();
+        m_drum[i].panelRow = -1;
+        m_drum[i].panelColumn = -1;
     }
 }
 
@@ -298,6 +300,8 @@ void Drumset::initDrumset()
         smDrumset->drum(i).shortcut = 0;
         smDrumset->drum(i).voice    = 0;
         smDrumset->drum(i).stemDirection = DirectionV::UP;
+        smDrumset->drum(i).panelRow     = -1;
+        smDrumset->drum(i).panelColumn  = -1;
     }
     smDrumset->drum(35) = DrumInstrument(TConv::userName(DrumNum(35)), NoteHeadGroup::HEAD_NORMAL,   8, DirectionV::DOWN, 1);
     smDrumset->drum(36) = DrumInstrument(TConv::userName(DrumNum(36)), NoteHeadGroup::HEAD_NORMAL,   7, DirectionV::DOWN, 1, Key_B);

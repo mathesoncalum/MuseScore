@@ -60,8 +60,8 @@ public:
     int numColumns() const { return NUM_COLUMNS; }
     int numPads() const { return m_padModels.count(); }
 
-    void setDrumset(const mu::engraving::Drumset* drumset);
-    const mu::engraving::Drumset* drumset() const { return m_drumset; }
+    void setDrumset(mu::engraving::Drumset* drumset);
+    mu::engraving::Drumset* drumset() const { return m_drumset; }
 
     void resetLayout();
 
@@ -84,7 +84,7 @@ private:
 
     int numEmptySlotsAtRow(int row) const;
 
-    const mu::engraving::Drumset* m_drumset = nullptr;
+    mu::engraving::Drumset* m_drumset = nullptr;
     QList<PercussionPanelPadModel*> m_padModels;
 
     int m_dragStartIndex = -1;
