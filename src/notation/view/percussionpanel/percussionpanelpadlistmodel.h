@@ -66,6 +66,8 @@ public:
     void setDrumset(mu::engraving::Drumset* drumset);
     mu::engraving::Drumset* drumset() const { return m_drumset; }
 
+    QList<PercussionPanelPadModel*> padList() const { return m_padModels; }
+
     muse::async::Notification hasActivePadsChanged() const { return m_hasActivePadsChanged; }
     muse::async::Channel<int /*pitch*/> padTriggered() const { return m_triggeredChannel; }
 

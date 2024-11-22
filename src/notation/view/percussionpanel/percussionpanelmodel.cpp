@@ -25,6 +25,7 @@
 #include "ui/view/iconcodes.h"
 
 #include "engraving/dom/factory.h"
+#include "engraving/dom/undo.h"
 
 #include "defer.h"
 
@@ -164,7 +165,35 @@ void PercussionPanelModel::handleMenuItem(const QString& itemId)
 
 void PercussionPanelModel::finishEditing()
 {
+    INotationUndoStackPtr undoStack = notation()->undoStack();
+    if (!undoStack) {
+        return;
+    }
+
+    DEFER {
+        undoStack->commitChanges();
+    };
+
     m_padListModel->removeEmptyRows();
+
+    Drumset targetLayout;
+    for (int i = 0; i < m_padListModel->padList().size(); ++i) {
+        const PercussionPanelPadModel* model = m_padListModel->padList().at(i);
+        if (!model) {
+            continue;
+        }
+        const int row = i / m_padListModel->numColumns();
+        const int column = i % m_padListModel->numColumns();
+        targetLayout.drum(model->pitch()).panelRow = row;
+        targetLayout.drum(model->pitch()).panelColumn = column;
+
+        // Hack so that this pitch is considered valid
+        targetLayout.drum(model->pitch()).name = String(i);
+    }
+
+    undoStack->prepareChanges(muse::TranslatableString("undoableAction", "Edit percussion panel layout"));
+    score()->undo(new mu::engraving::ChangePercussionPanelPadLayout(m_padListModel->drumset(), targetLayout));
+
     setCurrentPanelMode(m_panelModeToRestore);
 }
 
@@ -176,9 +205,10 @@ void PercussionPanelModel::customizeKit()
 void PercussionPanelModel::setUpConnections()
 {
     const auto updatePadModels = [this](mu::engraving::Drumset* drumset) {
-        if (drumset == m_padListModel->drumset()) {
-            return;
-        }
+        // beacuse pads changing doesn't change the pointer
+        // if (drumset == m_padListModel->drumset()) {
+        //     return;
+        // }
 
         if (m_currentPanelMode == PanelMode::Mode::EDIT_LAYOUT) {
             finishEditing();
@@ -214,6 +244,21 @@ void PercussionPanelModel::setUpConnections()
         case PanelMode::Mode::WRITE: writePitch(pitch); // fall through
         case PanelMode::Mode::SOUND_PREVIEW: playPitch(pitch);
         }
+    });
+
+    INotationUndoStackPtr undoStack = notation()->undoStack();
+    if (!undoStack) {
+        return;
+    }
+
+    // Not the nicest way of doing things, but it works...
+    undoStack->undoRedoNotification().onNotify(this, [this, updatePadModels]() {
+        if (!notation()) {
+            updatePadModels(nullptr);
+            return;
+        }
+        const INotationNoteInputPtr ni = interaction()->noteInput();
+        updatePadModels(ni->state().drumset);
     });
 }
 

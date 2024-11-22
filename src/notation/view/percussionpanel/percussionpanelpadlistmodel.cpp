@@ -110,9 +110,10 @@ void PercussionPanelPadListModel::endDrag(int endIndex)
 
 void PercussionPanelPadListModel::setDrumset(mu::engraving::Drumset* drumset)
 {
-    if (drumset == m_drumset) {
-        return;
-    }
+    // because pads might have changed
+    // if (drumset == m_drumset) {
+    //     return;
+    // }
 
     const bool drumsetWasValid = m_drumset;
 
@@ -162,6 +163,7 @@ void PercussionPanelPadListModel::load()
     int requiredSize = modelsMap.isEmpty() ? 0 : modelsMap.lastKey() + 1;
 
     for (PercussionPanelPadModel* modelToAppend : modelsToAppend) {
+        // questionable... maybe ok
         m_drumset->drum(modelToAppend->pitch()).panelRow = requiredSize / NUM_COLUMNS;
         m_drumset->drum(modelToAppend->pitch()).panelColumn = requiredSize % NUM_COLUMNS;
         modelsMap.insert(requiredSize++, modelToAppend);
@@ -246,26 +248,11 @@ int PercussionPanelPadListModel::createModelIndexForPitch(int pitch) const
 void PercussionPanelPadListModel::movePad(int fromIndex, int toIndex)
 {
     const int fromRow = fromIndex / NUM_COLUMNS;
-    const int fromColumn = fromIndex % NUM_COLUMNS;
-
     const int toRow = toIndex / NUM_COLUMNS;
-    const int toColumn = toIndex % NUM_COLUMNS;
 
     // fromRow will become empty if there's only 1 "occupied" slot, toRow will no longer be empty if it was previously...
     const bool fromRowEmptyChanged = numEmptySlotsAtRow(fromRow) == NUM_COLUMNS - 1;
     const bool toRowEmptyChanged = rowIsEmpty(toRow);
-
-    if (const PercussionPanelPadModel* fromModel = m_padModels.at(fromIndex)) {
-        const int fromPitch = fromModel->pitch();
-        m_drumset->drum(fromPitch).panelRow = toRow;
-        m_drumset->drum(fromPitch).panelColumn = toColumn;
-    }
-
-    if (const PercussionPanelPadModel* toModel = m_padModels.at(toIndex)) {
-        const int toPitch = toModel->pitch();
-        m_drumset->drum(toPitch).panelRow = fromRow;
-        m_drumset->drum(toPitch).panelColumn = fromColumn;
-    }
 
     m_padModels.swapItemsAt(fromIndex, toIndex);
     emit layoutChanged();

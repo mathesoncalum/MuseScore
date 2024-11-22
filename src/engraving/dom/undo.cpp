@@ -3039,6 +3039,23 @@ void ChangeDrumset::flip(EditData*)
 }
 
 //---------------------------------------------------------
+//   ChangePercussionPanelPadLayout::flip
+//---------------------------------------------------------
+
+void ChangePercussionPanelPadLayout::flip(EditData*)
+{
+    Drumset d = *m_drumsetToChange;
+    for (int pitch = 0; pitch < mu::engraving::DRUM_INSTRUMENTS; ++pitch) {
+        if (!m_drumsetToChange->isValid(pitch) || !m_targetLayout.isValid(pitch)) {
+            continue;
+        }
+        m_drumsetToChange->drum(pitch).panelRow = m_targetLayout.drum(pitch).panelRow;
+        m_drumsetToChange->drum(pitch).panelColumn = m_targetLayout.drum(pitch).panelColumn;
+    }
+    m_targetLayout = d;
+}
+
+//---------------------------------------------------------
 //   FretDot
 //---------------------------------------------------------
 

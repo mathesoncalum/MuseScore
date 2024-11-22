@@ -1481,6 +1481,22 @@ public:
     UNDO_NAME("ChangeDrumset")
 };
 
+class ChangePercussionPanelPadLayout : public UndoCommand
+{
+    OBJECT_ALLOCATOR(engraving, ChangeDrumset)
+
+    Drumset* m_drumsetToChange = nullptr;
+    Drumset m_targetLayout;
+
+    void flip(EditData*) override;
+
+public:
+    ChangePercussionPanelPadLayout(Drumset* drumsetToChange, Drumset targetLayout)
+        : m_drumsetToChange(drumsetToChange), m_targetLayout(targetLayout) {}
+
+    UNDO_NAME("ChangePercussionPanelPadLayout")
+};
+
 class FretDot : public UndoCommand
 {
     OBJECT_ALLOCATOR(engraving, FretDot)
