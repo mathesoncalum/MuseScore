@@ -107,6 +107,10 @@ void Drumset::save(XmlWriter& xml) const
             }
             xml.endElement();
         }
+        if (panelRow(i) > -1 && panelColumn(i) > -1) {
+            xml.tag("panelRow", panelRow(i));
+            xml.tag("panelColumn", panelColumn(i));
+        }
         xml.endElement();
     }
 }
@@ -161,6 +165,10 @@ bool Drumset::readProperties(XmlReader& e, int pitch)
                 m_drum[pitch].addVariant(div);
             }
         }
+    } else if (tag == "panelRow") {
+        m_drum[pitch].panelRow = e.readInt();
+    } else if (tag == "panelColumn") {
+        m_drum[pitch].panelColumn = e.readInt();
     } else {
         return false;
     }
@@ -197,6 +205,8 @@ void Drumset::clear()
         m_drum[i].notehead = NoteHeadGroup::HEAD_INVALID;
         m_drum[i].shortcut = 0;
         m_drum[i].variants.clear();
+        m_drum[i].panelRow = -1;
+        m_drum[i].panelColumn = -1;
     }
 }
 
@@ -279,6 +289,8 @@ void Drumset::initDrumset()
         smDrumset->drum(i).shortcut = 0;
         smDrumset->drum(i).voice    = 0;
         smDrumset->drum(i).stemDirection = DirectionV::UP;
+        smDrumset->drum(i).panelRow     = -1;
+        smDrumset->drum(i).panelColumn  = -1;
     }
     smDrumset->drum(35) = DrumInstrument(TConv::userName(DrumNum(35)), NoteHeadGroup::HEAD_NORMAL,   8, DirectionV::DOWN, 1);
     smDrumset->drum(36) = DrumInstrument(TConv::userName(DrumNum(36)), NoteHeadGroup::HEAD_NORMAL,   7, DirectionV::DOWN, 1, Key_B);

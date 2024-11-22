@@ -157,12 +157,14 @@ void PercussionPanelModel::handleMenuItem(const QString& itemId)
     } else if (itemId == EDIT_LAYOUT_CODE) {
         setCurrentPanelMode(PanelMode::Mode::EDIT_LAYOUT);
     } else if (itemId == RESET_LAYOUT_CODE) {
-        m_padListModel->resetLayout();
+        // TODO: Need a mechanism for "default" layouts...
+        // m_padListModel->resetLayout();
     }
 }
 
 void PercussionPanelModel::finishEditing()
 {
+    m_padListModel->removeEmptyRows();
     setCurrentPanelMode(m_panelModeToRestore);
 }
 
@@ -173,7 +175,7 @@ void PercussionPanelModel::customizeKit()
 
 void PercussionPanelModel::setUpConnections()
 {
-    const auto updatePadModels = [this](const mu::engraving::Drumset* drumset) {
+    const auto updatePadModels = [this](mu::engraving::Drumset* drumset) {
         if (drumset == m_padListModel->drumset()) {
             return;
         }
@@ -183,7 +185,6 @@ void PercussionPanelModel::setUpConnections()
         }
 
         m_padListModel->setDrumset(drumset);
-        m_padListModel->resetLayout(); //! NOTE: Placeholder until we implement saving/loading
     };
 
     if (!notation()) {
