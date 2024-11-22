@@ -105,6 +105,7 @@ public:
     static void initDrumset();
 
 private:
+    bool hasUndefinedPanelLayout() const;
     DrumInstrument m_drum[DRUM_INSTRUMENTS];
 };
 
