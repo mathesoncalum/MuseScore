@@ -107,6 +107,10 @@ void Drumset::save(XmlWriter& xml) const
             }
             xml.endElement();
         }
+        if (panelRow(i) > -1 && panelColumn(i) > -1) {
+            xml.tag("panelRow", panelRow(i));
+            xml.tag("panelColumn", panelColumn(i));
+        }
         xml.endElement();
     }
 }
@@ -161,6 +165,10 @@ bool Drumset::readProperties(XmlReader& e, int pitch)
                 m_drum[pitch].addVariant(div);
             }
         }
+    } else if (tag == "panelRow") {
+        m_drum[pitch].panelRow = e.readInt();
+    } else if (tag == "panelColumn") {
+        m_drum[pitch].panelColumn = e.readInt();
     } else {
         return false;
     }
@@ -184,6 +192,21 @@ void Drumset::load(XmlReader& e)
             e.unknown();
         }
     }
+    if (!hasUndefinedPanelLayout()) {
+        return;
+    }
+
+    LOGW() << "drumset has missing row/column tags, falling back to chromatic layout";
+
+    // Fallback: if rows/column tags are missing from XML, determine panel positions chromatically
+    for (int pitch = 0; pitch < DRUM_INSTRUMENTS; ++pitch) {
+        if (!isValid(pitch)) {
+            continue;
+        }
+        // TODO: Prefer to use NUM_COLUMNS here somehow
+        m_drum[pitch].panelRow = pitch / 8;
+        m_drum[pitch].panelColumn = pitch % 8;
+    }
 }
 
 //---------------------------------------------------------
@@ -197,6 +220,8 @@ void Drumset::clear()
         m_drum[i].notehead = NoteHeadGroup::HEAD_INVALID;
         m_drum[i].shortcut = 0;
         m_drum[i].variants.clear();
+        m_drum[i].panelRow = -1;
+        m_drum[i].panelColumn = -1;
     }
 }
 
@@ -279,6 +304,8 @@ void Drumset::initDrumset()
         smDrumset->drum(i).shortcut = 0;
         smDrumset->drum(i).voice    = 0;
         smDrumset->drum(i).stemDirection = DirectionV::UP;
+        smDrumset->drum(i).panelRow     = -1;
+        smDrumset->drum(i).panelColumn  = -1;
     }
     smDrumset->drum(35) = DrumInstrument(TConv::userName(DrumNum(35)), NoteHeadGroup::HEAD_NORMAL,   8, DirectionV::DOWN, 1);
     smDrumset->drum(36) = DrumInstrument(TConv::userName(DrumNum(36)), NoteHeadGroup::HEAD_NORMAL,   7, DirectionV::DOWN, 1, Key_B);
@@ -303,5 +330,18 @@ void Drumset::initDrumset()
     smDrumset->drum(56) = DrumInstrument(TConv::userName(DrumNum(56)), NoteHeadGroup::HEAD_TRIANGLE_DOWN, 1, DirectionV::UP);
     smDrumset->drum(57) = DrumInstrument(TConv::userName(DrumNum(57)), NoteHeadGroup::HEAD_CROSS,   -3, DirectionV::UP);
     smDrumset->drum(59) = DrumInstrument(TConv::userName(DrumNum(59)), NoteHeadGroup::HEAD_CROSS,    2, DirectionV::UP);
+}
+
+bool Drumset::hasUndefinedPanelLayout() const
+{
+    for (int pitch = 0; pitch < DRUM_INSTRUMENTS; ++pitch) {
+        if (!isValid(pitch)) {
+            continue;
+        }
+        if (m_drum[pitch].panelRow < 0 || m_drum[pitch].panelColumn < 0) {
+            return true;
+        }
+    }
+    return false;
 }
 }

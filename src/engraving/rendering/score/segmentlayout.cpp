@@ -143,7 +143,7 @@ void SegmentLayout::layoutChordDrumset(const Staff* staff, const Segment& segmen
         return;
     }
 
-    const Drumset* drumset = ins->drumset();
+    const Drumset* drumset = ins->drumset().get();
     IF_ASSERT_FAILED(drumset) {
         return;
     }

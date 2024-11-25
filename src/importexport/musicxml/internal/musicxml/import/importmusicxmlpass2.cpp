@@ -6443,7 +6443,7 @@ static void setDrumset(Chord* c, MusicXmlParserPass1& pass1, const String& partI
 void MusicXmlParserPass2::xmlSetDrumsetPitch(Note* note, const Chord* chord, const Staff* staff, int step, int octave,
                                              NoteHeadGroup headGroup, DirectionV& stemDir, Instrument* instrument)
 {
-    Drumset* ds = instrument->drumset();
+    Drumset* ds = instrument->drumset().get();
     // get line
     // determine staff line based on display-step / -octave and clef type
     const ClefType clef = staff->clef(chord->tick());

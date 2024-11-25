@@ -649,6 +649,8 @@ void OveToMScore::convertTrackHeader(ovebase::Track* track, Part* part)
             drumset->drum(i).stemDirection = smDrumset->drum(i).stemDirection;
             drumset->drum(i).voice     = smDrumset->drum(i).voice;
             drumset->drum(i).shortcut = 0;
+            drumset->drum(i).panelRow = smDrumset->drum(i).panelRow;
+            drumset->drum(i).panelColumn = smDrumset->drum(i).panelColumn;
         }
         QList<ovebase::Track::DrumNode> nodes = track->getDrumKit();
         for (int i = 0; i < nodes.size(); ++i) {
@@ -1498,7 +1500,7 @@ bool isRestDefaultLine(ovebase::Note* rest, ovebase::NoteType noteType)
 Drumset* getDrumset(Score* score, int part)
 {
     Part* p = score->parts().at(part);
-    return const_cast<Drumset*>(p->instrument()->drumset()); // TODO: remove cast
+    return const_cast<Drumset*>(p->instrument()->drumset().get()); // TODO: remove cast
 }
 
 void OveToMScore::convertNotes(Measure* measure, int part, int staff, int track)

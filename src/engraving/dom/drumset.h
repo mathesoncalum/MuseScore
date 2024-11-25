@@ -56,6 +56,9 @@ struct DrumInstrument {
     char shortcut = '\0';      ///< accelerator key (CDEFGAB)
     std::list<DrumInstrumentVariant> variants;
 
+    int panelRow = -1;
+    int panelColumn = -1;
+
     DrumInstrument() {}
     DrumInstrument(const char* s, NoteHeadGroup nh, int l, DirectionV d,
                    int v = 0, char sc = 0)
@@ -75,7 +78,6 @@ static const int DRUM_INSTRUMENTS = 128;
 class Drumset
 {
 public:
-
     bool isValid(int pitch) const { return !m_drum[pitch].name.empty(); }
     NoteHeadGroup noteHead(int pitch) const { return m_drum[pitch].notehead; }
     SymId noteHeads(int pitch, NoteHeadType t) const { return m_drum[pitch].noteheads[int(t)]; }
@@ -86,6 +88,8 @@ public:
     String translatedName(int pitch) const;
     int shortcut(int pitch) const { return m_drum[pitch].shortcut; }
     std::list<DrumInstrumentVariant> variants(int pitch) const { return m_drum[pitch].variants; }
+    int panelRow(int pitch) const { return m_drum[pitch].panelRow; }
+    int panelColumn(int pitch) const { return m_drum[pitch].panelColumn; }
 
     void save(XmlWriter&) const;
     void load(XmlReader&);
@@ -99,8 +103,9 @@ public:
     DrumInstrumentVariant findVariant(int pitch, const std::vector<Articulation*>& articulations, TremoloType tremType) const;
 
     static void initDrumset();
-private:
 
+private:
+    bool hasUndefinedPanelLayout() const;
     DrumInstrument m_drum[DRUM_INSTRUMENTS];
 };
 

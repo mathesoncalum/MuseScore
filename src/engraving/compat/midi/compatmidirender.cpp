@@ -1144,7 +1144,7 @@ bool CompatMidiRender::isGlissandoValid(Glissando* glissando)
 const Drumset* CompatMidiRender::getDrumset(const Chord* chord)
 {
     if (chord->staff() && chord->staff()->isDrumStaff(chord->tick())) {
-        const Drumset* ds = chord->staff()->part()->instrument(chord->tick())->drumset();
+        const Drumset* ds = chord->staff()->part()->instrument(chord->tick())->drumset().get();
         return ds;
     }
     return nullptr;

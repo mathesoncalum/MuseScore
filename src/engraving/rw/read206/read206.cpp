@@ -692,7 +692,7 @@ static void readInstrument206(Instrument* i, Part* p, XmlReader& e, ReadContext&
                 i->drumset()->clear();
                 customDrumset = true;
             }
-            readDrumset206(i->drumset(), e);
+            readDrumset206(i->drumset().get(), e);
         } else if (read400::TRead::readProperties(i, e, ctx, p, &customDrumset)) {
         } else {
             e.unknown();
@@ -763,7 +763,7 @@ void Read206::readPart206(Part* part, XmlReader& e, ReadContext& ctx)
         if (tag == "Instrument") {
             Instrument* i = part->m_instruments.instrument(/* tick */ -1);
             readInstrument206(i, part, e, ctx);
-            Drumset* ds = i->drumset();
+            Drumset* ds = i->drumset().get();
             Staff* s = part->staff(0);
             int lld = s ? std::round(s->lineDistance(Fraction(0, 1))) : 1;
             if (ds && s && lld > 1) {

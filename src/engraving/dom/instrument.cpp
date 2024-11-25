@@ -86,7 +86,7 @@ Instrument::Instrument(const Instrument& i)
     m_musicXmlId   = i.m_musicXmlId;
     m_stringData   = i.m_stringData;
     m_drumset      = 0;
-    setDrumset(i.m_drumset);
+    setDrumset(i.m_drumset.get());
     m_useDrumset   = i.m_useDrumset;
     m_stringData   = i.m_stringData;
     m_midiActions  = i.m_midiActions;
@@ -103,7 +103,6 @@ void Instrument::operator=(const Instrument& i)
 {
     muse::DeleteAll(m_channel);
     m_channel.clear();
-    delete m_drumset;
 
     m_id           = i.m_id;
     m_soundId      = i.m_soundId;
@@ -118,7 +117,7 @@ void Instrument::operator=(const Instrument& i)
     m_musicXmlId   = i.m_musicXmlId;
     m_stringData   = i.m_stringData;
     m_drumset      = 0;
-    setDrumset(i.m_drumset);
+    setDrumset(i.m_drumset.get());
     m_useDrumset   = i.m_useDrumset;
     m_stringData   = i.m_stringData;
     m_midiActions  = i.m_midiActions;
@@ -138,8 +137,6 @@ void Instrument::operator=(const Instrument& i)
 Instrument::~Instrument()
 {
     muse::DeleteAll(m_channel);
-    delete m_drumset;
-    m_drumset = nullptr;
 }
 
 //---------------------------------------------------------
@@ -895,7 +892,7 @@ void Instrument::setUseDrumset(bool val)
 {
     m_useDrumset = val;
     if (val && !m_drumset) {
-        m_drumset = new Drumset(*smDrumset);
+        m_drumset = std::make_shared<Drumset>(*smDrumset);
     }
 }
 
@@ -905,14 +902,14 @@ void Instrument::setUseDrumset(bool val)
 
 void Instrument::setDrumset(const Drumset* ds)
 {
-    delete m_drumset;
-    if (ds) {
-        m_useDrumset = true;
-        m_drumset = new Drumset(*ds);
-    } else {
+    if (!ds) {
+        m_drumset = nullptr;
         m_useDrumset = false;
-        m_drumset = 0;
+        return;
     }
+
+    m_drumset = std::make_shared<Drumset>(*ds);
+    m_useDrumset = true;
 }
 
 //---------------------------------------------------------

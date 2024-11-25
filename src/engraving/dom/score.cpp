@@ -3251,7 +3251,7 @@ void Score::padToggle(Pad p, const EditData& ed)
                             int n = m_is.drumNote();
                             if (n == -1) {
                                 // no selection on palette - find next valid pitch
-                                const Drumset* ds = m_is.drumset();
+                                const Drumset* ds = m_is.drumset().get();
                                 n = ds->nextPitch(n);
                             }
                             nval = NoteVal(n);

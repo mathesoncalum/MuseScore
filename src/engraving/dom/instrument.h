@@ -336,8 +336,8 @@ public:
     void setMusicXmlId(const String& musicXmlId) { m_musicXmlId = musicXmlId; }
 
     void setDrumset(const Drumset* ds);
-    const Drumset* drumset() const { return m_drumset; }
-    Drumset* drumset() { return m_drumset; }
+    const std::shared_ptr<Drumset> drumset() const { return m_drumset; }
+    std::shared_ptr<Drumset> drumset() { return m_drumset; }
     bool useDrumset() const { return m_useDrumset; }
     void setUseDrumset(bool val);
     void setAmateurPitchRange(int a, int b) { m_minPitchA = a; m_maxPitchA = b; }
@@ -427,7 +427,7 @@ private:
     String m_musicXmlId;
 
     bool m_useDrumset = false;
-    Drumset* m_drumset = nullptr;
+    std::shared_ptr<Drumset> m_drumset;
     StringData m_stringData;
 
     std::list<NamedEventList> m_midiActions;

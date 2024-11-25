@@ -50,20 +50,23 @@ public:
 
     Q_INVOKABLE void addRow();
     Q_INVOKABLE void deleteRow(int row);
+
+    void removeEmptyRows();
+
     Q_INVOKABLE bool rowIsEmpty(int row) const;
 
     Q_INVOKABLE void startDrag(int startIndex);
     Q_INVOKABLE void endDrag(int endIndex);
 
-    bool hasActivePads() const { return m_drumset; }
+    bool hasActivePads() const { return m_drumset.get(); }
 
     int numColumns() const { return NUM_COLUMNS; }
     int numPads() const { return m_padModels.count(); }
 
-    void setDrumset(const mu::engraving::Drumset* drumset);
-    const mu::engraving::Drumset* drumset() const { return m_drumset; }
+    void setDrumset(std::shared_ptr<engraving::Drumset> drumset);
+    std::shared_ptr<engraving::Drumset> drumset() const { return m_drumset; }
 
-    void resetLayout();
+    QList<PercussionPanelPadModel*> padList() const { return m_padModels; }
 
     muse::async::Notification hasActivePadsChanged() const { return m_hasActivePadsChanged; }
     muse::async::Channel<int /*pitch*/> padTriggered() const { return m_triggeredChannel; }
@@ -79,12 +82,18 @@ private:
         PadModelRole = Qt::UserRole + 1,
     };
 
+    void load();
+
     bool indexIsValid(int index) const;
+
+    PercussionPanelPadModel* createPadModelForPitch(int pitch);
+    int createModelIndexForPitch(int pitch) const;
+
     void movePad(int fromIndex, int toIndex);
 
     int numEmptySlotsAtRow(int row) const;
 
-    const mu::engraving::Drumset* m_drumset = nullptr;
+    std::shared_ptr<engraving::Drumset> m_drumset = nullptr;
     QList<PercussionPanelPadModel*> m_padModels;
 
     int m_dragStartIndex = -1;

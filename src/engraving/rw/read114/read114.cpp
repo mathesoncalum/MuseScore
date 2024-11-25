@@ -2457,7 +2457,7 @@ static void readInstrument(Instrument* i, Part* p, XmlReader& e, ReadContext& ct
                 i->drumset()->clear();
                 customDrumset = true;
             }
-            readDrumset(i->drumset(), e);
+            readDrumset(i->drumset().get(), e);
         } else if (read400::TRead::readProperties(i, e, ctx, p, &customDrumset)) {
         } else {
             e.unknown();
@@ -2533,7 +2533,7 @@ static void readPart(Part* part, XmlReader& e, ReadContext& ctx)
                     i->setStringData(StringData(24, 4, g_celloStrings));
                 }
             }
-            Drumset* d = i->drumset();
+            Drumset* d = i->drumset().get();
             Staff* st = part->staff(0);
             if (d && st && st->lines(Fraction(0, 1)) != 5) {
                 int n = 0;

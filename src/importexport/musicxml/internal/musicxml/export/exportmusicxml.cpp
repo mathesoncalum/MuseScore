@@ -7569,7 +7569,7 @@ static void partList(XmlWriter& xml, Score* score, MusicXmlInstrumentMap& instrM
         }
 
         if (part->instrument()->useDrumset()) {
-            const Drumset* drumset = part->instrument()->drumset();
+            const Drumset* drumset = part->instrument()->drumset().get();
             pitchSet pitches;
             findPitchesUsed(part, pitches);
             for (int i = 0; i < 128; ++i) {

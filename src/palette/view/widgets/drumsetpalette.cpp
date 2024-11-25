@@ -73,12 +73,12 @@ void DrumsetPalette::updateDrumset()
     }
 
     NoteInputState state = noteInput->state();
-    if (m_drumset == state.drumset) {
+    if (m_drumset == state.drumset.get()) {
         return;
     }
 
     clear();
-    m_drumset = state.drumset;
+    m_drumset = state.drumset.get();
 
     if (!m_drumset) {
         return;

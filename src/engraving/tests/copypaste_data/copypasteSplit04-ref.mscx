@@ -93,6 +93,8 @@
           <name>Side Stick</name>
           <stem>1</stem>
           <shortcut>A</shortcut>
+          <panelRow>4</panelRow>
+          <panelColumn>5</panelColumn>
           </Drum>
         <Drum pitch="38">
           <head>normal</head>
@@ -101,6 +103,8 @@
           <name>Snare</name>
           <stem>1</stem>
           <shortcut>B</shortcut>
+          <panelRow>4</panelRow>
+          <panelColumn>6</panelColumn>
           </Drum>
         <clef>PERC</clef>
         <Channel>

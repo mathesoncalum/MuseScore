@@ -389,7 +389,7 @@ bool NotationInteraction::showShadowNote(const PointF& pos)
     int line = position.line;
 
     if (instr->useDrumset()) {
-        const mu::engraving::Drumset* ds  = instr->drumset();
+        const mu::engraving::Drumset* ds  = instr->drumset().get();
         int pitch = inputState.drumNote();
         if (pitch >= 0 && ds->isValid(pitch)) {
             line = ds->line(pitch);

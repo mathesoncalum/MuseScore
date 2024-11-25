@@ -934,7 +934,7 @@ SymId Note::noteHead() const
             if (st->staffTypeForElement(chord())->isDrumStaff()) {
                 Fraction t = chord()->tick();
                 Instrument* inst = st->part()->instrument(t);
-                Drumset* d = inst->drumset();
+                Drumset* d = inst->drumset().get();
                 if (d) {
                     return d->noteHeads(m_pitch, ht);
                 } else {
@@ -1938,7 +1938,7 @@ EngravingItem* Note::drop(EditData& data)
         const StaffGroup staffGroup = st->staffType(segment->tick())->group();
         DirectionV stemDirection = DirectionV::AUTO;
         if (staffGroup == StaffGroup::PERCUSSION) {
-            const Drumset* ds = st->part()->instrument(segment->tick())->drumset();
+            const Drumset* ds = st->part()->instrument(segment->tick())->drumset().get();
             stemDirection = ds->stemDirection(n->noteVal().pitch);
         }
         ch->setStemDirection(stemDirection);
@@ -2489,7 +2489,7 @@ int Note::ppitch() const
         Fraction tick = ch->tick();
 
         if (staff && staff->isDrumStaff(tick)) {
-            const Drumset* ds = staff->part()->instrument(tick)->drumset();
+            const Drumset* ds = staff->part()->instrument(tick)->drumset().get();
             if (ds) {
                 DrumInstrumentVariant div = ds->findVariant(m_pitch, ch->articulations(), ch->tremoloType());
                 if (div.pitch != INVALID_PITCH) {
@@ -3206,7 +3206,7 @@ String Note::accessibleInfo() const
         }
     }
 
-    const Drumset* drumset = part()->instrument(chord()->tick())->drumset();
+    const Drumset* drumset = part()->instrument(chord()->tick())->drumset().get();
     if (fixed() && headGroup() == NoteHeadGroup::HEAD_SLASH) {
         pitchName = chord()->noStem() ? muse::mtrc("engraving", "Beat slash") : muse::mtrc("engraving", "Rhythm slash");
     } else if (staff()->isDrumStaff(tick()) && drumset) {
@@ -3235,7 +3235,7 @@ String Note::screenReaderInfo() const
     String voice = voices ? muse::mtrc("engraving", "Voice: %1").arg(track() % VOICES + 1) : u"";
     String pitchName;
     String pitchOutOfRangeWarning;
-    const Drumset* drumset = instrument->drumset();
+    const Drumset* drumset = instrument->drumset().get();
     if (fixed() && headGroup() == NoteHeadGroup::HEAD_SLASH) {
         pitchName = chord()->noStem() ? muse::mtrc("engraving", "Beat slash") : muse::mtrc("engraving", "Rhythm slash");
     } else if (staff()->isDrumStaff(tick()) && drumset) {

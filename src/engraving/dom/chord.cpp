@@ -1730,7 +1730,7 @@ void Chord::cmdUpdateNotes(AccidentalState* as, staff_idx_t staffIdx)
         }
     } else if (staffGroup == StaffGroup::PERCUSSION) {
         const Instrument* instrument = part()->instrument(this->tick());
-        const Drumset* drumset = instrument->drumset();
+        const Drumset* drumset = instrument->drumset().get();
         if (!drumset) {
             LOGW("no drumset");
         }
@@ -2338,7 +2338,7 @@ void Chord::setSlash(bool flag, bool stemless)
                 dot->undoChangeProperty(Pid::VISIBLE, true);
             }
             if (staff()->isDrumStaff(tick())) {
-                const Drumset* ds = part()->instrument(tick())->drumset();
+                const Drumset* ds = part()->instrument(tick())->drumset().get();
                 int pitch = n->pitch();
                 if (ds && ds->isValid(pitch)) {
                     undoChangeProperty(Pid::STEM_DIRECTION, ds->stemDirection(pitch));

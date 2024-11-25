@@ -72,7 +72,7 @@ void MdlMigrator::remapPercussion()
 
             remapPitches(startTrack, endTrack, startTick, endTick, repitch);
 
-            Drumset* drumset = instr->drumset();
+            Drumset* drumset = instr->drumset().get();
 
             if (!loadDrumset(drumset, drumsetPath)) {
                 Drumset newDrumset;
@@ -152,7 +152,7 @@ void MdlMigrator::remapPitches(track_idx_t startTrack, track_idx_t endTrack, Fra
 
 bool MdlMigrator::needToRemap(const Instrument& instr, RepitchFunc& repitch, path_t& drumsetPath)
 {
-    const Drumset* drumset = instr.drumset();
+    const Drumset* drumset = instr.drumset().get();
     const InstrChannel* channel = instr.channel(0);
 
     if (!drumset || !channel || channel->synti() != u"Zerberus") {

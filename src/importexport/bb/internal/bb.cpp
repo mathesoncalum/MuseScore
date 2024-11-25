@@ -588,7 +588,7 @@ Fraction BBFile::processPendingNotes(Score* score, QList<MNote*>* notes, const F
     Fraction len(l);
     Staff* cstaff                = score->staff(track / VOICES);
     const Instrument* instrument = cstaff->part()->instrument();
-    const Drumset* drumset       = instrument->drumset();
+    const Drumset* drumset       = instrument->drumset().get();
     bool useDrumset              = instrument->useDrumset();
     Fraction tick                = Fraction::fromTicks(notes->at(0)->mc.ontime());
 

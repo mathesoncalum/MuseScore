@@ -311,7 +311,7 @@ static Note* prepareTarget(ChordRest* target, Note* with, const Fraction& durati
     const StaffGroup staffGroup = staff->staffType(segment->tick())->group();
     DirectionV stemDirection = DirectionV::AUTO;
     if (staffGroup == StaffGroup::PERCUSSION) {
-        const Drumset* ds = staff->part()->instrument(segment->tick())->drumset();
+        const Drumset* ds = staff->part()->instrument(segment->tick())->drumset().get();
         stemDirection = ds->stemDirection(with->noteVal().pitch);
     }
 

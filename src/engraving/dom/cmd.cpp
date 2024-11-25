@@ -1918,7 +1918,7 @@ void Score::upDown(bool up, UpDownMode mode)
         switch (staffGroup) {
         case StaffGroup::PERCUSSION:
         {
-            const Drumset* ds = part->instrument(tick)->drumset();
+            const Drumset* ds = part->instrument(tick)->drumset().get();
             if (ds) {
                 newPitch = up ? ds->nextPitch(pitch) : ds->prevPitch(pitch);
                 newTpc1 = pitch2tpc(newPitch, Key::C, Prefer::NEAREST);
@@ -4770,7 +4770,7 @@ void Score::cmdAddPitch(const EditData& ed, int note, bool addFlag, bool insert)
         return;
     }
     is.setRest(false);
-    const Drumset* ds = is.drumset();
+    const Drumset* ds = is.drumset().get();
     int octave = 4;
     if (ds) {
         char note1 = "CDEFGAB"[note];

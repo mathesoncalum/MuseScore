@@ -79,7 +79,7 @@ NoteVal Score::noteValForPosition(Position pos, AccidentalType at, bool& error)
         if (m_is.rest()) {
             break;
         }
-        const Drumset* ds = instr->drumset();
+        const Drumset* ds = instr->drumset().get();
         nval.pitch        = m_is.drumNote();
         if (nval.pitch < 0) {
             error = true;
@@ -198,7 +198,7 @@ Note* Score::addPitch(NoteVal& nval, bool addFlag, InputState* externalInputStat
     DirectionV stemDirection = DirectionV::AUTO;
     track_idx_t track = is.track();
     if (is.drumset()) {
-        const Drumset* ds = is.drumset();
+        const Drumset* ds = is.drumset().get();
         if (!ds->isValid(nval.pitch)) {
             return nullptr;
         }
@@ -433,7 +433,7 @@ Ret Score::putNote(const Position& p, bool replace)
 
     switch (staffGroup) {
     case StaffGroup::PERCUSSION: {
-        const Drumset* ds = st->part()->instrument(s->tick())->drumset();
+        const Drumset* ds = st->part()->instrument(s->tick())->drumset().get();
         stemDirection     = ds->stemDirection(nval.pitch);
         break;
     }
