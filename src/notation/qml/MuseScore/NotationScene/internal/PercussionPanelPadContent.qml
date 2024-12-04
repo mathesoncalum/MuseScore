@@ -35,13 +35,11 @@ Column {
 
     property bool dragActive: false
 
-    Rectangle {
+    Item {
         id: mainContentArea
 
         width: parent.width
         height: parent.height - separator.height - footerArea.height
-
-        color: Utils.colorWithAlpha(ui.theme.accentColor, ui.theme.buttonOpacityNormal)
 
         MouseArea {
             id: mouseArea
@@ -50,11 +48,36 @@ Column {
             hoverEnabled: true
 
             onPressed: {
+                ui.tooltip.hide(root)
+
                 if (!Boolean(root.padModel)) {
                     return
                 }
+
                 root.padModel.triggerPad()
             }
+
+            onContainsMouseChanged: {
+                if (!Boolean(root.padModel)) {
+                    ui.tooltip.hide(root)
+                    return
+                }
+
+                if (mouseArea.containsMouse && root.useNotationPreview) {
+                    ui.tooltip.show(root, root.padModel.instrumentName)
+                } else {
+                    ui.tooltip.hide(root)
+                }
+            }
+        }
+
+        Rectangle {
+            id: instrumentNameBackground
+
+            visible: !root.useNotationPreview
+            anchors.fill: parent
+
+            color: Utils.colorWithAlpha(ui.theme.accentColor, ui.theme.buttonOpacityNormal)
         }
 
         StyledTextLabel {
@@ -81,6 +104,8 @@ Column {
 
             engravingItem: Boolean(root.padModel) ? root.padModel.notationPreviewItem : null
             spatium: 6.25 // Value approximated visually (needs to accomodate "extreme ledger line" situations)
+
+            opacity: 0.9
         }
 
         states: [
@@ -88,16 +113,24 @@ Column {
                 name: "MOUSE_HOVERED"
                 when: mouseArea.containsMouse && !mouseArea.pressed && !root.dragActive
                 PropertyChanges {
-                    target: mainContentArea
+                    target: instrumentNameBackground
                     color: Utils.colorWithAlpha(ui.theme.accentColor, ui.theme.buttonOpacityHover)
+                }
+                PropertyChanges {
+                    target: notationPreview
+                    opacity: 0.7
                 }
             },
             State {
                 name: "MOUSE_HIT"
                 when: mouseArea.pressed || root.dragActive
                 PropertyChanges {
-                    target: mainContentArea
+                    target: instrumentNameBackground
                     color: Utils.colorWithAlpha(ui.theme.accentColor, ui.theme.buttonOpacityHit)
+                }
+                PropertyChanges {
+                    target: notationPreview
+                    opacity: 1.0
                 }
             }
         ]
