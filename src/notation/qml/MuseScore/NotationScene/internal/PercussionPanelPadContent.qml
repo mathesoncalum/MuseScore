@@ -80,6 +80,7 @@ Column {
             anchors.fill: parent
 
             engravingItem: Boolean(root.padModel) ? root.padModel.notationPreviewItem : null
+            spatium: 6.25 // Value approximated visually (needs to accomodate "extreme ledger line" situations)
         }
 
         states: [
