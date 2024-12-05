@@ -161,8 +161,7 @@ void PercussionPanelModel::handleMenuItem(const QString& itemId)
         const bool currentlyEditing = m_currentPanelMode == PanelMode::Mode::EDIT_LAYOUT;
         currentlyEditing ? finishEditing() : setCurrentPanelMode(PanelMode::Mode::EDIT_LAYOUT, false);
     } else if (itemId == RESET_LAYOUT_CODE) {
-        // TODO: Need a mechanism for "default" layouts...
-        // m_padListModel->resetLayout();
+        resetLayout();
     }
 }
 
@@ -309,6 +308,86 @@ void PercussionPanelModel::playPitch(int pitch)
 
     note->setParent(nullptr);
     delete note;
+}
+
+void PercussionPanelModel::resetLayout()
+{
+    if (m_currentPanelMode == PanelMode::Mode::EDIT_LAYOUT) {
+        // TODO: There's a minor technical limitation here. There are competing requirements where changing the drumset "naturally" (e.g. by
+        // moving the selection to another staff) *should* cause us to finish editing, but we *shouldn't* finish editing when the drumset is changed
+        // through a layout reset. At the moment we don't have any way of distinguishing between these two cases inside updatePadModels, so we
+        // always finish editing. The solution is probably to avoid using ChangeDrumset, and instead introduce a more granular UndoCommand...
+        finishEditing();
+    }
+
+    NoteInputState inputState = interaction()->noteInput()->state();
+    const Staff* staff = inputState.staff;
+
+    IF_ASSERT_FAILED(staff && staff->part()) {
+        return;
+    }
+
+    Instrument* inst = staff->part()->instrument(inputState.segment->tick());
+
+    IF_ASSERT_FAILED(inst) {
+        return;
+    }
+
+    const InstrumentTemplate instTemplate = instrumentsRepository()->instrumentTemplate(inst->id());
+    const Drumset* drumsetTemplate = instTemplate.drumset;
+
+    IF_ASSERT_FAILED(drumsetTemplate) {
+        return;
+    }
+
+    Drumset tempDrumset = *m_padListModel->drumset();
+
+    int highestIndex = -1;
+    QList<int /*pitch*/> noTemplateFound;
+    for (int pitch = 0; pitch < mu::engraving::DRUM_INSTRUMENTS; ++pitch) {
+        if (!tempDrumset.isValid(pitch)) {
+            // We aren't currently using this pitch, doesn't matter if it's valid in the template..
+            continue;
+        }
+        //! NOTE: Pitch + drum name isn't exactly the most robust identifier, but this will change with the new percussion ID system
+        if (!drumsetTemplate->isValid(pitch) || tempDrumset.name(pitch) != drumsetTemplate->name(pitch)) {
+            // Drum is valid, but we can't find a template for it. We'll set the position chromatically once we know the rest of the layout...
+            noTemplateFound.emplaceBack(pitch);
+            continue;
+        }
+
+        const int templateRow = drumsetTemplate->drum(pitch).panelRow;
+        const int templateColumn = drumsetTemplate->drum(pitch).panelColumn;
+
+        tempDrumset.drum(pitch).panelRow = templateRow;
+        tempDrumset.drum(pitch).panelColumn = templateColumn;
+
+        const int modelIndex = templateRow * m_padListModel->numColumns() + templateColumn;
+
+        if (modelIndex > highestIndex) {
+            highestIndex = modelIndex;
+        }
+    }
+
+    for (int pitch : noTemplateFound) {
+        ++highestIndex;
+        tempDrumset.drum(pitch).panelRow = highestIndex / m_padListModel->numColumns();
+        tempDrumset.drum(pitch).panelColumn = highestIndex % m_padListModel->numColumns();
+    }
+
+    // Return if nothing changed after reset...
+    if (tempDrumset == *m_padListModel->drumset()) {
+        return;
+    }
+
+    INotationUndoStackPtr undoStack = notation()->undoStack();
+
+    DEFER {
+        undoStack->commitChanges();
+    };
+
+    undoStack->prepareChanges(muse::TranslatableString("undoableAction", "Reset percussion panel layout"));
+    score()->undo(new engraving::ChangeDrumset(inst, &tempDrumset, staff->part()));
 }
 
 const INotationPtr PercussionPanelModel::notation() const

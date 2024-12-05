@@ -30,6 +30,7 @@
 #include "context/iglobalcontext.h"
 #include "actions/iactionsdispatcher.h"
 #include "playback/iplaybackcontroller.h"
+#include "iinstrumentsrepository.h"
 
 #include "percussionpanelpadlistmodel.h"
 
@@ -52,6 +53,7 @@ class PercussionPanelModel : public QObject, public muse::Injectable, public mus
     muse::Inject<context::IGlobalContext> globalContext = { this };
     muse::Inject<muse::actions::IActionsDispatcher> dispatcher = { this };
     muse::Inject<playback::IPlaybackController> playbackController = { this };
+    muse::Inject<IInstrumentsRepository> instrumentsRepository = { this };
 
     Q_OBJECT
 
@@ -100,6 +102,8 @@ private:
 
     void writePitch(int pitch);
     void playPitch(int pitch);
+
+    void resetLayout();
 
     const mu::notation::INotationPtr notation() const;
     const mu::notation::INotationInteractionPtr interaction() const;
