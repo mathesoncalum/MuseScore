@@ -85,7 +85,9 @@ public:
     QList<QVariantMap> layoutMenuItems() const;
     Q_INVOKABLE void handleMenuItem(const QString& itemId);
 
-    Q_INVOKABLE void finishEditing();
+    //! NOTE: There are a handful of circumstances where we should discard changes (e.g. undoing/redoing a layout change mid
+    //! edit, resetting the layout mid edit, or selecting a different drumset mid edit)
+    Q_INVOKABLE void finishEditing(bool discardChanges);
 
     Q_INVOKABLE void customizeKit();
 

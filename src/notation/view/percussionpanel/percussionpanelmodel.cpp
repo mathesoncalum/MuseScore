@@ -159,13 +159,13 @@ void PercussionPanelModel::handleMenuItem(const QString& itemId)
         setUseNotationPreview(true);
     } else if (itemId == EDIT_LAYOUT_CODE) {
         const bool currentlyEditing = m_currentPanelMode == PanelMode::Mode::EDIT_LAYOUT;
-        currentlyEditing ? finishEditing() : setCurrentPanelMode(PanelMode::Mode::EDIT_LAYOUT, false);
+        currentlyEditing ? finishEditing(/*discardChanges*/ false) : setCurrentPanelMode(PanelMode::Mode::EDIT_LAYOUT, false);
     } else if (itemId == RESET_LAYOUT_CODE) {
         resetLayout();
     }
 }
 
-void PercussionPanelModel::finishEditing()
+void PercussionPanelModel::finishEditing(bool discardChanges)
 {
     Drumset* updatedDrumset = m_padListModel->drumset();
     m_padListModel->removeEmptyRows();
@@ -179,7 +179,13 @@ void PercussionPanelModel::finishEditing()
 
     Instrument* inst = staff->part()->instrument(inputState.segment->tick());
 
-    IF_ASSERT_FAILED(inst) {
+    IF_ASSERT_FAILED(inst && inst->drumset()) {
+        return;
+    }
+
+    if (discardChanges) {
+        m_padListModel->setDrumset(inst->drumset());
+        setCurrentPanelMode(m_panelModeToRestore, false);
         return;
     }
 
@@ -226,7 +232,7 @@ void PercussionPanelModel::setUpConnections()
         }
 
         if (m_currentPanelMode == PanelMode::Mode::EDIT_LAYOUT) {
-            finishEditing();
+            finishEditing(/*discardChanges*/ true);
         }
 
         m_padListModel->setDrumset(drumset);
@@ -313,11 +319,7 @@ void PercussionPanelModel::playPitch(int pitch)
 void PercussionPanelModel::resetLayout()
 {
     if (m_currentPanelMode == PanelMode::Mode::EDIT_LAYOUT) {
-        // TODO: There's a minor technical limitation here. There are competing requirements where changing the drumset "naturally" (e.g. by
-        // moving the selection to another staff) *should* cause us to finish editing, but we *shouldn't* finish editing when the drumset is changed
-        // through a layout reset. At the moment we don't have any way of distinguishing between these two cases inside updatePadModels, so we
-        // always finish editing. The solution is probably to avoid using ChangeDrumset, and instead introduce a more granular UndoCommand...
-        finishEditing();
+        finishEditing(/*discardChanges*/ true);
     }
 
     NoteInputState inputState = interaction()->noteInput()->state();
