@@ -102,6 +102,9 @@ bool NavigationSection::active() const
 
 void NavigationSection::setActive(bool arg)
 {
+    if (name() == "NotationView") {
+        //
+    }
     AbstractNavigation::setActive(arg);
 }
 

@@ -295,6 +295,17 @@ Item {
                             }
                             gridPrv.currentPadNavigationIndex = [pad.navigationRow, pad.navigationColumn]
                         }
+
+                        Connections {
+                            target: padGrid.model
+
+                            function onpadFocusRequested(padIndex) {
+                                if (index !== padIndex) {
+                                    return
+                                }
+                                pad.padNavigation.requestActive()
+                            }
+                        }
                     }
 
                     states: [

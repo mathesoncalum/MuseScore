@@ -298,6 +298,9 @@ void PercussionPanelModel::writePitch(int pitch)
 
     interaction()->noteInput()->startNoteInput();
 
+    //! NOTE: Calling startNoteInput eventually leads to AbstractNotationPaintView::onNoteInputStateChanged, which
+    //! always steals navigation focus through activeFocusRequested.
+
     score()->addMidiPitch(pitch, false, /*transpose*/ false);
 
     const mu::engraving::InputState& inputState = score()->inputState();

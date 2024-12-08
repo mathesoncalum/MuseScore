@@ -75,6 +75,7 @@ public:
 signals:
     void numPadsChanged();
     void rowIsEmptyChanged(int row, bool empty);
+    void padFocusRequested(int padIndex); //! NOTE: This won't work if it is called immediately before a layoutChange
 
 private:
     static constexpr int NUM_COLUMNS = 8;
