@@ -77,7 +77,7 @@ struct DrumInstrument {
     bool operator==(const DrumInstrument& other) const
     {
         return notehead == other.notehead
-               && noteheads == other.noteheads
+               // && noteheads == other.noteheads // TODO: Investigate false negatives here...
                && line == other.line
                && stemDirection == other.stemDirection
                && voice == other.voice
