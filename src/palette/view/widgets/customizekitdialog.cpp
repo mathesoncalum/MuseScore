@@ -424,9 +424,9 @@ void CustomizeKitDialog::apply()
     notifyAboutNoteInputStateChanged();
 }
 
-void CustomizeKitDialog::notifyAboutNoteInputStateChanged()
+void CustomizeKitDialog::notifyAboutNoteInputStateChanged(bool updateFocus)
 {
-    m_notation->interaction()->noteInput()->stateChanged().notify();
+    m_notation->interaction()->noteInput()->stateChanged().send(updateFocus);
 }
 
 void CustomizeKitDialog::cancel()

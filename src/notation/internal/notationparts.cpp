@@ -665,8 +665,7 @@ void NotationParts::replaceDrumset(const InstrumentKey& instrumentKey, const Dru
     }
 
     notifyAboutPartChanged(part);
-
-    m_interaction->noteInput()->stateChanged().notify();
+    notifyAboutNoteInputStateChanged();
 }
 
 Notification NotationParts::partsChanged() const
@@ -1217,4 +1216,9 @@ void NotationParts::notifyAboutStaffRemoved(const Staff* staff) const
 
     ChangedNotifier<const Staff*>& notifier = m_staffChangedNotifierMap[staff->part()->id()];
     notifier.itemRemoved(staff);
+}
+
+void NotationParts::notifyAboutNoteInputStateChanged(bool updateFocus)
+{
+    m_interaction->noteInput()->stateChanged().send(updateFocus);
 }

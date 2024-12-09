@@ -85,7 +85,7 @@ void NotationBraille::init()
                 doBraille(true);
             });
 
-            notation()->interaction()->noteInput()->stateChanged().onNotify(this, [this]() {
+            notation()->interaction()->noteInput()->stateChanged().onReceive(this, [this](bool) {
                 if (interaction()->noteInput()->isNoteInputMode()) {
                     if (isNavigationMode()) {
                         setMode(BrailleMode::BrailleInput);

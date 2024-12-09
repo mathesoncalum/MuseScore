@@ -89,7 +89,7 @@ NoteInputState NotationNoteInput::state() const
 }
 
 //! NOTE Copied from `void ScoreView::startNoteEntry()`
-void NotationNoteInput::startNoteInput()
+void NotationNoteInput::startNoteInput(bool updateFocus)
 {
     TRACEFUNC;
 
@@ -144,7 +144,7 @@ void NotationNoteInput::startNoteInput()
     }
 
     notifyAboutNoteInputStarted();
-    notifyAboutStateChanged();
+    notifyAboutStateChanged(updateFocus);
 
     m_interaction->showItem(el);
 }
@@ -627,7 +627,7 @@ Notification NotationNoteInput::noteAdded() const
     return m_noteAdded;
 }
 
-Notification NotationNoteInput::stateChanged() const
+Channel</*updateFocus*/ bool> NotationNoteInput::stateChanged() const
 {
     return m_stateChanged;
 }
@@ -665,9 +665,9 @@ void NotationNoteInput::updateInputState()
     notifyAboutStateChanged();
 }
 
-void NotationNoteInput::notifyAboutStateChanged()
+void NotationNoteInput::notifyAboutStateChanged(bool updateFocus)
 {
-    m_stateChanged.notify();
+    m_stateChanged.send(updateFocus);
 }
 
 void NotationNoteInput::notifyNoteAddedChanged()

@@ -51,7 +51,7 @@ public:
 
     NoteInputState state() const override;
 
-    void startNoteInput() override;
+    void startNoteInput(bool updateFocus = true) override;
     void endNoteInput(bool resetState = false) override;
     void toggleNoteInputMethod(NoteInputMethod method) override;
     void addNote(NoteName noteName, NoteAddingMode addingMode) override;
@@ -80,7 +80,7 @@ public:
     muse::RectF cursorRect() const override;
 
     muse::async::Notification noteAdded() const override;
-    muse::async::Notification stateChanged() const override;
+    muse::async::Channel</*updateFocus*/ bool> stateChanged() const override;
 
     void setGetViewRectFunc(const std::function<muse::RectF()>& func);
 
@@ -93,7 +93,7 @@ private:
     void apply();
 
     void updateInputState();
-    void notifyAboutStateChanged();
+    void notifyAboutStateChanged(bool updateFocus = true);
     void notifyNoteAddedChanged();
     void notifyAboutNoteInputStarted();
     void notifyAboutNoteInputEnded();
@@ -104,7 +104,7 @@ private:
     INotationInteraction* m_interaction = nullptr;
     INotationUndoStackPtr m_undoStack;
 
-    muse::async::Notification m_stateChanged;
+    muse::async::Channel</*updateFocus*/ bool> m_stateChanged;
     muse::async::Notification m_noteAdded;
     muse::async::Notification m_noteInputStarted;
     muse::async::Notification m_noteInputEnded;

@@ -248,8 +248,8 @@ void AbstractNotationPaintView::onLoadNotation(INotationPtr)
     });
 
     onNoteInputStateChanged();
-    interaction->noteInput()->stateChanged().onNotify(this, [this]() {
-        onNoteInputStateChanged();
+    interaction->noteInput()->stateChanged().onReceive(this, [this](bool updateFocus) {
+        onNoteInputStateChanged(updateFocus);
     });
 
     interaction->selectionChanged().onNotify(this, [this]() {
@@ -323,7 +323,7 @@ void AbstractNotationPaintView::onUnloadNotation(INotationPtr)
 {
     m_notation->notationChanged().resetOnNotify(this);
     INotationInteractionPtr interaction = m_notation->interaction();
-    interaction->noteInput()->stateChanged().resetOnNotify(this);
+    interaction->noteInput()->stateChanged().resetOnReceive(this);
     interaction->selectionChanged().resetOnNotify(this);
 
     if (isMainView()) {
@@ -453,14 +453,14 @@ INotationSelectionPtr AbstractNotationPaintView::notationSelection() const
     return notationInteraction() ? notationInteraction()->selection() : nullptr;
 }
 
-void AbstractNotationPaintView::onNoteInputStateChanged()
+void AbstractNotationPaintView::onNoteInputStateChanged(bool updateFocus)
 {
     TRACEFUNC;
 
     bool noteEnterMode = isNoteEnterMode();
     setAcceptHoverEvents(noteEnterMode);
 
-    if (noteEnterMode) {
+    if (updateFocus && noteEnterMode) {
         emit activeFocusRequested();
     }
 

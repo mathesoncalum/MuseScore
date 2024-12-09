@@ -242,7 +242,7 @@ void PercussionPanelModel::setUpConnections()
     updatePadModels(noteInput->state().drumset);
     setEnabled(m_padListModel->hasActivePads());
 
-    noteInput->stateChanged().onNotify(this, [this, updatePadModels]() {
+    noteInput->stateChanged().onReceive(this, [this, updatePadModels](bool) {
         if (!notation()) {
             updatePadModels(nullptr);
             return;

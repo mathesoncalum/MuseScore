@@ -335,7 +335,7 @@ private:
     void notifyAboutTextEditingStarted();
     void notifyAboutTextEditingChanged();
     void notifyAboutTextEditingEnded(TextBase* text);
-    void notifyAboutNoteInputStateChanged();
+    void notifyAboutNoteInputStateChanged(bool updateFocus = true);
     void doDragLasso(const muse::PointF& p);
     void endLasso();
     void toggleFontStyle(mu::engraving::FontStyle);
