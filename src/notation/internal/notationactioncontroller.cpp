@@ -526,7 +526,7 @@ void NotationActionController::init()
     globalContext()->currentNotationChanged().onNotify(this, [this]() {
         auto notation = globalContext()->currentNotation();
         if (notation) {
-            notation->interaction()->noteInput()->stateChanged().onNotify(this, [this]() {
+            notation->interaction()->noteInput()->stateChanged().onReceive(this, [this](bool) {
                 m_currentNotationNoteInputChanged.notify();
             });
         }

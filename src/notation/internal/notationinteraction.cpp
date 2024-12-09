@@ -186,7 +186,7 @@ NotationInteraction::NotationInteraction(Notation* notation, INotationUndoStackP
     m_noteInput = std::make_shared<NotationNoteInput>(notation, this, m_undoStack, iocContext());
     m_selection = std::make_shared<NotationSelection>(notation);
 
-    m_noteInput->stateChanged().onNotify(this, [this]() {
+    m_noteInput->stateChanged().onReceive(this, [this](bool) {
         if (!m_noteInput->isNoteInputMode()) {
             hideShadowNote();
         }
@@ -323,9 +323,9 @@ void NotationInteraction::notifyAboutSelectionChangedIfNeed()
     m_selectionChanged.notify();
 }
 
-void NotationInteraction::notifyAboutNoteInputStateChanged()
+void NotationInteraction::notifyAboutNoteInputStateChanged(bool updateFocus)
 {
-    m_noteInput->stateChanged().notify();
+    m_noteInput->stateChanged().send(updateFocus);
 }
 
 void NotationInteraction::paint(Painter* painter)

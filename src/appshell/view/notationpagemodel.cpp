@@ -153,7 +153,7 @@ void NotationPageModel::onNotationChanged()
     // TODO: Delete when the new percussion panel is finished
     if (!notationConfiguration()->useNewPercussionPanel()) {
         INotationNoteInputPtr noteInput = notation->interaction()->noteInput();
-        noteInput->stateChanged().onNotify(this, [this]() {
+        noteInput->stateChanged().onReceive(this, [this](bool) {
             updateDrumsetPanelVisibility();
             updatePercussionPanelVisibility();
         });

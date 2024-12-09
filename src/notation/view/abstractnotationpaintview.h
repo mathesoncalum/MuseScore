@@ -235,7 +235,7 @@ private:
     bool adjustCanvasPosition(const muse::RectF& logicRect, bool adjustVertically = true);
     bool adjustCanvasPositionSmoothPan(const muse::RectF& cursorRect);
 
-    void onNoteInputStateChanged();
+    void onNoteInputStateChanged(bool updateFocus = true);
 
     void onShowItemRequested(const INotationInteraction::ShowItemRequest& request);
 

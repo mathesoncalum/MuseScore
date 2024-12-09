@@ -22,7 +22,7 @@
 #ifndef MU_NOTATION_INOTATIONNOTEINPUT_H
 #define MU_NOTATION_INOTATIONNOTEINPUT_H
 
-#include "async/notification.h"
+#include "async/channel.h"
 #include "types/ret.h"
 
 #include "notationtypes.h"
@@ -37,7 +37,7 @@ public:
 
     virtual NoteInputState state() const = 0;
 
-    virtual void startNoteInput() = 0;
+    virtual void startNoteInput(bool updateFocus = true) = 0;
     virtual void endNoteInput(bool resetState = false) = 0;
     virtual void toggleNoteInputMethod(NoteInputMethod method) = 0;
     virtual void addNote(NoteName noteName, NoteAddingMode addingMode) = 0;
@@ -68,7 +68,7 @@ public:
     virtual muse::RectF cursorRect() const = 0;
 
     virtual muse::async::Notification noteAdded() const = 0;
-    virtual muse::async::Notification stateChanged() const = 0;
+    virtual muse::async::Channel</*updateFocus*/ bool> stateChanged() const = 0;
 };
 
 using INotationNoteInputPtr = std::shared_ptr<INotationNoteInput>;

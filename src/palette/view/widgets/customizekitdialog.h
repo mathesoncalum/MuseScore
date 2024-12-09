@@ -75,7 +75,7 @@ private:
     void setEnabledPitchControls(bool enable);
     void fillNoteheadsComboboxes(bool customGroup, int pitch);
 
-    void notifyAboutNoteInputStateChanged();
+    void notifyAboutNoteInputStateChanged(bool updateFocus = true);
 
     notation::INotationPtr m_notation;
     notation::InstrumentKey m_instrumentKey;

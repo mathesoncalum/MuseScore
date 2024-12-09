@@ -181,7 +181,7 @@ int NoteInputBarModel::findNoteInputModeItemIndex() const
 void NoteInputBarModel::onNotationChanged()
 {
     if (context()->currentNotation()) {
-        noteInput()->stateChanged().onNotify(this, [this]() {
+        noteInput()->stateChanged().onReceive(this, [this](bool) {
             updateState();
         });
 

@@ -130,7 +130,7 @@ void DrumsetPanelView::initDrumsetPalette()
         return;
     }
 
-    notation->interaction()->noteInput()->stateChanged().onNotify(this, [updateView]() {
+    notation->interaction()->noteInput()->stateChanged().onReceive(this, [updateView](bool) {
         updateView();
     });
 }

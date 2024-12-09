@@ -131,6 +131,8 @@ private:
     void notifyAboutStaffAdded(const Staff* staff, const muse::ID& partId) const;
     void notifyAboutStaffRemoved(const Staff* staff) const;
 
+    void notifyAboutNoteInputStateChanged(bool updateFocus = true);
+
     IGetScore* m_getScore = nullptr;
     INotationUndoStackPtr m_undoStack;
     INotationInteractionPtr m_interaction;
