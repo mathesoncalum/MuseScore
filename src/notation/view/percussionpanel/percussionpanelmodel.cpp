@@ -189,7 +189,7 @@ void PercussionPanelModel::finishEditing(bool discardChanges)
     NoteInputState inputState = interaction()->noteInput()->state();
     const Staff* staff = inputState.staff;
 
-    IF_ASSERT_FAILED(staff && staff->part()) {
+    IF_ASSERT_FAILED(staff && staff->part() && inputState.segment) {
         return;
     }
 
@@ -269,8 +269,30 @@ void PercussionPanelModel::setUpConnections()
             updatePadModels(nullptr);
             return;
         }
-        const INotationNoteInputPtr ni = interaction()->noteInput();
-        updatePadModels(ni->state().drumset);
+
+        NoteInputState inputState = interaction()->noteInput()->state();
+        updatePadModels(inputState.drumset);
+
+        const Staff* staff = inputState.staff;
+        if (!staff || !staff->part() || !inputState.segment) {
+            updatePadModels(nullptr);
+            return;
+        }
+
+        const Instrument* inst = staff->part()->instrument(inputState.segment->tick());
+        if (!inst) {
+            updatePadModels(nullptr);
+            return;
+        }
+
+        inst->drumsetChanged().onNotify(this, [this, updatePadModels](){
+            if (!notation()) {
+                updatePadModels(nullptr);
+                return;
+            }
+            const INotationNoteInputPtr ni = interaction()->noteInput();
+            updatePadModels(ni->state().drumset);
+        });
     });
 
     m_padListModel->hasActivePadsChanged().onNotify(this, [this]() {
@@ -394,7 +416,7 @@ void PercussionPanelModel::resetLayout()
     NoteInputState inputState = interaction()->noteInput()->state();
     const Staff* staff = inputState.staff;
 
-    IF_ASSERT_FAILED(staff && staff->part()) {
+    IF_ASSERT_FAILED(staff && staff->part() && inputState.segment) {
         return;
     }
 

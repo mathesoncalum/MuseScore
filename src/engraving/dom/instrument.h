@@ -28,6 +28,9 @@
 #include "global/containers.h"
 #include "global/types/string.h"
 
+#include "async/asyncable.h"
+#include "async/notification.h"
+
 #include "clef.h"
 #include "interval.h"
 #include "notifier.h"
@@ -300,7 +303,7 @@ struct Trait
 //   Instrument
 //---------------------------------------------------------
 
-class Instrument
+class Instrument : public muse::async::Asyncable
 {
 public:
     Instrument(String id = String());
@@ -340,6 +343,8 @@ public:
     Drumset* drumset() { return m_drumset; }
     bool useDrumset() const { return m_useDrumset; }
     void setUseDrumset(bool val);
+    muse::async::Notification drumsetChanged() const { return m_drumsetChangedNotification; }
+
     void setAmateurPitchRange(int a, int b) { m_minPitchA = a; m_maxPitchA = b; }
     void setProfessionalPitchRange(int a, int b) { m_minPitchP = a; m_maxPitchP = b; }
     InstrChannel* channel(int idx) { return muse::value(m_channel, idx); }
@@ -439,6 +444,8 @@ private:
 
     Trait m_trait;
     bool m_isPrimary = false;
+
+    muse::async::Notification m_drumsetChangedNotification;
 };
 
 //---------------------------------------------------------

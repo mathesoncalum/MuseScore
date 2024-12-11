@@ -913,6 +913,7 @@ void Instrument::setDrumset(const Drumset* ds)
         m_useDrumset = false;
         m_drumset = 0;
     }
+    m_drumsetChangedNotification.notify();
 }
 
 //---------------------------------------------------------
