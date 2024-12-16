@@ -9,6 +9,6 @@
         <file>qml/Muse/Ui/StandardDialogPanel.qml</file>
         <file>qml/Muse/Ui/internal/FileDialog.qml</file>
         <file>qml/Muse/Ui/internal/FolderDialog.qml</file>
-        <file alias="ui/data/MusescoreIcon.ttf">data/MusescoreIcon.ttf</file>
+        <file alias="ui/data/MusescoreIcon_Rebrand_Test.ttf">data/MusescoreIcon_Rebrand_Test.ttf</file>
     </qresource>
 </RCC>

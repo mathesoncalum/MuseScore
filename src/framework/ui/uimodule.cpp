@@ -195,8 +195,8 @@ void UiModule::onInit(const IApplication::RunMode& mode)
         return;
     }
 
-    if (QFontDatabase::addApplicationFont(":/ui/data/MusescoreIcon.ttf") == -1) {
-        LOGE() << "Unable load icon font: `:/ui/data/MusescoreIcon.ttf`";
+    if (QFontDatabase::addApplicationFont(":/ui/data/MusescoreIcon_Rebrand_Test.ttf") == -1) {
+        LOGE() << "Unable load icon font: `:/ui/data/MusescoreIcon_Rebrand_Test.ttf`";
     }
 
     m_keyNavigationController->init();

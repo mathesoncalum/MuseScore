@@ -63,7 +63,7 @@ void UiConfiguration::init()
     settings()->setDefaultValue(UI_FOLLOW_SYSTEM_THEME_KEY, Val(false));
     settings()->setDefaultValue(UI_FONT_FAMILY_KEY, Val(defaultFontFamily()));
     settings()->setDefaultValue(UI_FONT_SIZE_KEY, Val(defaultFontSize()));
-    settings()->setDefaultValue(UI_ICONS_FONT_FAMILY_KEY, Val("MusescoreIcon"));
+    settings()->setDefaultValue(UI_ICONS_FONT_FAMILY_KEY, Val("MusescoreIcon_Rebrand_Test"));
     settings()->setDefaultValue(UI_MUSICAL_FONT_FAMILY_KEY, Val("Leland"));
     settings()->setDefaultValue(UI_MUSICAL_FONT_SIZE_KEY, Val(24));
     settings()->setDefaultValue(UI_THEMES_KEY, Val(""));
