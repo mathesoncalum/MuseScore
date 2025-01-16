@@ -30,9 +30,7 @@
 #include "uicomponents/view/qmllistproperty.h"
 #include "ui/view/navigationsection.h"
 
-namespace KDDockWidgets {
-class DockWidgetQuick;
-}
+#include "DockWidgetQuick.h"
 
 namespace muse::dock {
 struct DropDestination;
@@ -114,6 +112,9 @@ public:
 
     bool isInSameFrame(const DockBase* other) const;
     void setFramePanelOrder(int order);
+    KDDockWidgets::DockWidgetBase* currentWidgetInFrame() const;
+
+    KDDockWidgets::DockWidgetQuick* dockWidget() const;
 
     Q_INVOKABLE bool isOpen() const;
     Q_INVOKABLE void open();
@@ -181,7 +182,6 @@ protected:
     void componentComplete() override;
 
     DockType type() const;
-    KDDockWidgets::DockWidgetQuick* dockWidget() const;
 
 protected slots:
     void applySizeConstraints();

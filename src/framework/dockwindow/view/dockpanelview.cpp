@@ -308,3 +308,22 @@ void DockPanelView::setCurrentTabIndex(int index)
         frame->setCurrentTabIndex(index);
     }
 }
+
+void DockPanelView::setCurrentWidget(KDDockWidgets::DockWidgetQuick* widget)
+{
+    IF_ASSERT_FAILED(dockWidget() && widget) {
+        return;
+    }
+
+    KDDockWidgets::Frame* frame = dockWidget()->frame();
+    if (!frame) {
+        return;
+    }
+
+    auto it = std::find(frame->dockWidgets().begin(), frame->dockWidgets().end(), widget);
+    if (it == frame->dockWidgets().end()) {
+        return;
+    }
+
+    frame->setCurrentDockWidget(widget);
+}

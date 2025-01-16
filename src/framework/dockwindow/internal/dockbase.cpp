@@ -530,6 +530,15 @@ void DockBase::setFramePanelOrder(int order)
     frameVisualItem->setProperty("titleBarNavigationPanelOrder", order);
 }
 
+KDDockWidgets::DockWidgetBase* DockBase::currentWidgetInFrame() const
+{
+    if (!m_dockWidget) {
+        return nullptr;
+    }
+    auto frame = static_cast<const KDDockWidgets::FrameQuick*>(m_dockWidget->frame());
+    return frame ? frame->currentDockWidget() : nullptr;
+}
+
 void DockBase::resetToDefault()
 {
     setVisible(m_defaultVisibility);
