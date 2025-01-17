@@ -31,6 +31,8 @@
 #include "commonscene/commonscenetypes.h"
 #include "abstractelementpopupmodel.h"
 
+#include "engraving/dom/drumset.h"
+
 using namespace mu;
 using namespace mu::notation;
 using namespace mu::engraving;
@@ -964,6 +966,34 @@ void NotationViewInputController::handleLeftClickRelease(const QPointF& releaseP
     }
 }
 
+bool NotationViewInputController::tryPercussionShortcut(const char sc, bool replace, bool insert)
+{
+    INotationNoteInputPtr noteInput = viewInteraction()->noteInput();
+    const Drumset* drumset = noteInput ? noteInput->state().drumset : nullptr;
+    if (!drumset) {
+        return false;
+    }
+
+    for (int pitch = 0; pitch < DRUM_INSTRUMENTS; ++pitch) {
+        if (!drumset->isValid(pitch)) {
+            continue;
+        }
+
+        const DrumInstrument& drum = drumset->drum(pitch);
+        if (drum.shortcut != sc) {
+            continue;
+        }
+
+        noteInput->startNoteInput();
+
+        noteInput->setDrumNote(pitch);
+        noteInput->setCurrentVoice(drumset->voice(pitch));
+        dispatcher()->dispatch("put-note", ActionData::make_arg3<PointF, bool, bool>(PointF(), replace, insert));
+    }
+
+    return false;
+}
+
 void NotationViewInputController::mouseDoubleClickEvent(QMouseEvent* event)
 {
     if (m_view->isNoteEnterMode()) {
@@ -1018,13 +1048,21 @@ bool NotationViewInputController::shortcutOverrideEvent(QKeyEvent* event)
 {
     if (viewInteraction()->isElementEditStarted()) {
         return viewInteraction()->isEditAllowed(event);
-    } else if (startTextEditingAllowed()) {
-        if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
-            return true;
-        }
     }
 
-    return false;
+    const bool someBool = event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter;
+    if (startTextEditingAllowed() && someBool) {
+        return true;
+    }
+
+    const INotationNoteInputPtr noteInput = viewInteraction()->noteInput();
+    if (noteInput && noteInput->state().staffGroup != mu::engraving::StaffGroup::PERCUSSION) {
+        return false;
+    }
+
+    const bool replace = event->modifiers() & Qt::ShiftModifier;
+    const bool insert = event->modifiers() & Qt::ControlModifier;
+    return tryPercussionShortcut('B', replace, insert);
 }
 
 void NotationViewInputController::keyPressEvent(QKeyEvent* event)

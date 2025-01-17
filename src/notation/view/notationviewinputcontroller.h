@@ -184,6 +184,8 @@ private:
     bool startTextEditingAllowed() const;
     void updateTextCursorPosition();
 
+    bool tryPercussionShortcut(const char sc, bool replace, bool insert);
+
     EngravingItem* resolveStartPlayableElement() const;
 
     IControlledView* m_view = nullptr;
