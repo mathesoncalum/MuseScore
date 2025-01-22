@@ -31,16 +31,27 @@ StyledDialogView {
 
     title: qsTrc("shortcuts", "Enter shortcut sequence")
 
+    property var currentShortcut: null
+    property var allShortcuts: null
+
     contentWidth: 538
     contentHeight: 200
 
     margins: 20
 
-    signal applySequenceRequested(string newSequence, int conflictShortcutIndex)
+    Component.onCompleted: {
+        model.load(root.currentShortcut, root.allShortcuts)
+    }
 
-    function startEdit(shortcut, allShortcuts) {
-        model.load(shortcut, allShortcuts)
-        open()
+    function done(data = {}) {
+        let value = Object.assign(data)
+
+        root.ret = {
+            errcode: 0,
+            value: value
+        }
+
+        root.hide()
     }
 
     onNavigationActivateRequested: {
@@ -55,10 +66,6 @@ StyledDialogView {
 
         EditShortcutModel {
             id: model
-
-            onApplyNewSequenceRequested: function(newSequence, conflictShortcutIndex) {
-                root.applySequenceRequested(newSequence, conflictShortcutIndex)
-            }
         }
 
         NavigationPanel {
@@ -91,7 +98,7 @@ StyledDialogView {
                     width: parent.width
                     horizontalAlignment: Qt.AlignLeft
 
-                    text: model.conflictWarning
+                    text: model.conflictWarningText
                 }
 
                 GridLayout {
@@ -155,12 +162,11 @@ StyledDialogView {
                 navigationPanel.order: 2
 
                 onStandardButtonClicked: function(buttonId) {
-                    if (buttonId === ButtonBoxModel.Cancel) {
-                        root.reject()
-                    } else if (buttonId === ButtonBoxModel.Save) {
-                        model.applyNewSequence()
-                        root.accept()
+                    if (buttonId === ButtonBoxModel.Save && model.applyNewSequence()) {
+                        root.done({newSequence: model.newSequence, conflictShortcutIndex: model.conflictShorcutIndex})
+                        return;
                     }
+                    root.reject()
                 }
             }
         }

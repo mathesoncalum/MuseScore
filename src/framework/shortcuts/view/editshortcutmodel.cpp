@@ -76,6 +76,7 @@ void EditShortcutModel::clearNewSequence()
     m_conflictShortcut.clear();
 
     emit newSequenceChanged();
+    emit conflictShortcutIndexChanged();
 }
 
 void EditShortcutModel::inputKey(Qt::Key key, Qt::KeyboardModifiers modifiers)
@@ -173,7 +174,11 @@ bool EditShortcutModel::isShiftAllowed(Qt::Key key)
 
 void EditShortcutModel::checkNewSequenceForConflicts()
 {
-    m_conflictShortcut.clear();
+    if (!m_conflictShortcut.isEmpty()) {
+        m_conflictShortcut.clear();
+        emit conflictShortcutIndexChanged();
+    }
+
     const std::string input = newSequence().toStdString();
 
     for (const QVariant& shortcut : m_potentialConflictShortcuts) {
@@ -184,6 +189,7 @@ void EditShortcutModel::checkNewSequenceForConflicts()
         for (const std::string& toCheckSequence : toCheckSequences) {
             if (input == toCheckSequence) {
                 m_conflictShortcut = map;
+                emit conflictShortcutIndexChanged();
                 return;
             }
         }
@@ -202,7 +208,12 @@ QString EditShortcutModel::newSequenceInNativeFormat() const
     return m_newSequence.toString(QKeySequence::NativeText);
 }
 
-QString EditShortcutModel::conflictWarning() const
+int EditShortcutModel::conflictShortcutIndex() const
+{
+    return !m_conflictShortcut.isEmpty() ? m_allShortcuts.indexOf(m_conflictShortcut) : -1;
+}
+
+QString EditShortcutModel::conflictWarningText() const
 {
     QString title = m_conflictShortcut["title"].toString();
     if (title.isEmpty()) {
@@ -212,21 +223,15 @@ QString EditShortcutModel::conflictWarning() const
     return muse::qtrc("shortcuts", "This shortcut is already assigned to: <b>%1</b>").arg(title);
 }
 
-void EditShortcutModel::applyNewSequence()
+bool EditShortcutModel::applyNewSequence()
 {
-    QString newSequence = this->newSequence();
-
-    if (m_originSequence == newSequence) {
-        return;
+    if (newSequence() == m_originSequence) {
+        return false;
     }
 
-    m_originSequence = newSequence;
-
-    QString conflictWarn = conflictWarning();
-
+    const QString conflictWarn = conflictWarningText();
     if (conflictWarn.isEmpty()) {
-        emit applyNewSequenceRequested(m_originSequence);
-        return;
+        return true;
     }
 
     QString str = conflictWarn + "<br><br>" + muse::qtrc("shortcuts", "Are you sure you want to assign it to <b>%1</b> instead?")
@@ -240,11 +245,12 @@ void EditShortcutModel::applyNewSequence()
     }, (int)IInteractive::Button::Ok).standardButton();
 
     if (btn != IInteractive::Button::Ok) {
-        return;
+        m_newSequence = m_originSequence;
+        emit newSequenceChanged();
+        return false;
     }
 
-    int conflictShortcutIndex = m_allShortcuts.indexOf(m_conflictShortcut);
-    emit applyNewSequenceRequested(m_originSequence, conflictShortcutIndex);
+    return true;
 }
 
 QString EditShortcutModel::newSequence() const

@@ -67,12 +67,10 @@ public:
     Q_INVOKABLE void importShortcutsFromFile();
     Q_INVOKABLE void exportShortcutsToFile();
 
-    Q_INVOKABLE void applySequenceToCurrentShortcut(const QString& newSequence, int conflictShortcutIndex = -1);
+    Q_INVOKABLE void startEditCurrentShortcut();
 
     Q_INVOKABLE void clearSelectedShortcuts();
     Q_INVOKABLE void resetToDefaultSelectedShortcuts();
-
-    Q_INVOKABLE QVariantList shortcuts() const;
 
 public slots:
     void setSelection(const QItemSelection& selection);
@@ -81,6 +79,8 @@ signals:
     void selectionChanged();
 
 private:
+    QVariantList shortcuts() const;
+
     const muse::ui::UiAction& action(const std::string& actionCode) const;
     QString actionText(const std::string& actionCode) const;
 
@@ -88,6 +88,9 @@ private:
     void notifyAboutShortcutChanged(const QModelIndex& index);
 
     QVariant shortcutToObject(const Shortcut& shortcut) const;
+
+    muse::RetVal<muse::Val> openEditShortcutDialog() const;
+    void applySequenceToCurrentShortcut(const QString& newSequence, int conflictShortcutIndex = -1);
 
     enum Roles {
         RoleTitle = Qt::UserRole + 1,

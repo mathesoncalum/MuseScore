@@ -59,22 +59,7 @@ Item {
 
     QtObject {
         id: prv
-
         readonly property int buttonMinWidth: 104
-    }
-
-    EditShortcutDialog {
-        id: editShortcutDialog
-
-        onApplySequenceRequested: function(newSequence, conflictShortcutIndex) {
-            shortcutsModel.applySequenceToCurrentShortcut(newSequence, conflictShortcutIndex)
-        }
-
-        property bool canEditCurrentShortcut: Boolean(shortcutsModel.currentShortcut)
-
-        function startEditCurrentShortcut() {
-            editShortcutDialog.startEdit(shortcutsModel.currentShortcut, shortcutsModel.shortcuts())
-        }
     }
 
     ColumnLayout {
@@ -88,7 +73,7 @@ Item {
             Layout.fillWidth: true
             Layout.preferredHeight: childrenRect.height
 
-            canEditCurrentShortcut: editShortcutDialog.canEditCurrentShortcut
+            canEditCurrentShortcut: Boolean(shortcutsModel.currentShortcut)
             canClearCurrentShortcuts: shortcutsView.hasSelection
 
             buttonMinWidth: prv.buttonMinWidth
@@ -97,7 +82,7 @@ Item {
             navigation.order: root.navigationOrderStart + 1
 
             onStartEditCurrentShortcutRequested: {
-                editShortcutDialog.startEditCurrentShortcut()
+                shortcutsModel.startEditCurrentShortcut()
             }
 
             onClearSelectedShortcutsRequested: {
@@ -118,7 +103,7 @@ Item {
             navigationOrderStart: root.navigationOrderStart + 2
 
             onStartEditCurrentShortcutRequested: {
-                editShortcutDialog.startEditCurrentShortcut()
+                shortcutsModel.startEditCurrentShortcut()
             }
         }
 

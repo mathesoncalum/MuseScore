@@ -37,7 +37,9 @@ class EditShortcutModel : public QObject, public Injectable
 
     Q_PROPERTY(QString originSequence READ originSequenceInNativeFormat NOTIFY originSequenceChanged)
     Q_PROPERTY(QString newSequence READ newSequenceInNativeFormat NOTIFY newSequenceChanged)
-    Q_PROPERTY(QString conflictWarning READ conflictWarning NOTIFY newSequenceChanged)
+
+    Q_PROPERTY(int conflictShortcutIndex READ conflictShortcutIndex NOTIFY conflictShortcutIndexChanged)
+    Q_PROPERTY(QString conflictWarningText READ conflictWarningText NOTIFY newSequenceChanged)
 
     Inject<IInteractive> interactive = { this };
 
@@ -46,24 +48,26 @@ public:
 
     QString originSequenceInNativeFormat() const;
     QString newSequenceInNativeFormat() const;
-    QString conflictWarning() const;
-    bool isShiftAllowed(Qt::Key key);
+
+    int conflictShortcutIndex() const;
+    QString conflictWarningText() const;
 
     Q_INVOKABLE void load(const QVariant& shortcut, const QVariantList& allShortcuts);
     Q_INVOKABLE void inputKey(Qt::Key key, Qt::KeyboardModifiers modifiers);
-    Q_INVOKABLE void applyNewSequence();
+    Q_INVOKABLE bool applyNewSequence();
 
 signals:
     void originSequenceChanged();
     void newSequenceChanged();
-
-    void applyNewSequenceRequested(const QString& newSequence, int conflictShortcutIndex = -1);
+    void conflictShortcutIndexChanged();
 
 private:
     void clearNewSequence();
 
     QString newSequence() const;
     void checkNewSequenceForConflicts();
+
+    bool isShiftAllowed(Qt::Key key);
 
     QVariantList m_allShortcuts;
 

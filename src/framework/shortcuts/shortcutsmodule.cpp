@@ -47,6 +47,7 @@
 #include "api/shortcutsapi.h"
 
 #include "ui/iuiengine.h"
+#include "ui/iinteractiveuriregister.h"
 
 #include "muse_framework_config.h"
 
@@ -79,6 +80,14 @@ void ShortcutsModule::registerExports()
     ioc()->registerExport<IShortcutsController>(moduleName(), m_shortcutsController);
     ioc()->registerExport<IMidiRemote>(moduleName(), m_midiRemote);
     ioc()->registerExport<IShortcutsConfiguration>(moduleName(), m_configuration);
+}
+
+void ShortcutsModule::resolveImports()
+{
+    auto ir = ioc()->resolve<IInteractiveUriRegister>(moduleName());
+    if (ir) {
+        ir->registerQmlUri(Uri("musescore://shortcuts/editshortcut"), "Muse/Shortcuts/EditShortcutDialog.qml");
+    }
 }
 
 void ShortcutsModule::registerApi()

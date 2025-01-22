@@ -209,6 +209,20 @@ void ShortcutsModel::exportShortcutsToFile()
     }
 }
 
+void ShortcutsModel::startEditCurrentShortcut()
+{
+    const RetVal<Val> rv = openEditShortcutDialog();
+    if (!rv.ret) {
+        return;
+    }
+
+    const QVariantMap vals = rv.val.toQVariant().toMap();
+    const QString& newSequence = vals["newSequence"].toString();
+    const int conflictShortcutIndex = vals["conflictShortcutIndex"].toInt();
+
+    applySequenceToCurrentShortcut(newSequence, conflictShortcutIndex);
+}
+
 void ShortcutsModel::applySequenceToCurrentShortcut(const QString& newSequence, int conflictShortcutIndex)
 {
     QModelIndex currIndex = currentShortcutIndex();
@@ -299,4 +313,12 @@ QVariant ShortcutsModel::shortcutToObject(const Shortcut& shortcut) const
     obj["autoRepeat"] = shortcut.autoRepeat;
 
     return obj;
+}
+
+muse::RetVal<muse::Val> ShortcutsModel::openEditShortcutDialog() const
+{
+    muse::UriQuery query("musescore://shortcuts/editshortcut?sync=true&modal=true");
+    query.addParam("currentShortcut", Val::fromQVariant(currentShortcut()));
+    query.addParam("allShortcuts", Val::fromQVariant(shortcuts()));
+    return interactive()->open(query);
 }
