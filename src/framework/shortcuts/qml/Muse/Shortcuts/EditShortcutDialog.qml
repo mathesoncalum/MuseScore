@@ -43,6 +43,17 @@ StyledDialogView {
         open()
     }
 
+    function done(data = {}) {
+        let value = Object.assign(data)
+
+        root.ret = {
+            errcode: 0,
+            value: value
+        }
+
+        root.hide()
+    }
+
     onNavigationActivateRequested: {
         newSequenceField.navigation.requestActive()
     }
@@ -159,7 +170,7 @@ StyledDialogView {
                         root.reject()
                     } else if (buttonId === ButtonBoxModel.Save) {
                         model.applyNewSequence()
-                        root.accept()
+                        root.done({shortcut: model.newSequence})
                     }
                 }
             }

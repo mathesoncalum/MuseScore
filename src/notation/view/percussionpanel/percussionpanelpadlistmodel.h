@@ -84,6 +84,8 @@ public:
     void focusFirstActivePad();
     void focusLastActivePad();
 
+    muse::RetVal<muse::Val> openEditShortcutDialog() const;
+
     muse::async::Notification hasActivePadsChanged() const { return m_hasActivePadsChanged; }
     muse::async::Channel<PercussionPanelPadModel::PadAction, int /*pitch*/> padActionRequested() const { return m_padActionRequestChannel; }
 

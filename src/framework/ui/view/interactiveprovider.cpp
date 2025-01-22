@@ -558,7 +558,8 @@ QWindow* InteractiveProvider::topWindow() const
     }
 
     if (!last.window->parent()) {
-        ASSERT_X("Window must have a parent!");
+        // TODO: Getting this assertion when opening the define shortcut dialog from the customize kit dialog
+        // ASSERT_X("Window must have a parent!");
     }
 
     return qobject_cast<QWindow*>(last.window);

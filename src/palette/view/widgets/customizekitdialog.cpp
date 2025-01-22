@@ -51,7 +51,6 @@ using namespace mu::notation;
 using namespace mu::engraving;
 
 static const QString CUSTOMIZE_KIT_DIALOG_NAME("CustomizeKitDialog");
-static const std::string_view POSSIBLE_SHORTCUTS("ABCDEFG");
 
 enum Column : char {
     PITCH, NOTE, SHORTCUT, NAME
@@ -185,7 +184,7 @@ CustomizeKitDialog::CustomizeKitDialog(QWidget* parent)
     connect(staffLine, &QSpinBox::valueChanged, this, &CustomizeKitDialog::valueChanged);
     connect(voice, &QComboBox::currentIndexChanged, this, &CustomizeKitDialog::valueChanged);
     connect(stemDirection, &QComboBox::currentIndexChanged, this, &CustomizeKitDialog::valueChanged);
-    connect(shortcut, &QComboBox::currentIndexChanged, this, &CustomizeKitDialog::shortcutChanged);
+    connect(shortcut, &QPushButton::clicked, this, &CustomizeKitDialog::defineShortcut);
     connect(loadButton, &QPushButton::clicked, this, &CustomizeKitDialog::load);
     connect(saveButton, &QPushButton::clicked, this, &CustomizeKitDialog::save);
     pitchList->setColumnWidth(0, 40);
@@ -308,8 +307,7 @@ void CustomizeKitDialog::loadPitchesList()
         if (m_editedDrumset.shortcut(i) == 0) {
             item->setText(Column::SHORTCUT, "");
         } else {
-            QString s(QChar(m_editedDrumset.shortcut(i)));
-            item->setText(Column::SHORTCUT, s);
+            item->setText(Column::SHORTCUT, QChar(m_editedDrumset.shortcut(i)));
         }
         item->setText(Column::NAME, m_editedDrumset.translatedName(i));
         item->setData(Column::PITCH, Qt::UserRole, i);
@@ -352,49 +350,6 @@ void CustomizeKitDialog::nameChanged(const QString& n)
         }
     }
     setEnabledPitchControls(!n.isEmpty());
-}
-
-//---------------------------------------------------------
-//   shortcutChanged
-//---------------------------------------------------------
-
-void CustomizeKitDialog::shortcutChanged()
-{
-    QTreeWidgetItem* item = pitchList->currentItem();
-    if (!item) {
-        return;
-    }
-
-    int pitch = item->data(Column::PITCH, Qt::UserRole).toInt();
-    int index = shortcut->currentIndex();
-    bool invalidIndex = index < 0 || index >= static_cast<int>(POSSIBLE_SHORTCUTS.size());
-    int sc;
-
-    if (invalidIndex) {
-        sc = 0;
-    } else {
-        sc = POSSIBLE_SHORTCUTS[index];
-    }
-
-    if (QString(QChar(m_editedDrumset.drum(pitch).shortcut)) != shortcut->currentText()) {
-        //
-        // remove conflicting shortcuts
-        //
-        for (int i = 0; i < DRUM_INSTRUMENTS; ++i) {
-            if (i == pitch) {
-                continue;
-            }
-            if (m_editedDrumset.drum(i).shortcut == sc) {
-                m_editedDrumset.drum(i).shortcut = 0;
-            }
-        }
-        m_editedDrumset.drum(pitch).shortcut = sc;
-        if (invalidIndex) {
-            item->setText(Column::SHORTCUT, "");
-        } else {
-            item->setText(Column::SHORTCUT, shortcut->currentText());
-        }
-    }
 }
 
 //---------------------------------------------------------
@@ -494,16 +449,10 @@ void CustomizeKitDialog::itemChanged(QTreeWidgetItem* current, QTreeWidgetItem* 
             }
         }
 
-        m_editedDrumset.drum(pitch).line          = staffLine->value();
-        m_editedDrumset.drum(pitch).voice         = voice->currentIndex();
-        int index = shortcut->currentIndex();
-
-        if (index < 0 || index >= static_cast<int>(POSSIBLE_SHORTCUTS.size())) {
-            m_editedDrumset.drum(pitch).shortcut = 0;
-        } else {
-            m_editedDrumset.drum(pitch).shortcut = POSSIBLE_SHORTCUTS[index];
-        }
+        m_editedDrumset.drum(pitch).line = staffLine->value();
+        m_editedDrumset.drum(pitch).voice = voice->currentIndex();
         m_editedDrumset.drum(pitch).stemDirection = DirectionV(stemDirection->currentIndex());
+
         previous->setText(Column::NAME, m_editedDrumset.translatedName(pitch));
     }
     if (current == 0) {
@@ -529,11 +478,9 @@ void CustomizeKitDialog::itemChanged(QTreeWidgetItem* current, QTreeWidgetItem* 
     noteHead->setCurrentIndex(noteHead->findData(int(nh)));
     fillNoteheadsComboboxes(isCustomGroup, pitch);
 
-    if (m_editedDrumset.shortcut(pitch) == 0) {
-        shortcut->setCurrentIndex(7);
-    } else {
-        shortcut->setCurrentIndex(m_editedDrumset.shortcut(pitch) - 'A');
-    }
+    const bool hasShortcut = m_editedDrumset.shortcut(pitch) != '\0';
+    const QString shortcutText = hasShortcut ? QChar(m_editedDrumset.shortcut(pitch)) : muse::qtrc("shortcuts", "None");
+    shortcut->setText(shortcutText);
 
     staffLine->blockSignals(false);
     voice->blockSignals(false);
@@ -574,16 +521,13 @@ void CustomizeKitDialog::valueChanged()
         setCustomNoteheadsGUIEnabled(false);
     }
 
-    m_editedDrumset.drum(pitch).line          = staffLine->value();
-    m_editedDrumset.drum(pitch).voice         = voice->currentIndex();
+    m_editedDrumset.drum(pitch).line  = staffLine->value();
+    m_editedDrumset.drum(pitch).voice = voice->currentIndex();
     m_editedDrumset.drum(pitch).stemDirection = DirectionV(stemDirection->currentIndex());
-    if (QString(QChar(m_editedDrumset.drum(pitch).shortcut)) != shortcut->currentText()) {
-        if (shortcut->currentText().isEmpty()) {
-            m_editedDrumset.drum(pitch).shortcut = 0;
-        } else {
-            m_editedDrumset.drum(pitch).shortcut = shortcut->currentText().at(0).toLatin1();
-        }
-    }
+
+    // TODO: Since the text can be "None" this isn't quite right...
+    m_editedDrumset.drum(pitch).shortcut = shortcut->text().at(0).toLatin1();
+
     updateExample();
 
     m_notation->parts()->replaceDrumset(m_instrumentKey, m_editedDrumset);
@@ -715,4 +659,53 @@ void CustomizeKitDialog::save()
 void CustomizeKitDialog::customQuarterChanged(int)
 {
     updateExample();
+}
+
+void CustomizeKitDialog::defineShortcut()
+{
+    QTreeWidgetItem* item = pitchList->currentItem();
+    if (!item) {
+        return;
+    }
+
+    muse::UriQuery query("musescore://shortcuts/editshortcut?sync=true&modal=true");
+    muse::RetVal<muse::Val> rv = interactive()->open(query);
+
+    const QVariantMap vals = rv.val.toQVariant().toMap();
+    if (!rv.ret) {
+        return;
+    }
+
+    const int targetPitch = item->data(Column::PITCH, Qt::UserRole).toInt();
+    IF_ASSERT_FAILED(m_editedDrumset.isValid(targetPitch)) {
+        return;
+    }
+
+    const QString newShortcut = vals["shortcut"].toString();
+    const bool hasShortcut = !newShortcut.isEmpty();
+    char sc = '\0';
+    if (hasShortcut) {
+        sc = newShortcut.toLatin1().at(0);
+
+        // Remove conflicting shortcuts...
+        for (int pitch = 0; pitch < DRUM_INSTRUMENTS; ++pitch) {
+            if (!m_editedDrumset.isValid(pitch)) {
+                continue;
+            }
+
+            DrumInstrument& drum = m_editedDrumset.drum(pitch);
+            if (drum.shortcut == sc) {
+                drum.shortcut = '\0';
+                // TODO: Visually update the conflicting QTreeWidgetItem...
+                break;
+            }
+        }
+    }
+
+    m_editedDrumset.drum(targetPitch).shortcut = sc;
+
+    shortcut->setText(hasShortcut ? newShortcut : muse::qtrc("shortcuts", "None"));
+    item->setText(Column::SHORTCUT, hasShortcut ? shortcut->text() : QString());
+
+    valueChanged();
 }

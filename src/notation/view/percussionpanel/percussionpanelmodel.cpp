@@ -408,9 +408,50 @@ void PercussionPanelModel::onDeletePadRequested(int pitch)
     undoStack->commitChanges();
 }
 
-void PercussionPanelModel::onDefinePadShortcutRequested(int)
+void PercussionPanelModel::onDefinePadShortcutRequested(int pitch)
 {
-    // TODO: Design in progress...
+    const std::pair<Instrument*, Part*> instAndPart = getCurrentInstrumentAndPart();
+    Instrument* inst = instAndPart.first;
+    Part* part = instAndPart.second;
+
+    IF_ASSERT_FAILED(inst && part) {
+        return;
+    }
+
+    muse::RetVal<muse::Val> rv = m_padListModel->openEditShortcutDialog();
+    const QVariantMap vals = rv.val.toQVariant().toMap();
+    if (!rv.ret) {
+        return;
+    }
+
+    Drumset updatedDrumset = *m_padListModel->drumset();
+    const QString newShortcut = vals["shortcut"].toString();
+
+    char sc = '\0';
+    if (!newShortcut.isEmpty()) {
+        sc = newShortcut.at(0).toLatin1();
+
+        // Remove conflicting shortcuts...
+        for (int i = 0; i < mu::engraving::DRUM_INSTRUMENTS; ++i) {
+            if (!updatedDrumset.isValid(i)) {
+                continue;
+            }
+
+            engraving::DrumInstrument& drum = updatedDrumset.drum(i);
+            if (drum.shortcut == sc) {
+                drum.shortcut = '\0';
+                break;
+            }
+        }
+    }
+
+    updatedDrumset.drum(pitch).shortcut = sc;
+
+    INotationUndoStackPtr undoStack = notation()->undoStack();
+
+    undoStack->prepareChanges(muse::TranslatableString("undoableAction", "Edit percussion shortcut"));
+    score()->undo(new engraving::ChangeDrumset(inst, updatedDrumset, part));
+    undoStack->commitChanges();
 }
 
 void PercussionPanelModel::writePitch(int pitch)

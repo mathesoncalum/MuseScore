@@ -71,26 +71,11 @@ void Drumset::save(XmlWriter& xml) const
         xml.tag("voice", voice(i));
         xml.tag("name", name(i));
         xml.tag("stem", int(stemDirection(i)));
-        if (shortcut(i)) {
-            switch (shortcut(i)) {
-            case 'C':
-            case 'D':
-            case 'E':
-            case 'F':
-            case 'G':
-            case 'A':
-            case 'B':
-            {
-                char a[2];
-                a[0] = shortcut(i);
-                a[1] = 0;
-                xml.tag("shortcut", a);
-            }
-            break;
-            default:
-                LOGD("illegal drum shortcut");
-                break;
-            }
+        if (shortcut(i) != '\0') {
+            char a[2];
+            a[0] = shortcut(i);
+            a[1] = 0;
+            xml.tag("shortcut", a);
         }
         std::list<DrumInstrumentVariant> vs = variants(i);
         if (!vs.empty()) {
@@ -144,10 +129,8 @@ bool Drumset::readProperties(XmlReader& e, int pitch)
     } else if (tag == "stem") {
         m_drums[pitch].stemDirection = DirectionV(e.readInt());
     } else if (tag == "shortcut") {
-        bool isNum;
-        AsciiStringView val = e.readAsciiText();
-        int i = val.toInt(&isNum);
-        m_drums[pitch].shortcut = isNum ? i : val.at(0).toUpper();
+        const AsciiStringView val = e.readAsciiText();
+        m_drums[pitch].shortcut = val.at(0).toUpper();
     } else if (tag == "variants") {
         while (e.readNextStartElement()) {
             const AsciiStringView tagv(e.name());

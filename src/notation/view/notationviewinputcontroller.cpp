@@ -31,6 +31,8 @@
 #include "commonscene/commonscenetypes.h"
 #include "abstractelementpopupmodel.h"
 
+#include "engraving/dom/drumset.h"
+
 using namespace mu;
 using namespace mu::notation;
 using namespace mu::engraving;
@@ -797,6 +799,32 @@ void NotationViewInputController::updateTextCursorPosition()
     }
 }
 
+bool NotationViewInputController::tryPercussionShortcut(const char sc)
+{
+    INotationNoteInputPtr noteInput = viewInteraction()->noteInput();
+    const Drumset* drumset = noteInput ? noteInput->state().drumset : nullptr;
+    if (!drumset) {
+        return false;
+    }
+
+    for (int pitch = 0; pitch < DRUM_INSTRUMENTS; ++pitch) {
+        if (!drumset->isValid(pitch)) {
+            continue;
+        }
+
+        const DrumInstrument& drum = drumset->drum(pitch);
+        if (drum.shortcut != sc) {
+            continue;
+        }
+
+        // TODO: Then dispatch a note input action based on the pitch
+
+        return true;
+    }
+
+    return false;
+}
+
 void NotationViewInputController::mouseMoveEvent(QMouseEvent* event)
 {
     if (viewInteraction()->isDragCopyStarted()) {
@@ -1018,13 +1046,19 @@ bool NotationViewInputController::shortcutOverrideEvent(QKeyEvent* event)
 {
     if (viewInteraction()->isElementEditStarted()) {
         return viewInteraction()->isEditAllowed(event);
-    } else if (startTextEditingAllowed()) {
-        if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
-            return true;
-        }
     }
 
-    return false;
+    const bool editTextKeysFound = event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter;
+    if (editTextKeysFound && startTextEditingAllowed()) {
+        return true;
+    }
+
+    const QString& eventText = event->text().toUpper();
+    if (eventText.isEmpty() || event->modifiers() != Qt::NoModifier) {
+        return false;
+    }
+
+    return tryPercussionShortcut(eventText.at(0).toLatin1());
 }
 
 void NotationViewInputController::keyPressEvent(QKeyEvent* event)

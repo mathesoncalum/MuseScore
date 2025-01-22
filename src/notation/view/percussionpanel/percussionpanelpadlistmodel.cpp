@@ -246,6 +246,13 @@ void PercussionPanelPadListModel::focusLastActivePad()
     }
 }
 
+muse::RetVal<muse::Val> PercussionPanelPadListModel::openEditShortcutDialog() const
+{
+    muse::UriQuery query("musescore://shortcuts/editshortcut?sync=true&modal=true");
+    query.addParam("isSequenceAllowed", muse::Val(false));
+    return interactive()->open(query);
+}
+
 int PercussionPanelPadListModel::nextAvailableIndex(int pitch) const
 {
     const int currentModelIndex = getModelIndexForPitch(pitch);
