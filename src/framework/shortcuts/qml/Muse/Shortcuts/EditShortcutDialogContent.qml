@@ -32,6 +32,8 @@ Item {
 
     property alias navigationSection: navPanel.section
 
+    property alias headerText: headerText.text
+
     property alias originShortcutText: originShortcutField.currentText
     property alias newShortcutText: newShortcutField.currentText
     property alias informationText: informationText.text
@@ -61,8 +63,9 @@ Item {
         spacing: 20
 
         StyledTextLabel {
+            id: headerText
+
             width: parent.width
-            text: qsTrc("shortcuts", "Define keyboard shortcut")
             horizontalAlignment: Text.AlignLeft
             font: ui.theme.headerBoldFont
         }

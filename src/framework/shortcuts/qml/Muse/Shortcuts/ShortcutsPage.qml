@@ -92,6 +92,8 @@ Item {
 
             navigationSection: editShortcutDialog.navigationSection
 
+            headerText: qsTrc("shortcuts", "Define keyboard shortcut")
+
             originShortcutText: editShortcutModel.originSequence
             newShortcutText: editShortcutModel.newSequence
             informationText: editShortcutModel.conflictWarning

@@ -410,7 +410,52 @@ void PercussionPanelModel::onDeletePadRequested(int pitch)
 
 void PercussionPanelModel::onDefinePadShortcutRequested(int)
 {
-    // TODO: Design in progress...
+    muse::UriQuery query("musescore://notation/editpercussionshortcut?sync=true&modal=true");
+
+    // All of these QVariants are placeholders for now...
+    QVariantMap exampleOriginDrum;
+    exampleOriginDrum["title"] = QString("Hi-hat");
+    exampleOriginDrum["shortcut"] = QString("H");
+
+    QVariantList allDrums;
+
+    QVariantMap d1;
+    d1["title"] = QString("Bass drum");
+    d1["shortcut"] = QString("B");
+    allDrums << d1;
+
+    QVariantMap d2;
+    d2["title"] = QString("Tom");
+    d2["shortcut"] = QString("N");
+    allDrums << d2;
+
+    QVariantMap d3;
+    d3["title"] = QString("Cymbal");
+    d3["shortcut"] = QString("C");
+    allDrums << d3;
+
+    QVariantList applicationShortcuts;
+
+    QVariantMap as1;
+    as1["title"] = QString("Save");
+    as1["shortcut"] = QString("S");
+    applicationShortcuts << as1;
+
+    QVariantMap as2;
+    as2["title"] = QString("Toggle Multimeasures");
+    as2["shortcut"] = QString("M");
+    applicationShortcuts << as2;
+
+    QVariantMap as3;
+    as3["title"] = QString("Start note input");
+    as3["shortcut"] = QString("N");
+    applicationShortcuts << as3;
+
+    query.addParam("originDrum", Val::fromQVariant(exampleOriginDrum));
+    query.addParam("drumsWithShortcut", Val::fromQVariant(allDrums));
+    query.addParam("appNoteInputShortcuts", Val::fromQVariant(applicationShortcuts));
+
+    muse::RetVal<muse::Val> rv = interactive()->open(query);
 }
 
 void PercussionPanelModel::writePitch(int pitch)
