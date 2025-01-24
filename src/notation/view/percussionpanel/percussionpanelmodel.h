@@ -29,6 +29,8 @@
 
 #include "context/iglobalcontext.h"
 #include "actions/iactionsdispatcher.h"
+#include "ui/iuiactionsregister.h"
+#include "shortcuts/ishortcutsregister.h"
 #include "playback/iplaybackcontroller.h"
 #include "iinstrumentsrepository.h"
 
@@ -52,6 +54,8 @@ class PercussionPanelModel : public QObject, public muse::Injectable, public mus
 {
     muse::Inject<context::IGlobalContext> globalContext = { this };
     muse::Inject<muse::IInteractive> interactive = { this };
+    Inject<muse::ui::IUiActionsRegister> uiactionsRegister = { this };
+    Inject<muse::shortcuts::IShortcutsRegister> shortcutsRegister = { this };
     muse::Inject<muse::actions::IActionsDispatcher> dispatcher = { this };
     muse::Inject<playback::IPlaybackController> playbackController = { this };
     muse::Inject<IInstrumentsRepository> instrumentsRepository = { this };
@@ -121,6 +125,8 @@ private:
 
     void writePitch(int pitch);
     void playPitch(int pitch);
+
+    QVariantMap drumToQVariantMap(const mu::engraving::DrumInstrument& drum) const;
 
     void resetLayout();
 
