@@ -44,7 +44,9 @@ public:
 
     Q_INVOKABLE void load(const QVariant& originDrum, const QVariantList& drumsWithShortcut, const QVariantList& appNoteInputShortcuts);
     Q_INVOKABLE void inputKey(Qt::Key key);
-    Q_INVOKABLE void trySave();
+    Q_INVOKABLE bool trySave();
+
+    Q_INVOKABLE int conflictDrumPitch() const;
 
     QString originShortcutText() const;
     QString newShortcutText() const;
@@ -53,9 +55,6 @@ public:
 signals:
     void originShortcutTextChanged();
     void newShortcutTextChanged();
-
-    void applyChangesRequested();
-    void cancelRequested();
 
 private:
     bool checkDrumShortcutsForConflict();

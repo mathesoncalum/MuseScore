@@ -362,7 +362,6 @@ void PercussionPanelModel::onDuplicatePadRequested(int pitch)
     IF_ASSERT_FAILED(inst && part) {
         return;
     }
-
     const int nextAvailablePitch = m_padListModel->nextAvailablePitch(pitch);
     if (nextAvailablePitch < 0) {
         // TODO: Show some sort of warning dialog?
@@ -410,41 +409,36 @@ void PercussionPanelModel::onDeletePadRequested(int pitch)
 
 void PercussionPanelModel::onDefinePadShortcutRequested(int pitch)
 {
-    const Drumset* drumset = m_padListModel->drumset();
-    IF_ASSERT_FAILED(drumset && drumset->isValid(pitch)) {
+    const std::pair<Instrument*, Part*> instAndPart = getCurrentInstrumentAndPart();
+    Instrument* inst = instAndPart.first;
+    Part* part = instAndPart.second;
+    IF_ASSERT_FAILED(inst && part) {
         return;
     }
 
-    muse::UriQuery query("musescore://notation/editpercussionshortcut?sync=true&modal=true");
-
-    const mu::engraving::DrumInstrument& originDrum = drumset->drum(pitch);
-    query.addParam("originDrum", Val::fromQVariant(drumToQVariantMap(originDrum)));
-
-    QVariantList drumsWithShortcut;
-    for (int i = 0; i < mu::engraving::DRUM_INSTRUMENTS; ++i) {
-        if (!drumset->isValid(i) || drumset->shortcut(i) == '\0') {
-            continue;
-        }
-        drumsWithShortcut << drumToQVariantMap(drumset->drum(i));
+    const RetVal<Val> rv = openPercussionShortcutDialog(pitch);
+    if (!rv.ret) {
+        return;
     }
-    query.addParam("drumsWithShortcut", Val::fromQVariant(drumsWithShortcut));
 
-    QVariantList applicationShortcuts;
-    for (const UiAction& action : uiactionsRegister()->actionList()) {
-        muse::shortcuts::Shortcut shortcut = shortcutsRegister()->shortcut(action.code);
-        if (!shortcut.isValid()) {
-            continue;
-        }
-        for (const std::string& str : shortcut.sequences) {
-            QVariantMap sc;
-            sc ["title"] = action.title.qTranslatedWithoutMnemonic();
-            sc ["shortcut"] = QString::fromStdString(str);
-            applicationShortcuts << sc;
-        }
+    const QVariantMap vals = rv.val.toQVariant().toMap();
+
+    const QString newShortcutStr = vals.value("newShortcut").toString();
+    const char newShortcut = !newShortcutStr.isEmpty() ? newShortcutStr.at(0).toLatin1() : '\0';
+
+    const int conflictShortcutPitch = vals.value("conflictDrumPitch").toInt();
+
+    Drumset updatedDrumset = *m_padListModel->drumset();
+    updatedDrumset.drum(pitch).shortcut = newShortcut;
+    if (conflictShortcutPitch > -1) {
+        updatedDrumset.drum(conflictShortcutPitch).shortcut = '\0';
     }
-    query.addParam("appNoteInputShortcuts", Val::fromQVariant(applicationShortcuts));
 
-    muse::RetVal<muse::Val> rv = interactive()->open(query);
+    INotationUndoStackPtr undoStack = notation()->undoStack();
+
+    undoStack->prepareChanges(muse::TranslatableString("undoableAction", "Edit percussion shortcut"));
+    score()->undo(new engraving::ChangeDrumset(inst, updatedDrumset, part));
+    undoStack->commitChanges();
 }
 
 void PercussionPanelModel::writePitch(int pitch)
@@ -480,6 +474,47 @@ void PercussionPanelModel::playPitch(int pitch)
     chord->setTrack(inputState.currentTrack);
 
     playbackController()->playElements({ chord.get() });
+}
+
+muse::RetVal<muse::Val> PercussionPanelModel::openPercussionShortcutDialog(int originPitch) const
+{
+    const Drumset* drumset = m_padListModel->drumset();
+    IF_ASSERT_FAILED(drumset && drumset->isValid(originPitch)) {
+        return make_ret(Ret::Code::UnknownError);
+    }
+
+    muse::UriQuery query("musescore://notation/editpercussionshortcut?sync=true&modal=true");
+
+    const mu::engraving::DrumInstrument& originDrum = drumset->drum(originPitch);
+    query.addParam("originDrum", Val::fromQVariant(drumToQVariantMap(originDrum)));
+
+    QVariantList drumsWithShortcut;
+    for (int otherPitch = 0; otherPitch < mu::engraving::DRUM_INSTRUMENTS; ++otherPitch) {
+        if (otherPitch == originPitch || !drumset->isValid(otherPitch) || drumset->shortcut(otherPitch) == '\0') {
+            continue;
+        }
+        QVariantMap drumVariant = drumToQVariantMap(drumset->drum(otherPitch));
+        drumVariant["pitch"] = otherPitch;
+        drumsWithShortcut << drumVariant;
+    }
+    query.addParam("drumsWithShortcut", Val::fromQVariant(drumsWithShortcut));
+
+    QVariantList applicationShortcuts;
+    for (const UiAction& action : uiactionsRegister()->actionList()) {
+        muse::shortcuts::Shortcut shortcut = shortcutsRegister()->shortcut(action.code);
+        if (!shortcut.isValid()) {
+            continue;
+        }
+        for (const std::string& str : shortcut.sequences) {
+            QVariantMap sc;
+            sc ["title"] = action.title.qTranslatedWithoutMnemonic();
+            sc ["shortcut"] = QString::fromStdString(str);
+            applicationShortcuts << sc;
+        }
+    }
+    query.addParam("appNoteInputShortcuts", Val::fromQVariant(applicationShortcuts));
+
+    return interactive()->open(query);
 }
 
 QVariantMap PercussionPanelModel::drumToQVariantMap(const engraving::DrumInstrument& drum) const

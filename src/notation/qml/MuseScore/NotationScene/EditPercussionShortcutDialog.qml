@@ -42,6 +42,17 @@ StyledDialogView {
 
     margins: 20
 
+    function done(data = {}) {
+        let value = Object.assign(data)
+
+        root.ret = {
+            errcode: 0,
+            value: value
+        }
+
+        root.hide()
+    }
+
     onNavigationActivateRequested: {
         editShortcutDialogContent.requestActive()
     }
@@ -66,11 +77,10 @@ StyledDialogView {
         informationText: model.informationText
 
         onSaveRequested: {
-            model.trySave()
-            root.accept()
-        }
-
-        onCancelRequested: {
+            if (model.trySave()) {
+                root.done({ newShortcut: model.newShortcutText, conflictDrumPitch: model.conflictDrumPitch() })
+                return
+            }
             root.reject()
         }
 

@@ -126,6 +126,7 @@ private:
     void writePitch(int pitch);
     void playPitch(int pitch);
 
+    muse::RetVal<muse::Val> openPercussionShortcutDialog(int originPitch) const;
     QVariantMap drumToQVariantMap(const mu::engraving::DrumInstrument& drum) const;
 
     void resetLayout();

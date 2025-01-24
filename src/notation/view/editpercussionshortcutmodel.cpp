@@ -70,16 +70,14 @@ void EditPercussionShortcutModel::inputKey(Qt::Key key)
     emit newShortcutTextChanged();
 }
 
-void EditPercussionShortcutModel::trySave()
+bool EditPercussionShortcutModel::trySave()
 {
     if (originShortcutText() == m_newShortcut.toString()) {
-        return;
+        return false;
     }
 
     if (m_conflictShortcut.isEmpty()) {
-        // No conflicts to warn about, apply the changes...
-        emit applyChangesRequested();
-        return;
+        return true;
     }
 
     const QString originTitle = m_originDrum.value("title").toString();
@@ -92,11 +90,18 @@ void EditPercussionShortcutModel::trySave()
     }, (int)IInteractive::Button::Ok).standardButton();
 
     if (btn != IInteractive::Button::Ok) {
-        emit cancelRequested();
-        return;
+        return false;
     }
 
-    emit applyChangesRequested();
+    return true;
+}
+
+int EditPercussionShortcutModel::conflictDrumPitch() const
+{
+    if (m_conflictShortcut.isEmpty() || m_conflictInAppShortcuts) {
+        return -1;
+    }
+    return m_conflictShortcut.value("pitch").toInt();
 }
 
 QString EditPercussionShortcutModel::originShortcutText() const
