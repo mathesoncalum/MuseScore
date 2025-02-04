@@ -199,9 +199,9 @@ void Drumset::load(XmlReader& e)
 void Drumset::clear()
 {
     for (int i = 0; i < DRUM_INSTRUMENTS; ++i) {
-        m_drums[i].name = u"";
+        m_drums[i].name.clear();
         m_drums[i].notehead = NoteHeadGroup::HEAD_INVALID;
-        m_drums[i].shortcut = 0;
+        m_drums[i].shortcut.clear();
         m_drums[i].variants.clear();
         m_drums[i].panelRow = -1;
         m_drums[i].panelColumn = -1;
@@ -282,9 +282,10 @@ void Drumset::initDrumset()
 {
     smDrumset = new Drumset;
     for (int i = 0; i < DRUM_INSTRUMENTS; ++i) {
+        smDrumset->drum(i).name.clear();
         smDrumset->drum(i).notehead = NoteHeadGroup::HEAD_INVALID;
         smDrumset->drum(i).line     = 0;
-        smDrumset->drum(i).shortcut = 0;
+        smDrumset->drum(i).shortcut.clear();
         smDrumset->drum(i).voice    = 0;
         smDrumset->drum(i).stemDirection = DirectionV::UP;
         smDrumset->drum(i).panelRow     = -1;

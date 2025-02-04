@@ -809,12 +809,16 @@ bool NotationViewInputController::tryPercussionShortcut(QKeyEvent* event)
 
     const QKeySequence seq(event->keyCombination());
     const int pitchToWrite = drumset->pitchForShortcut(seq.toString());
-    if (pitchToWrite > -1) {
-        // TODO: Dispatch a note input action using this pitch
-        return true;
+    if (pitchToWrite < 0) {
+        return false;
     }
 
-    return false;
+    NoteInputParams params;
+    params.drumPitch = pitchToWrite;
+
+    noteInput->addNote(params, NoteAddingMode::NextChord);
+
+    return true;
 }
 
 void NotationViewInputController::mouseMoveEvent(QMouseEvent* event)

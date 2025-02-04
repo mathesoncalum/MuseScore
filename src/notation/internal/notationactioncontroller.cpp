@@ -765,13 +765,20 @@ void NotationActionController::handleNoteAction(NoteName note, NoteAddingMode ad
         return;
     }
 
+    NoteInputParams params;
+    const bool addFlag = addingMode == NoteAddingMode::CurrentChord;
+    bool ok = currentNotationScore()->resolveNoteInputParams(static_cast<int>(note), addFlag, params);
+    if (!ok) {
+        return;
+    }
+
     if (!noteInput->isNoteInputMode()) {
         noteInput->startNoteInput(configuration()->defaultNoteInputMethod());
     }
 
     if (addingMode == NoteAddingMode::NextChord) {
         if (noteInput->usingNoteInputMethod(NoteInputMethod::BY_DURATION)) {
-            noteInput->setInputNote(note);
+            noteInput->setInputNote(params);
 
             if (configuration()->isPlayPreviewNotesInInputByDuration()) {
                 const NoteInputState& state = noteInput->state();
@@ -781,7 +788,7 @@ void NotationActionController::handleNoteAction(NoteName note, NoteAddingMode ad
         }
     }
 
-    noteInput->addNote(note, addingMode);
+    noteInput->addNote(params, addingMode);
 
     playSelectedElement();
 }

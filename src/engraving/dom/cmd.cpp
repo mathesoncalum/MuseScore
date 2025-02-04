@@ -5025,9 +5025,8 @@ bool Score::resolveNoteInputParams(int note, bool addFlag, NoteInputParams& out)
 //---------------------------------------------------------
 //   cmdAddPitch
 ///   insert note or add note to chord
-//    c d e f g a b entered:
 //---------------------------------------------------------
-void Score::cmdAddPitch(const EditData& ed, int note, bool addFlag, bool insert)
+void Score::cmdAddPitch(const EditData& ed, const NoteInputParams& params, bool addFlag, bool insert)
 {
     InputState& is = inputState();
     if (!is.isValid()) {
@@ -5036,12 +5035,6 @@ void Score::cmdAddPitch(const EditData& ed, int note, bool addFlag, bool insert)
     }
 
     is.setRest(false);
-
-    NoteInputParams params;
-    bool ok = resolveNoteInputParams(note, addFlag, params);
-    if (!ok) {
-        return;
-    }
 
     const Drumset* ds = is.drumset();
     if (ds) {
