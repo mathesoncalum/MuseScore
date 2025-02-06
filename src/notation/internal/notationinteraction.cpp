@@ -383,11 +383,10 @@ bool NotationInteraction::showShadowNote(const PointF& pos)
     params.accidentalType = inputState.accidentalType();
     params.articulationIds = inputState.articulationIds();
 
-    showShadowNoteAtPosition(shadowNote, params, position);
-    return true;
+    return showShadowNoteAtPosition(shadowNote, params, position);
 }
 
-void NotationInteraction::showShadowNoteAtPosition(ShadowNote& shadowNote, const ShadowNoteParams& params, Position& position)
+bool NotationInteraction::showShadowNoteAtPosition(ShadowNote& shadowNote, const ShadowNoteParams& params, Position& position)
 {
     const mu::engraving::InputState& inputState = score()->inputState();
     const Staff* staff = score()->staff(position.staffIdx);
@@ -414,20 +413,35 @@ void NotationInteraction::showShadowNoteAtPosition(ShadowNote& shadowNote, const
 
     mu::engraving::NoteHeadGroup noteheadGroup = mu::engraving::NoteHeadGroup::HEAD_NORMAL;
     mu::engraving::NoteHeadType noteHead = params.duration.headType();
+
     int line = position.line;
+    voice_idx_t voice = 0;
+    int drumNotePitch = -1;
 
     if (instr->useDrumset()) {
-        const mu::engraving::Drumset* ds  = instr->drumset();
-        int pitch = inputState.drumNote();
-        if (pitch >= 0 && ds->isValid(pitch)) {
-            line = ds->line(pitch);
-            noteheadGroup = ds->noteHead(pitch);
-        }
-    }
+        const Drumset* ds = instr->drumset();
 
-    voice_idx_t voice = 0;
-    if (inputState.drumNote() != -1 && inputState.drumset() && inputState.drumset()->isValid(inputState.drumNote())) {
-        voice = inputState.drumset()->voice(inputState.drumNote());
+        const int startPitch = shadowNote.drumNotePitch() > -1 ? shadowNote.drumNotePitch() : 0;
+        int pitch = startPitch;
+        do {
+            if (ds->isValid(pitch) && ds->line(pitch) == line) {
+                noteheadGroup = ds->noteHead(pitch);
+                voice = ds->voice(pitch);
+                drumNotePitch = pitch;
+                break;
+            }
+            ++pitch;
+            if (pitch >= mu::engraving::DRUM_INSTRUMENTS) {
+                // Wrap around
+                pitch = 0;
+            }
+        } while (pitch != startPitch);
+        if (drumNotePitch < 0) {
+            shadowNote.setVisible(false);
+            shadowNote.setDrumNotePitch(drumNotePitch);
+            m_shadowNoteChanged.notify();
+            return false;
+        }
     } else {
         voice = inputState.voice();
     }
@@ -438,6 +452,7 @@ void NotationInteraction::showShadowNoteAtPosition(ShadowNote& shadowNote, const
     shadowNote.setStaffIdx(position.staffIdx);
     shadowNote.setVoice(voice);
     shadowNote.setLineIndex(line);
+    shadowNote.setDrumNotePitch(drumNotePitch);
 
     Color color = configuration()->noteInputPreviewColor();
 
@@ -472,6 +487,7 @@ void NotationInteraction::showShadowNoteAtPosition(ShadowNote& shadowNote, const
     shadowNote.setPos(position.pos);
 
     m_shadowNoteChanged.notify();
+    return true;
 }
 
 void NotationInteraction::hideShadowNote()
