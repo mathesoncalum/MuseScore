@@ -325,7 +325,7 @@ private:
         std::set<SymId> articulationIds;
     };
 
-    void showShadowNoteAtPosition(mu::engraving::ShadowNote& note, const ShadowNoteParams& params, mu::engraving::Position& pos);
+    bool showShadowNoteAtPosition(mu::engraving::ShadowNote& note, const ShadowNoteParams& params, mu::engraving::Position& pos);
 
     bool needStartEditGrip(QKeyEvent* event) const;
     bool handleKeyPress(QKeyEvent* event);

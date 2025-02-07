@@ -79,5 +79,6 @@
         <file>qml/MuseScore/NotationScene/internal/PartialTieMenuRowItem.qml</file>
         <file>qml/MuseScore/NotationScene/EditPercussionShortcutDialog.qml</file>
         <file>qml/MuseScore/NotationScene/internal/ShadowNotePopup.qml</file>
+        <file>qml/MuseScore/NotationScene/internal/PercussionNotePopupContent.qml</file>
     </qresource>
 </RCC>
