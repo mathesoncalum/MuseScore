@@ -142,8 +142,8 @@ QString PercussionNotePopupContentModel::keyboardShortcut() const
         return QString();
     }
 
-    const int shortcut = ds->shortcut(currentDrumPitch());
-    return shortcut ? QString("(%1)").arg(QChar(shortcut)) : QString();
+    const muse::String shortcut = ds->shortcut(currentDrumPitch());
+    return !shortcut.isEmpty() ? QString("(%1)").arg(shortcut) : QString();
 }
 
 INotationInteractionPtr PercussionNotePopupContentModel::interaction() const
