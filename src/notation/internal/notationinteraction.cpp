@@ -361,6 +361,11 @@ INotationNoteInputPtr NotationInteraction::noteInput() const
     return m_noteInput;
 }
 
+mu::engraving::ShadowNote* NotationInteraction::shadowNote() const
+{
+    return score()->shadowNote();
+}
+
 bool NotationInteraction::showShadowNote(const PointF& pos)
 {
     const mu::engraving::InputState& inputState = score()->inputState();
@@ -369,6 +374,7 @@ bool NotationInteraction::showShadowNote(const PointF& pos)
     mu::engraving::Position position;
     if (!score()->getPosition(&position, pos, inputState.voice())) {
         shadowNote.setVisible(false);
+        m_shadowNoteChanged.notify();
         return false;
     }
 
@@ -464,6 +470,8 @@ void NotationInteraction::showShadowNoteAtPosition(ShadowNote& shadowNote, const
     score()->renderer()->layoutItem(&shadowNote);
 
     shadowNote.setPos(position.pos);
+
+    m_shadowNoteChanged.notify();
 }
 
 void NotationInteraction::hideShadowNote()
@@ -490,6 +498,11 @@ RectF NotationInteraction::shadowNoteRect() const
     rect.adjust(-penWidth, -penWidth, penWidth, penWidth);
 
     return rect;
+}
+
+muse::async::Notification NotationInteraction::shadowNoteChanged() const
+{
+    return m_shadowNoteChanged;
 }
 
 void NotationInteraction::toggleVisible()

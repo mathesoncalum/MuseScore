@@ -78,5 +78,6 @@
         <file>qml/MuseScore/NotationScene/internal/EditStyle/StyledImage.qml</file>
         <file>qml/MuseScore/NotationScene/internal/PartialTieMenuRowItem.qml</file>
         <file>qml/MuseScore/NotationScene/EditPercussionShortcutDialog.qml</file>
+        <file>qml/MuseScore/NotationScene/internal/ShadowNotePopup.qml</file>
     </qresource>
 </RCC>
