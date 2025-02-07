@@ -49,7 +49,7 @@ void PercussionNotePopupContentModel::prevDrumNote()
         return;
     }
 
-    const int currNote = shadowNote->drumNotePitch();
+    const int currNote = currentDrumPitch();
     const int currLine = ds->line(currNote);
 
     int pitch = currNote - 1;
@@ -59,7 +59,7 @@ void PercussionNotePopupContentModel::prevDrumNote()
             pitch = mu::engraving::DRUM_INSTRUMENTS - 1;
         }
         if (ds->isValid(pitch) && ds->line(pitch) == currLine) {
-            shadowNote->setDrumNotePitch(pitch);
+            noteInput()->setDrumNote(pitch);
             interaction()->showShadowNote(shadowNote->pos());
             interaction()->selectionChanged().notify(); // TEMPORARY HACK - triggers AbstractNotationPaintView::scheduleRedraw
             emit percussionNoteNameChanged();
@@ -80,7 +80,7 @@ void PercussionNotePopupContentModel::nextDrumNote()
         return;
     }
 
-    const int currNote = shadowNote->drumNotePitch();
+    const int currNote = currentDrumPitch();
     const int currLine = ds->line(currNote);
 
     int pitch = currNote + 1;
@@ -90,7 +90,7 @@ void PercussionNotePopupContentModel::nextDrumNote()
             pitch = 0;
         }
         if (ds->isValid(pitch) && ds->line(pitch) == currLine) {
-            shadowNote->setDrumNotePitch(pitch);
+            noteInput()->setDrumNote(pitch);
             interaction()->showShadowNote(shadowNote->pos());
             interaction()->selectionChanged().notify(); // TEMPORARY HACK - triggers AbstractNotationPaintView::scheduleRedraw
             emit percussionNoteNameChanged();
@@ -106,12 +106,11 @@ void PercussionNotePopupContentModel::nextDrumNote()
 bool PercussionNotePopupContentModel::shouldShowButtons() const
 {
     const Drumset* ds = currentDrumset();
-    const mu::engraving::ShadowNote* shadowNote = currentShadowNote();
-    if (!ds || !shadowNote || shadowNote->drumNotePitch() < 0) {
+    if (!ds || currentDrumPitch() < 0) {
         return false;
     }
 
-    const int line = ds->line(shadowNote->drumNotePitch());
+    const int line = ds->line(currentDrumPitch());
 
     int drumsOnSameLine = 0;
     for (int pitch = 0; pitch < mu::engraving::DRUM_INSTRUMENTS; ++pitch) {
@@ -129,23 +128,21 @@ bool PercussionNotePopupContentModel::shouldShowButtons() const
 QString PercussionNotePopupContentModel::percussionNoteName() const
 {
     const Drumset* ds = currentDrumset();
-    const mu::engraving::ShadowNote* shadowNote = currentShadowNote();
-    if (!ds || !shadowNote || shadowNote->drumNotePitch() < 0) {
+    if (!ds || currentDrumPitch() < 0) {
         return QString();
     }
 
-    return ds->name(shadowNote->drumNotePitch());
+    return ds->name(currentDrumPitch());
 }
 
 QString PercussionNotePopupContentModel::keyboardShortcut() const
 {
     const Drumset* ds = currentDrumset();
-    const mu::engraving::ShadowNote* shadowNote = currentShadowNote();
-    if (!ds || !shadowNote || shadowNote->drumNotePitch() < 0) {
+    if (!ds || currentDrumPitch() < 0) {
         return QString();
     }
 
-    const int shortcut = ds->shortcut(shadowNote->drumNotePitch());
+    const int shortcut = ds->shortcut(currentDrumPitch());
     return shortcut ? QString("(%1)").arg(QChar(shortcut)) : QString();
 }
 
@@ -153,6 +150,11 @@ INotationInteractionPtr PercussionNotePopupContentModel::interaction() const
 {
     INotationPtr notation = globalContext()->currentNotation();
     return notation ? notation->interaction() : nullptr;
+}
+
+INotationNoteInputPtr PercussionNotePopupContentModel::noteInput() const
+{
+    return interaction() ? interaction()->noteInput() : nullptr;
 }
 
 mu::engraving::ShadowNote* PercussionNotePopupContentModel::currentShadowNote() const
@@ -174,4 +176,31 @@ const Drumset* PercussionNotePopupContentModel::currentDrumset() const
 
     const Instrument* inst = part->instrument(shadowNote->tick());
     return inst ? inst->drumset() : nullptr;
+}
+
+int PercussionNotePopupContentModel::currentDrumPitch() const
+{
+    const Drumset* ds = currentDrumset();
+    const mu::engraving::ShadowNote* shadowNote = currentShadowNote();
+    if (!noteInput() || !ds || !shadowNote) {
+        return -1;
+    }
+
+    const int shadowNoteLine = shadowNote->lineIndex();
+
+    //  First check whether a drum note has been specified in the input state, and whether it's valid...
+    const int noteInputPitch = noteInput()->state().drumNote();
+    if (noteInputPitch > 0 && ds->isValid(noteInputPitch) && ds->line(noteInputPitch) == shadowNoteLine) {
+        return noteInputPitch;
+    }
+
+    // Otherwise just return the first pitch that matches the line that the shadowNote is currently on...
+    for (int pitch = 0; pitch < mu::engraving::DRUM_INSTRUMENTS; ++pitch) {
+        if (!ds->isValid(pitch) || ds->line(pitch) != shadowNoteLine) {
+            continue;
+        }
+        return pitch;
+    }
+
+    return -1;
 }

@@ -416,31 +416,30 @@ bool NotationInteraction::showShadowNoteAtPosition(ShadowNote& shadowNote, const
 
     int line = position.line;
     voice_idx_t voice = 0;
-    int drumNotePitch = -1;
 
     if (instr->useDrumset()) {
         const Drumset* ds = instr->drumset();
 
-        const int startPitch = shadowNote.drumNotePitch() > -1 ? shadowNote.drumNotePitch() : 0;
-        int pitch = startPitch;
-        do {
-            if (ds->isValid(pitch) && ds->line(pitch) == line) {
-                noteheadGroup = ds->noteHead(pitch);
-                voice = ds->voice(pitch);
-                drumNotePitch = pitch;
-                break;
+        int drumNotePitch = -1;
+        const int noteInputPitch = inputState.drumNote();
+
+        if (noteInputPitch > 0 && ds->isValid(noteInputPitch) && ds->line(noteInputPitch) == line) {
+            noteheadGroup = ds->noteHead(noteInputPitch);
+            voice = ds->voice(noteInputPitch);
+        } else {
+            for (int pitch = 0; pitch < mu::engraving::DRUM_INSTRUMENTS; ++pitch) {
+                if (ds->isValid(pitch) && ds->line(pitch) == line) {
+                    noteheadGroup = ds->noteHead(pitch);
+                    voice = ds->voice(pitch);
+                    drumNotePitch = pitch;
+                    break;
+                }
             }
-            ++pitch;
-            if (pitch >= mu::engraving::DRUM_INSTRUMENTS) {
-                // Wrap around
-                pitch = 0;
+            if (drumNotePitch < 0) {
+                shadowNote.setVisible(false);
+                m_shadowNoteChanged.notify();
+                return false;
             }
-        } while (pitch != startPitch);
-        if (drumNotePitch < 0) {
-            shadowNote.setVisible(false);
-            shadowNote.setDrumNotePitch(drumNotePitch);
-            m_shadowNoteChanged.notify();
-            return false;
         }
     } else {
         voice = inputState.voice();
@@ -452,7 +451,6 @@ bool NotationInteraction::showShadowNoteAtPosition(ShadowNote& shadowNote, const
     shadowNote.setStaffIdx(position.staffIdx);
     shadowNote.setVoice(voice);
     shadowNote.setLineIndex(line);
-    shadowNote.setDrumNotePitch(drumNotePitch);
 
     Color color = configuration()->noteInputPreviewColor();
 

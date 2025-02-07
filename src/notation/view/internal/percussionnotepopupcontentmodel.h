@@ -59,8 +59,11 @@ signals:
 
 private:
     INotationInteractionPtr interaction() const;
+    INotationNoteInputPtr noteInput() const;
 
     mu::engraving::ShadowNote* currentShadowNote() const;
     const Drumset* currentDrumset() const;
+
+    int currentDrumPitch() const;
 };
 }
