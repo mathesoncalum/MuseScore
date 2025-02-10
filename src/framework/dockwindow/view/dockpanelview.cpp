@@ -309,6 +309,11 @@ void DockPanelView::setCurrentTabIndex(int index)
     }
 }
 
+bool DockPanelView::isOpen() const
+{
+    return isCurrentTabInFrame() && DockBase::isOpen();
+}
+
 bool DockPanelView::isCurrentTabInFrame() const
 {
     if (!dockWidget()) {

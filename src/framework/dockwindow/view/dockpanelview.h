@@ -58,6 +58,8 @@ public:
     void addPanelAsTab(DockPanelView* tab);
     void setCurrentTabIndex(int index);
 
+    bool isOpen() const override;
+
     bool isCurrentTabInFrame() const;
     void makeCurrentTabInFrame();
 

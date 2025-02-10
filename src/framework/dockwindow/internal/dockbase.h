@@ -115,7 +115,7 @@ public:
     bool isInSameFrame(const DockBase* other) const;
     void setFramePanelOrder(int order);
 
-    Q_INVOKABLE bool isOpen() const;
+    Q_INVOKABLE virtual bool isOpen() const;
     Q_INVOKABLE void open();
     Q_INVOKABLE void close();
     Q_INVOKABLE void resize(int width, int height);

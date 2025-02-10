@@ -193,16 +193,7 @@ QList<DockPanelView*> DockPageView::possiblePanelsForTab(const DockPanelView* ta
 bool DockPageView::isDockOpen(const QString& dockName) const
 {
     const DockBase* dock = dockByName(dockName);
-    if (!dock) {
-        return false;
-    }
-
-    const DockPanelView* panel = dynamic_cast<const DockPanelView*>(dock);
-    if (!panel) {
-        return false;
-    }
-
-    return dock ? dock->isOpen() && panel->isCurrentTabInFrame() : false;
+    return dock && dock->isOpen();
 }
 
 void DockPageView::toggleDock(const QString& dockName)
