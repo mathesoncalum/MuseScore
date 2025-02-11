@@ -39,55 +39,117 @@ PreferencesPage {
         percussionPreferencesModel.init()
     }
 
-    BaseSection {
-        id: percussionPanelPreferences
+    Column {
+        id: contentColumn
 
-        title: qsTrc("appshell/preferences", "Percussion")
-        rowSpacing: 20
+        width: root.width
+        spacing: root.sectionsSpacing
 
-        navigation.section: root.navigationSection
+        BaseSection {
+            id: autoShowSection
 
-        //! NOTE: "Pad swap options" and the associated dialog were dropped from percussion panel MVP (version 4.5).
-        //! See PR #25810 when re-implementing...
-        // Column {
-        //     id: swappingOptionsColumn
-        //     ...
-        // }
+            enabled: percussionPreferencesModel.useNewPercussionPanel
+
+            width: parent.width
+            rowSpacing: 16
+
+            title: qsTrc("notation/percussion", "Triggering the panel")
+
+            navigation.section: root.navigationSection
+            navigation.order: root.navigationOrderStart + 1
+
+            StyledTextLabel {
+                id: autoShowLabel
+
+                width: parent.width
+
+                horizontalAlignment: Text.AlignLeft
+                wrapMode: Text.Wrap
+                text: qsTrc("notation/percussion", "Open the percussion panel automatically:")
+            }
+
+            RadioButtonGroup {
+                id: autoShowModesBox
+
+                spacing: 12
+                orientation: Qt.Vertical
+
+                width: parent.width
+
+                model: percussionPreferencesModel.autoShowModes
+
+                delegate: RoundedRadioButton {
+                    width: parent.width
+
+                    checked: modelData.checked
+                    text: modelData.title
+
+                    navigation.name: modelData.title
+                    navigation.panel: autoShowSection.navigation
+                    navigation.row: model.index
+                    navigation.column: 0
+
+                    onToggled: {
+                        percussionPreferencesModel.setAutoShowMode(model.index)
+                    }
+                }
+            }
+        }
 
         SeparatorLine {}
 
-        Row {
-            id: useLegacyToggleRow
+        //! NOTE: "Pad swap options" and the associated dialog were dropped from percussion panel MVP (version 4.5).
+        //! See PR #25810 when re-implementing...
+        // BaseSection {
+        //     id: padSwappingOptionsSection
+        //     ...
+        // }
 
-            height: useLegacyToggle.height
+        // SeparatorLine {}
+
+        BaseSection {
+            id: legacyToggleSection
+
             width: parent.width
+            rowSpacing: 20
 
-            spacing: 6
+            title: qsTrc("appshell/preferences", "Legacy panel")
 
-            ToggleButton {
-                id: useLegacyToggle
+            navigation.section: root.navigationSection
+            navigation.order: autoShowSection.navigation.order + 1
 
-                checked: !percussionPreferencesModel.useNewPercussionPanel
+            Row {
+                id: useLegacyToggleRow
 
-                navigation.name: "UseLegacyPercussionPanel"
-                navigation.panel: percussionPanelPreferences.navigation
-                navigation.row: alwaysAsk.navigation.row + 1
+                height: useLegacyToggle.height
+                width: parent.width
 
-                onToggled: {
-                    percussionPreferencesModel.useNewPercussionPanel = !percussionPreferencesModel.useNewPercussionPanel
+                spacing: 6
+
+                ToggleButton {
+                    id: useLegacyToggle
+
+                    checked: !percussionPreferencesModel.useNewPercussionPanel
+
+                    navigation.name: "UseLegacyPercussionPanel"
+                    navigation.panel: legacyToggleSection.navigation
+
+                    onToggled: {
+                        percussionPreferencesModel.useNewPercussionPanel = !percussionPreferencesModel.useNewPercussionPanel
+                    }
                 }
-            }
 
-            StyledTextLabel {
-                id: legacyToggleInfo
+                StyledTextLabel {
+                    id: legacyToggleInfo
 
-                height: parent.height
+                    height: parent.height
 
-                horizontalAlignment: Text.AlignLeft
-                verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignLeft
+                    verticalAlignment: Text.AlignVCenter
 
-                wrapMode: Text.Wrap
-                text: qsTrc("notation/percussion", "Use legacy percussion panel")
+                    wrapMode: Text.Wrap
+                    text: qsTrc("notation/percussion", "Use legacy percussion panel")
+                }
             }
         }
     }

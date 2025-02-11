@@ -22,6 +22,8 @@
 
 #include "percussionpreferencesmodel.h"
 
+using namespace mu::notation;
+
 PercussionPreferencesModel::PercussionPreferencesModel(QObject* parent)
     : QObject(parent), muse::Injectable(muse::iocCtxForQmlObject(this))
 {
@@ -46,6 +48,38 @@ void PercussionPreferencesModel::init()
     });
 }
 
+QVariantList PercussionPreferencesModel::autoShowModes() const
+{
+    QVariantList result;
+
+    for (const AutoShowMode& mode: allAutoShowModes()) {
+        QVariantMap obj;
+        obj["title"] = mode.title;
+        obj["checked"] = mode.checked;
+
+        result << obj;
+    }
+
+    return result;
+}
+
+void PercussionPreferencesModel::setAutoShowMode(int modeIndex)
+{
+    QList<AutoShowMode> modes = allAutoShowModes();
+
+    if (modeIndex < 0 || modeIndex >= modes.size()) {
+        return;
+    }
+
+    const PercussionPanelAutoShowMode selectedMode = modes[modeIndex].type;
+    if (selectedMode == configuration()->percussionPanelAutoShowMode()) {
+        return;
+    }
+
+    configuration()->setPercussionPanelAutoShowMode(selectedMode);
+    emit percussionPanelAutoShowModeChanged();
+}
+
 bool PercussionPreferencesModel::useNewPercussionPanel() const
 {
     return configuration()->useNewPercussionPanel();
@@ -54,16 +88,6 @@ bool PercussionPreferencesModel::useNewPercussionPanel() const
 void PercussionPreferencesModel::setUseNewPercussionPanel(bool use)
 {
     configuration()->setUseNewPercussionPanel(use);
-}
-
-mu::notation::PercussionPanelAutoShowMode PercussionPreferencesModel::percussionPanelAutoShowMode() const
-{
-    return configuration()->percussionPanelAutoShowMode();
-}
-
-void PercussionPreferencesModel::setPercussionPanelAutoShowMode(mu::notation::PercussionPanelAutoShowMode autoShowMode)
-{
-    configuration()->setPercussionPanelAutoShowMode(autoShowMode);
 }
 
 bool PercussionPreferencesModel::showPercussionPanelPadSwapDialog() const
@@ -84,4 +108,31 @@ bool PercussionPreferencesModel::percussionPanelMoveMidiNotesAndShortcuts() cons
 void PercussionPreferencesModel::setPercussionPanelMoveMidiNotesAndShortcuts(bool move)
 {
     configuration()->setPercussionPanelMoveMidiNotesAndShortcuts(move);
+}
+
+QList<PercussionPreferencesModel::AutoShowMode> PercussionPreferencesModel::allAutoShowModes() const
+{
+    static const QMap<PercussionPanelAutoShowMode, QString> modeTitles {
+        { PercussionPanelAutoShowMode::UNPITCHED_STAFF,
+          muse::qtrc("notation/percussion", "When selecting an unpitched percussion staff") },
+
+        { PercussionPanelAutoShowMode::UNPITCHED_STAFF_NOTE_INPUT,
+          muse::qtrc("notation/percussion", "When in note input mode on an unpitched percussion staff") },
+
+        { PercussionPanelAutoShowMode::NEVER,
+          muse::qtrc("notation/percussion", "Never") },
+    };
+
+    QList<AutoShowMode> modes;
+
+    for (PercussionPanelAutoShowMode type : modeTitles.keys()) {
+        AutoShowMode mode;
+        mode.type = type;
+        mode.title = modeTitles[type];
+        mode.checked = configuration()->percussionPanelAutoShowMode() == type;
+
+        modes << mode;
+    }
+
+    return modes;
 }
