@@ -245,7 +245,13 @@ void NotationPageModel::updatePercussionPanelVisibility()
     }
 
     const INotationPtr notation = globalContext()->currentNotation();
-    if (!notation || !notation->elements() || !notationConfiguration()->autoShowPercussionPanel()) {
+    const PercussionPanelAutoShowMode autoShowMode = notationConfiguration()->percussionPanelAutoShowMode();
+    if (!notation || !notation->elements() || autoShowMode == PercussionPanelAutoShowMode::NEVER) {
+        return;
+    }
+
+    const INotationNoteInputPtr noteInput = notation->interaction()->noteInput();
+    if (noteInput && !noteInput->isNoteInputMode() && autoShowMode == PercussionPanelAutoShowMode::UNPITCHED_STAFF_NOTE_INPUT) {
         return;
     }
 
