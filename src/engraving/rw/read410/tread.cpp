@@ -1265,11 +1265,13 @@ void TRead::read(NamedEventList* item, XmlReader& e)
 
 void TRead::read(InstrumentChange* c, XmlReader& e, ReadContext& ctx)
 {
+    Part* part = c->part();
+
     Instrument inst;
     while (e.readNextStartElement()) {
         const AsciiStringView tag(e.name());
         if (tag == "Instrument") {
-            read(&inst, e, ctx, c->part());
+            read(&inst, e, ctx, part);
         } else if (tag == "init") {
             c->setInit(e.readBool());
         } else if (!readProperties(static_cast<TextBase*>(c), e, ctx)) {
@@ -1293,6 +1295,7 @@ void TRead::read(InstrumentChange* c, XmlReader& e, ReadContext& ctx)
     }
 
     c->setInstrument(inst);
+    part->setInstrument(inst, c->tick());
 }
 
 //---------------------------------------------------------
