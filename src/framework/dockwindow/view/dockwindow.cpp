@@ -320,10 +320,6 @@ void DockWindow::loadPageContent(const DockPageView* page)
     loadPanels(page);
     loadToolBars(page);
 
-    if (page->statusBar()) {
-        addDock(page->statusBar(), Location::Bottom);
-    }
-
     loadTopLevelToolBars(page);
 }
 
@@ -493,7 +489,28 @@ bool DockWindow::doLoadPage(const QString& uri, const QVariantMap& params)
     }
 
     loadPageContent(newPage);
+
+    QSet<DockPanelView*> docksWithValidLayout;
+    for (DockPanelView* panel : newPage->panels()) {
+        KDDockWidgets::DockWidgetBase* dockWidget = panel->dockWidget();
+        if (dockWidget->lastPositionsValid()) {
+            docksWithValidLayout.insert(panel);
+        }
+    }
+
     restorePageState(newPage->objectName());
+
+    for (DockPanelView* panel : docksWithValidLayout) {
+        KDDockWidgets::DockWidgetBase* dockWidget = panel->dockWidget();
+        if (!dockWidget->lastPositionsValid()) {
+            addDock(panel, panel->location());
+        }
+    }
+
+    if (newPage->statusBar()) {
+        addDock(newPage->statusBar(), Location::Bottom);
+    }
+
     initDocks(newPage);
 
     newPage->setParams(params);

@@ -336,6 +336,8 @@ public:
      */
     QStringList affinities() const;
 
+    bool lastPositionsValid() const;
+
     /// @brief Equivalent to QWidget::show(), but it's optimized to reduce flickering on some platforms
     Q_INVOKABLE void show();
 
