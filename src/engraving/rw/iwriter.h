@@ -32,7 +32,7 @@ namespace mu::engraving {
 class Score;
 class EngravingItem;
 class Segment;
-class SelectionFilter;
+class SelectionFilters;
 }
 
 namespace mu::engraving::rw {
@@ -44,8 +44,7 @@ public:
 
     virtual bool writeScore(Score* score, muse::io::IODevice* device, bool onlySelection, WriteInOutData* out = nullptr) = 0;
 
-    using Supported = std::variant<std::monostate
-                                   >;
+    using Supported = std::variant<std::monostate>;
 
     template<typename T>
     static void check_supported_static(T item)
@@ -67,7 +66,7 @@ public:
         doWriteItem(static_cast<const EngravingItem*>(item), xml);
     }
 
-    virtual void writeSegments(XmlWriter& xml, SelectionFilter* filter, track_idx_t st, track_idx_t et, Segment* sseg, Segment* eseg, bool,
+    virtual void writeSegments(XmlWriter& xml, SelectionFilters* filter, track_idx_t st, track_idx_t et, Segment* sseg, Segment* eseg, bool,
                                bool, Fraction& curTick) = 0;
 
 private:
