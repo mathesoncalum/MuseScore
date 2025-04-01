@@ -28,7 +28,8 @@
 #include "pitchspelling.h"
 #include "types.h"
 
-#include "selectionfilter/selectionfilter.h"
+#include "selectionfilter/elementsselectionfilter.h"
+#include "selectionfilter/voicesselectionfilter.h"
 
 namespace mu::engraving {
 class Score;
@@ -43,6 +44,32 @@ class MeasureBase;
 class Chord;
 class Tuplet;
 class GuitarBend;
+
+using SelectionFilterTypesVariant = std::variant<VoicesSelectionFilterTypes, ElementsSelectionFilterTypes>;
+
+class SelectionFilters
+{
+public:
+    SelectionFilters() = default;
+
+    inline bool operator==(const SelectionFilters& f) const
+    {
+        return m_elementsFilter == f.m_elementsFilter
+               && m_voicesFilter == f.m_voicesFilter;
+    }
+
+    inline bool operator!=(const SelectionFilters& f) const { return !this->operator==(f); }
+
+    bool canSelect(const EngravingItem* element) const { return m_elementsFilter.canSelect(element); }
+    bool canSelectVoice(track_idx_t track) const { return m_voicesFilter.canSelectVoice(track); }
+
+    bool isFiltered(const SelectionFilterTypesVariant& variant) const;
+    void setFiltered(const SelectionFilterTypesVariant& variant, bool filtered);
+
+private:
+    VoicesSelectionFilter m_voicesFilter;
+    ElementsSelectionFilter m_elementsFilter;
+};
 
 //---------------------------------------------------------
 //   ElementPattern
@@ -169,9 +196,9 @@ private:
 
     muse::ByteArray staffMimeData() const;
     muse::ByteArray symbolListMimeData() const;
-    SelectionFilter selectionFilter() const;
-    bool canSelect(EngravingItem* e) const { return selectionFilter().canSelect(e); }
-    bool canSelectVoice(track_idx_t track) const { return selectionFilter().canSelectVoice(track); }
+    SelectionFilters& selectionFilters() const;
+    bool canSelect(EngravingItem* e) const { return selectionFilters().canSelect(e); }
+    bool canSelectVoice(track_idx_t track) const { return selectionFilters().canSelectVoice(track); }
     void appendFiltered(EngravingItem* e);
     void appendChord(Chord* chord);
     void appendTupletHierarchy(Tuplet* innermostTuplet);
