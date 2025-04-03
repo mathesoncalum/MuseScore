@@ -97,6 +97,8 @@ public:
     // SelectionFilter
     bool isSelectionTypeFiltered(const SelectionFilterTypesVariant& variant) const override;
     void setSelectionTypeFiltered(const SelectionFilterTypesVariant& variant, bool filtered) override;
+    bool selectionFilterIncludeSingleNotes() const override;
+    void setSelectionFilterIncludeSingleNotes(bool include) override;
 
     // Drag
     bool isDragStarted() const override;

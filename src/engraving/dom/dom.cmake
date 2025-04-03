@@ -274,6 +274,8 @@ set(DOM_SRC
     ${CMAKE_CURRENT_LIST_DIR}/selectionfilter/abstractselectionfilter.cpp
     ${CMAKE_CURRENT_LIST_DIR}/selectionfilter/voicesselectionfilter.cpp
     ${CMAKE_CURRENT_LIST_DIR}/selectionfilter/voicesselectionfilter.h
+    ${CMAKE_CURRENT_LIST_DIR}/selectionfilter/notesinchordselectionfilter.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/selectionfilter/notesinchordselectionfilter.h
     ${CMAKE_CURRENT_LIST_DIR}/selectionfilter/elementsselectionfilter.cpp
     ${CMAKE_CURRENT_LIST_DIR}/selectionfilter/elementsselectionfilter.h
 

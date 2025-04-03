@@ -86,6 +86,8 @@ public:
     // SelectionFilter
     virtual bool isSelectionTypeFiltered(const SelectionFilterTypesVariant& variant) const = 0;
     virtual void setSelectionTypeFiltered(const SelectionFilterTypesVariant& variant, bool filtered) = 0;
+    virtual bool selectionFilterIncludeSingleNotes() const = 0;
+    virtual void setSelectionFilterIncludeSingleNotes(bool include) = 0;
 
     // Drag
     using IsDraggable = std::function<bool (const EngravingItem*)>;

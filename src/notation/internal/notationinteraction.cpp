@@ -1039,6 +1039,20 @@ void NotationInteraction::setSelectionTypeFiltered(const SelectionFilterTypesVar
     }
 }
 
+bool NotationInteraction::selectionFilterIncludeSingleNotes() const
+{
+    return score()->selectionFilters().includeSingleNotes();
+}
+
+void NotationInteraction::setSelectionFilterIncludeSingleNotes(bool include)
+{
+    score()->selectionFilters().setIncludeSingleNotes(include);
+    if (selection()->isRange()) {
+        score()->selection().updateSelectedElements();
+        notifyAboutSelectionChangedIfNeed();
+    }
+}
+
 bool NotationInteraction::isDragStarted() const
 {
     if (m_dragData.dragGroups.size() > 0) {

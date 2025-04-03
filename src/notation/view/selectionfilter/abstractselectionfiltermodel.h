@@ -48,32 +48,35 @@ public:
     int rowCount(const QModelIndex& parent = {}) const override;
     QHash<int, QByteArray> roleNames() const override;
 
-    bool enabled() const;
-
 signals:
     void enabledChanged();
 
 protected:
     enum Roles {
-        TitleRole = Qt::UserRole + 1,
+        IsAllowedRole = Qt::UserRole + 1,
+        TitleRole,
         IsSelectedRole,
         IsIndeterminateRole
     };
 
+    virtual bool enabled() const;
     virtual void loadTypes() = 0;
 
     bool isFiltered(const SelectionFilterTypesVariant& variant) const;
     void setFiltered(const SelectionFilterTypesVariant& variant, bool filtered);
 
+    virtual bool isAllowed(const SelectionFilterTypesVariant&) const { return true; }
     virtual QString titleForType(const SelectionFilterTypesVariant& variant) const = 0;
     virtual bool isIndeterminate(const SelectionFilterTypesVariant& variant) const = 0;
 
+    virtual void onSelectionChanged() {}
     virtual void notifyAboutDataChanged(const QModelIndex& index, const SelectionFilterTypesVariant& variant) = 0;
+
+    INotationInteractionPtr currentNotationInteraction() const;
 
     QList<SelectionFilterTypesVariant> m_types;
 
 private:
     INotationPtr currentNotation() const;
-    INotationInteractionPtr currentNotationInteraction() const;
 };
 }

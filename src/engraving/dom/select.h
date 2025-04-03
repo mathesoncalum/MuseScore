@@ -29,6 +29,7 @@
 #include "types.h"
 
 #include "selectionfilter/elementsselectionfilter.h"
+#include "selectionfilter/notesinchordselectionfilter.h"
 #include "selectionfilter/voicesselectionfilter.h"
 
 namespace mu::engraving {
@@ -45,7 +46,9 @@ class Chord;
 class Tuplet;
 class GuitarBend;
 
-using SelectionFilterTypesVariant = std::variant<VoicesSelectionFilterTypes, ElementsSelectionFilterTypes>;
+using SelectionFilterTypesVariant = std::variant<VoicesSelectionFilterTypes,
+                                                 NotesInChordSelectionFilterTypes,
+                                                 ElementsSelectionFilterTypes>;
 
 class SelectionFilters
 {
@@ -55,19 +58,25 @@ public:
     inline bool operator==(const SelectionFilters& f) const
     {
         return m_elementsFilter == f.m_elementsFilter
+               && m_notesInChordFilter == f.m_notesInChordFilter
                && m_voicesFilter == f.m_voicesFilter;
     }
 
     inline bool operator!=(const SelectionFilters& f) const { return !this->operator==(f); }
 
     bool canSelect(const EngravingItem* element) const { return m_elementsFilter.canSelect(element); }
+    bool canSelectNote(size_t noteIdx) const { return m_notesInChordFilter.canSelectNote(noteIdx); }
     bool canSelectVoice(track_idx_t track) const { return m_voicesFilter.canSelectVoice(track); }
 
     bool isFiltered(const SelectionFilterTypesVariant& variant) const;
     void setFiltered(const SelectionFilterTypesVariant& variant, bool filtered);
 
+    bool includeSingleNotes() const { return m_notesInChordFilter.includeSingleNotes(); }
+    void setIncludeSingleNotes(bool include) { m_notesInChordFilter.setIncludeSingleNotes(include); }
+
 private:
     VoicesSelectionFilter m_voicesFilter;
+    NotesInChordSelectionFilter m_notesInChordFilter;
     ElementsSelectionFilter m_elementsFilter;
 };
 
@@ -198,9 +207,10 @@ private:
     muse::ByteArray symbolListMimeData() const;
     SelectionFilters& selectionFilters() const;
     bool canSelect(EngravingItem* e) const { return selectionFilters().canSelect(e); }
+    bool canSelectNote(size_t noteIdx) const { return selectionFilters().canSelectNote(noteIdx); }
     bool canSelectVoice(track_idx_t track) const { return selectionFilters().canSelectVoice(track); }
     void appendFiltered(EngravingItem* e);
-    void appendChord(Chord* chord);
+    void appendChord(Chord* chordfalse);
     void appendTupletHierarchy(Tuplet* innermostTuplet);
     void appendGuitarBend(GuitarBend* guitarBend);
 

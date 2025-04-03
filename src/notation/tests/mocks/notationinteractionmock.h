@@ -59,6 +59,8 @@ public:
 
     MOCK_METHOD(bool, isSelectionTypeFiltered, (const SelectionFilterTypesVariant&), (const, override));
     MOCK_METHOD(void, setSelectionTypeFiltered, (const SelectionFilterTypesVariant&, bool), (override));
+    MOCK_METHOD(bool, selectionFilterIncludeSingleNotes, (), (const, override));
+    MOCK_METHOD(void, setSelectionFilterIncludeSingleNotes, (bool), (override));
 
     MOCK_METHOD(bool, isDragStarted, (), (const, override));
     MOCK_METHOD(void, startDrag, (const std::vector<EngravingItem*>&, const muse::PointF&, const IsDraggable&), (override));
