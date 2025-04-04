@@ -33,8 +33,8 @@ class NotationSelectionFilter : public INotationSelectionFilter
 public:
     NotationSelectionFilter(const IGetScore* getScore, INotationInteraction* interaction);
 
-    bool isSelectionTypeFiltered(const SelectionFilterType& type) const;
-    void setSelectionTypeFiltered(const SelectionFilterType& type, bool filtered);
+    bool isSelectionTypeFiltered(const SelectionFilterTypesVariant& variant) const;
+    void setSelectionTypeFiltered(const SelectionFilterTypesVariant& variant, bool filtered);
 
 private:
     mu::engraving::Score* score() const;
