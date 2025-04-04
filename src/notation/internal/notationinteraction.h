@@ -48,6 +48,7 @@ class QDrag;
 namespace mu::notation {
 class Notation;
 class NotationSelection;
+class NotationSelectionFilter;
 class NotationInteraction : public INotationInteraction, public muse::Injectable, public muse::async::Asyncable
 {
     muse::Inject<INotationConfiguration> configuration = { this };
@@ -93,10 +94,10 @@ public:
     muse::async::Notification selectionChanged() const override;
     void selectTopOrBottomOfChord(MoveDirection d) override;
     void moveSegmentSelection(MoveDirection d) override;
+    void notifyAboutSelectionChangedIfNeed() override;
 
     // SelectionFilter
-    bool isSelectionTypeFiltered(SelectionFilterType type) const override;
-    void setSelectionTypeFiltered(SelectionFilterType type, bool filtered) override;
+    INotationSelectionFilterPtr selectionFilter() const override;
 
     // Drag
     bool isDragStarted() const override;
@@ -353,7 +354,6 @@ private:
 
     void notifyAboutDragChanged();
     void notifyAboutDropChanged();
-    void notifyAboutSelectionChangedIfNeed();
     void notifyAboutNotationChanged();
     void notifyAboutTextEditingStarted();
     void notifyAboutTextEditingChanged();
@@ -493,6 +493,8 @@ private:
 
     std::shared_ptr<NotationSelection> m_selection = nullptr;
     muse::async::Notification m_selectionChanged;
+
+    std::shared_ptr<NotationSelectionFilter> m_selectionFilter = nullptr;
 
     DragData m_dragData;
     muse::async::Notification m_dragChanged;
