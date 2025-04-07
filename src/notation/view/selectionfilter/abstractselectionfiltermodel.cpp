@@ -40,12 +40,33 @@ void AbstractSelectionFilterModel::load()
     loadTypes();
     endResetModel();
 
+    const INotationInteractionPtr interaction = currentNotationInteraction();
+    if (!interaction) {
+        return;
+    }
+
+    interaction->selectionChanged().resetOnNotify(this);
+    interaction->selectionChanged().onNotify(this, [this]() {
+        onSelectionChanged();
+    });
+
     globalContext()->currentNotationChanged().onNotify(this, [this]() {
         emit enabledChanged();
+        onSelectionChanged();
 
         if (currentNotation()) {
             emit dataChanged(index(0), index(rowCount() - 1), { IsSelectedRole, IsIndeterminateRole });
         }
+
+        const INotationInteractionPtr interaction = currentNotationInteraction();
+        if (!interaction) {
+            return;
+        }
+
+        interaction->selectionChanged().resetOnNotify(this);
+        interaction->selectionChanged().onNotify(this, [this]() {
+            onSelectionChanged();
+        });
     });
 }
 
@@ -59,6 +80,9 @@ QVariant AbstractSelectionFilterModel::data(const QModelIndex& index, int role) 
     auto type = m_types[row];
 
     switch (role) {
+    case IsAllowedRole:
+        return isAllowed(type);
+
     case TitleRole:
         return titleForType(type);
 
@@ -103,6 +127,7 @@ int AbstractSelectionFilterModel::rowCount(const QModelIndex&) const
 QHash<int, QByteArray> AbstractSelectionFilterModel::roleNames() const
 {
     return {
+        { IsAllowedRole, "isAllowed" },
         { TitleRole, "title" },
         { IsSelectedRole, "isSelected" },
         { IsIndeterminateRole, "isIndeterminate" }
@@ -119,10 +144,14 @@ INotationPtr AbstractSelectionFilterModel::currentNotation() const
     return globalContext()->currentNotation();
 }
 
+INotationInteractionPtr AbstractSelectionFilterModel::currentNotationInteraction() const
+{
+    return currentNotation() ? currentNotation()->interaction() : nullptr;
+}
+
 INotationSelectionFilterPtr AbstractSelectionFilterModel::currentNotationSelectionFilter() const
 {
-    const INotationInteractionPtr interaction = currentNotation() ? currentNotation()->interaction() : nullptr;
-    return interaction ? interaction->selectionFilter() : nullptr;
+    return currentNotationInteraction() ? currentNotationInteraction()->selectionFilter() : nullptr;
 }
 
 bool AbstractSelectionFilterModel::isFiltered(const SelectionFilterTypesVariant& variant) const

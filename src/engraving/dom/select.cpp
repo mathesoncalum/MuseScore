@@ -444,29 +444,22 @@ void Selection::appendChord(Chord* chord)
         LOGE() << "selection locked, reason: " << lockReason();
         return;
     }
-    if (chord->beam() && !muse::contains(m_el, static_cast<EngravingItem*>(chord->beam()))) {
-        m_el.push_back(chord->beam());
+
+    const size_t noteCount = chord->notes().size();
+
+    const bool isSingleNoteChord = noteCount == 1;
+    if (isSingleNoteChord && !selectionFilter().includeSingleNotes()) {
+        return;
     }
-    if (chord->stem()) {
-        m_el.push_back(chord->stem());
-    }
-    if (chord->hook()) {
-        m_el.push_back(chord->hook());
-    }
-    if (chord->arpeggio()) {
-        appendFiltered(chord->arpeggio());
-    }
-    if (chord->stemSlash()) {
-        m_el.push_back(chord->stemSlash());
-    }
-    if (chord->tremoloTwoChord()) {
-        appendFiltered(chord->tremoloTwoChord());
-    }
-    if (chord->tremoloSingleChord()) {
-        appendFiltered(chord->tremoloSingleChord());
-    }
-    for (Note* note : chord->notes()) {
+
+    size_t totalAppendedNotes = 0;
+    for (size_t noteIdx = 0; noteIdx < noteCount; ++noteIdx) {
+        Note* note = chord->notes().at(noteIdx);
+        if (!note || (!selectionFilter().canSelectNote(noteIdx) && !isSingleNoteChord)) {
+            continue;
+        }
         m_el.push_back(note);
+        ++totalAppendedNotes = 0;
         if (note->accidental()) {
             m_el.push_back(note->accidental());
         }
@@ -512,6 +505,32 @@ void Selection::appendChord(Chord* chord)
         if (note->outgoingPartialTie()) {
             appendFiltered(note->outgoingPartialTie()->frontSegment());
         }
+    }
+
+    if (totalAppendedNotes < 1) {
+        return;
+    }
+
+    if (chord->beam() && !muse::contains(m_el, static_cast<EngravingItem*>(chord->beam()))) {
+        m_el.push_back(chord->beam());
+    }
+    if (chord->stem()) {
+        m_el.push_back(chord->stem());
+    }
+    if (chord->hook()) {
+        m_el.push_back(chord->hook());
+    }
+    if (chord->arpeggio()) {
+        appendFiltered(chord->arpeggio());
+    }
+    if (chord->stemSlash()) {
+        m_el.push_back(chord->stemSlash());
+    }
+    if (chord->tremoloTwoChord()) {
+        appendFiltered(chord->tremoloTwoChord());
+    }
+    if (chord->tremoloSingleChord()) {
+        appendFiltered(chord->tremoloSingleChord());
     }
 }
 
@@ -612,6 +631,11 @@ void Selection::updateSelectedElements()
     track_idx_t startTrack = m_staffStart * VOICES;
     track_idx_t endTrack   = m_staffEnd * VOICES;
 
+    //! NOTE: See usage of these variables - we should include single notes if the selection consists solely of single
+    //! notes, even if the "include single notes" filter flag is false...
+    std::unordered_set<Chord*> singleNoteChords;
+    size_t totalChordsFound = 0;
+
     for (track_idx_t st = startTrack; st < endTrack; ++st) {
         if (!canSelectVoice(st)) {
             continue;
@@ -655,6 +679,12 @@ void Selection::updateSelectedElements()
                         appendChord(graceNote);
                     }
                 }
+                if (chord->notes().size() == 1) {
+                    singleNoteChords.emplace(chord);
+                } else {
+                    appendChord(chord);
+                }
+                ++totalChordsFound;
                 appendChord(chord);
                 for (Articulation* art : chord->articulations()) {
                     appendFiltered(art);
@@ -670,6 +700,13 @@ void Selection::updateSelectedElements()
             }
         }
     }
+
+    if (totalChordsFound == singleNoteChords.size() || selectionFilter().includeSingleNotes()) {
+        for (Chord* chord : singleNoteChords) {
+            appendChord(chord);
+        }
+    }
+
     Fraction stick = tickStart();
     Fraction etick = tickEnd();
 
@@ -767,15 +804,16 @@ void Selection::update()
     for (EngravingItem* e : m_el) {
         e->setSelected(true); // also tells accessibility that e has focus
     }
-    // Only one element can have focus at a time, so currently the final
-    // element in _el has focus. That's ok for a LIST selection because it
-    // corresponds to the last element the user clicked on.
-    if (ChordRest* cr = activeCR()) {
-        // User is performing a RANGE selection. Let's focus a note/rest in the activeCR.
-        EngravingItem* e = cr->isChord() ? toChord(cr)->upNote() : toEngravingItem(cr);
-        assert(e->selected()); // was selected in loop above (e is somewhere in _el)
-        e->setSelected(true); // HACK: select it again so accessibility thinks it has focus
-    }
+    // Todo: this
+    // // Only one element can have focus at a time, so currently the final
+    // // element in _el has focus. That's ok for a LIST selection because it
+    // // corresponds to the last element the user clicked on.
+    // if (ChordRest* cr = activeCR()) {
+    //     // User is performing a RANGE selection. Let's focus a note/rest in the activeCR.
+    //     EngravingItem* e = cr->isChord() ? toChord(cr)->upNote() : toEngravingItem(cr);
+    //     assert(e->selected()); // was selected in loop above (e is somewhere in _el)
+    //     e->setSelected(true); // HACK: select it again so accessibility thinks it has focus
+    // }
     updateState();
 }
 
