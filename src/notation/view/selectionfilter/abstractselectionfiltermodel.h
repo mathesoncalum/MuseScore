@@ -55,7 +55,8 @@ signals:
 
 protected:
     enum Roles {
-        TitleRole = Qt::UserRole + 1,
+        IsAllowedRole = Qt::UserRole + 1,
+        TitleRole,
         IsSelectedRole,
         IsIndeterminateRole
     };
@@ -68,15 +69,19 @@ protected:
     bool isFiltered(const SelectionFilterTypesVariant& variant) const;
     void setFiltered(const SelectionFilterTypesVariant& variant, bool filtered);
 
+    virtual bool isAllowed(const SelectionFilterTypesVariant&) const { return true; }
     virtual QString titleForType(const SelectionFilterTypesVariant& variant) const = 0;
     bool isIndeterminate(const SelectionFilterTypesVariant& variant) const;
 
+    virtual void onSelectionChanged() {}
     void notifyAboutDataChanged(const QModelIndex& index, const SelectionFilterTypesVariant& variant);
+
+    INotationInteractionPtr currentNotationInteraction() const;
+    INotationSelectionFilterPtr currentNotationSelectionFilter() const;
 
     QList<SelectionFilterTypesVariant> m_types;
 
 private:
     INotationPtr currentNotation() const;
-    INotationSelectionFilterPtr currentNotationSelectionFilter() const;
 };
 }

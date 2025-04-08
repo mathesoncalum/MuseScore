@@ -28,7 +28,8 @@ bool SelectionFilter::isFiltered(const SelectionFilterTypesVariant& variant) con
 {
     switch (variant.index()) {
     case 0: return isVoicesFiltered(std::get<VoicesSelectionFilterTypes>(variant));
-    case 1: return isElementsFiltered(std::get<ElementsSelectionFilterTypes>(variant));
+    case 1: return isNotesInChordFiltered(std::get<NotesInChordSelectionFilterTypes>(variant));
+    case 2: return isElementsFiltered(std::get<ElementsSelectionFilterTypes>(variant));
     default: break;
     }
 
@@ -39,11 +40,11 @@ bool SelectionFilter::isFiltered(const SelectionFilterTypesVariant& variant) con
 void SelectionFilter::setFiltered(const SelectionFilterTypesVariant& variant, bool filtered)
 {
     switch (variant.index()) {
-    case 0:
-        setVoicesFiltered(std::get<VoicesSelectionFilterTypes>(variant), filtered);
+    case 0: setVoicesFiltered(std::get<VoicesSelectionFilterTypes>(variant), filtered);
         return;
-    case 1:
-        setElementsFiltered(std::get<ElementsSelectionFilterTypes>(variant), filtered);
+    case 1: setNotesInChordFiltered(std::get<NotesInChordSelectionFilterTypes>(variant), filtered);
+        return;
+    case 2: setElementsFiltered(std::get<ElementsSelectionFilterTypes>(variant), filtered);
         return;
     default: break;
     }
@@ -132,6 +133,29 @@ bool SelectionFilter::canSelectVoice(track_idx_t track) const
         return isFiltered(VoicesSelectionFilterTypes::THIRD_VOICE);
     case 3:
         return isFiltered(VoicesSelectionFilterTypes::FOURTH_VOICE);
+    }
+    return true;
+}
+
+bool SelectionFilter::canSelectNote(size_t noteIdx) const
+{
+    switch (noteIdx) {
+    case 0:
+        return isFiltered(NotesInChordSelectionFilterTypes::BOTTOM_NOTE);
+    case 1:
+        return isFiltered(NotesInChordSelectionFilterTypes::SECOND_NOTE);
+    case 2:
+        return isFiltered(NotesInChordSelectionFilterTypes::THIRD_NOTE);
+    case 3:
+        return isFiltered(NotesInChordSelectionFilterTypes::FOURTH_NOTE);
+    case 4:
+        return isFiltered(NotesInChordSelectionFilterTypes::FIFTH_NOTE);
+    case 5:
+        return isFiltered(NotesInChordSelectionFilterTypes::SIXTH_NOTE);
+    case 6:
+        return isFiltered(NotesInChordSelectionFilterTypes::SEVENTH_NOTE);
+    case 7:
+        return isFiltered(NotesInChordSelectionFilterTypes::EIGHTH_NOTE);
     }
     return true;
 }

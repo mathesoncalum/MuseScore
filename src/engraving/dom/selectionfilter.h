@@ -62,6 +62,20 @@ enum class VoicesSelectionFilterTypes : unsigned int {
     ALL                     = ~(~0u << NUM_VOICES_SELECTION_FILTER_TYPES)
 };
 
+static constexpr size_t NUM_NOTES_IN_CHORD_SELECTION_FILTER_TYPES = 8;
+enum class NotesInChordSelectionFilterTypes : unsigned int {
+    NONE                    = 0,
+    EIGHTH_NOTE             = 1 << 0,
+    SEVENTH_NOTE            = 1 << 1,
+    SIXTH_NOTE              = 1 << 2,
+    FIFTH_NOTE              = 1 << 3,
+    FOURTH_NOTE             = 1 << 4,
+    THIRD_NOTE              = 1 << 5,
+    SECOND_NOTE             = 1 << 6,
+    BOTTOM_NOTE             = 1 << 7,
+    ALL                     = ~(~0u << NUM_NOTES_IN_CHORD_SELECTION_FILTER_TYPES)
+};
+
 static constexpr size_t NUM_ELEMENTS_SELECTION_FILTER_TYPES = 19;
 enum class ElementsSelectionFilterTypes : unsigned int {
     NONE                    = 0,
@@ -87,7 +101,9 @@ enum class ElementsSelectionFilterTypes : unsigned int {
     ALL                     = ~(~0u << NUM_ELEMENTS_SELECTION_FILTER_TYPES)
 };
 
-using SelectionFilterTypesVariant = std::variant<VoicesSelectionFilterTypes, ElementsSelectionFilterTypes>;
+using SelectionFilterTypesVariant = std::variant<VoicesSelectionFilterTypes,
+                                                 NotesInChordSelectionFilterTypes,
+                                                 ElementsSelectionFilterTypes>;
 
 class SelectionFilter
 {
@@ -107,10 +123,17 @@ public:
 
     bool canSelect(const EngravingItem* element) const;
     bool canSelectVoice(track_idx_t track) const;
+    bool canSelectNote(size_t noteIdx) const;
+
+    bool includeSingleNotes() const { return m_includeSingleNotes; }
+    void setIncludeSingleNotes(bool include) { m_includeSingleNotes = include; }
 
 private:
     //! NOTE: When using the macro, the name must match the enum (e.g. "Voices" and VoicesSelectionFilterTypes)
     DEFINE_FILTER_TYPE(Voices)
+    DEFINE_FILTER_TYPE(NotesInChord)
     DEFINE_FILTER_TYPE(Elements)
+
+    bool m_includeSingleNotes = true;
 };
 }
