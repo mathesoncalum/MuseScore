@@ -445,17 +445,17 @@ void Selection::appendChord(Chord* chord)
         return;
     }
 
-    const size_t noteCount = chord->notes().size();
-
-    const bool isSingleNoteChord = noteCount == 1;
-    if (isSingleNoteChord && !selectionFilter().includeSingleNotes()) {
-        return;
-    }
+    // const bool isSingleNoteChord = noteCount == 1;
+    // if (isSingleNoteChord && !selectionFilter().includeSingleNotes()) {
+    //     return;
+    // }
 
     size_t totalAppendedNotes = 0;
+
+    const size_t noteCount = chord->notes().size();
     for (size_t noteIdx = 0; noteIdx < noteCount; ++noteIdx) {
         Note* note = chord->notes().at(noteIdx);
-        if (!note || (!selectionFilter().canSelectNote(noteIdx) && !isSingleNoteChord)) {
+        if (!note || (!selectionFilter().canSelectNote(noteIdx) && noteCount != 1)) {
             continue;
         }
         m_el.push_back(note);
@@ -631,8 +631,8 @@ void Selection::updateSelectedElements()
     track_idx_t startTrack = m_staffStart * VOICES;
     track_idx_t endTrack   = m_staffEnd * VOICES;
 
-    //! NOTE: See usage of these variables - we should include single notes if the selection consists solely of single
-    //! notes, even if the "include single notes" filter flag is false...
+    //! NOTE: See usage of these variables - we should include single notes if the entire selection consists solely of
+    //! single notes, even if the "include single notes" filter flag is false...
     std::unordered_set<Chord*> singleNoteChords;
     size_t totalChordsFound = 0;
 
@@ -685,7 +685,6 @@ void Selection::updateSelectedElements()
                     appendChord(chord);
                 }
                 ++totalChordsFound;
-                appendChord(chord);
                 for (Articulation* art : chord->articulations()) {
                     appendFiltered(art);
                 }
