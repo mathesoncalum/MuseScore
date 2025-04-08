@@ -32,14 +32,14 @@ NotationSelectionFilter::NotationSelectionFilter(const IGetScore* getScore, INot
 {
 }
 
-bool NotationSelectionFilter::isSelectionTypeFiltered(const SelectionFilterType& type) const
+bool NotationSelectionFilter::isSelectionTypeFiltered(const SelectionFilterTypesVariant& variant) const
 {
-    return score()->selectionFilter().isFiltered(type);
+    return score()->selectionFilter().isFiltered(variant);
 }
 
-void NotationSelectionFilter::setSelectionTypeFiltered(const SelectionFilterType& type, bool filtered)
+void NotationSelectionFilter::setSelectionTypeFiltered(const SelectionFilterTypesVariant& variant, bool filtered)
 {
-    score()->selectionFilter().setFiltered(type, filtered);
+    score()->selectionFilter().setFiltered(variant, filtered);
     if (m_interaction->selection()->isRange()) {
         score()->selection().updateSelectedElements();
         m_interaction->notifyAboutSelectionChangedIfNeed();
