@@ -451,11 +451,6 @@ void Selection::appendChordRest(ChordRest* cr)
         }
     }
 
-    Tuplet* tuplet = cr->tuplet();
-    if (tuplet) {
-        appendTupletHierarchy(tuplet);
-    }
-
     if (cr->isRest()) {
         appendFiltered(cr);
         Rest* r = toRest(cr);
@@ -581,6 +576,23 @@ void Selection::appendTupletHierarchy(Tuplet* innermostTuplet)
         return;
     }
 
+    //! NOTE: It's not very efficient to use muse::contains here. It would be nicer to simply use
+    //! de->selected() instead, but the selected flag isn't set until Selection::update...
+    const std::vector<DurationElement*> elements = innermostTuplet->elements();
+    for (DurationElement* de : elements) {
+        if (!de->isChord()) {
+            if (!muse::contains(m_el, static_cast<EngravingItem*>(de))) {
+                return;
+            }
+            continue;
+        }
+        for (Note* note : toChord(de)->notes()) {
+            if (!muse::contains(m_el, static_cast<EngravingItem*>(note))) {
+                return;
+            }
+        }
+    }
+
     appendFiltered(innermostTuplet);
 
     // Recursively append upwards/outwards
@@ -677,6 +689,10 @@ void Selection::updateSelectedElements()
     std::unordered_set<ChordRest*> singleNoteChords;
     size_t totalChordsFound = 0;
 
+    //! NOTE: We also need to delay the appending of tuplets. We should only display tuplets as selected
+    //! if all of their contained elements are selected...
+    std::unordered_set<Tuplet*> innerTuplets;
+
     for (track_idx_t st = startTrack; st < endTrack; ++st) {
         if (!canSelectVoice(st)) {
             continue;
@@ -708,6 +724,9 @@ void Selection::updateSelectedElements()
             }
 
             ChordRest* cr = toChordRest(e);
+            if (Tuplet* tuplet = cr->tuplet()) {
+                innerTuplets.emplace(tuplet);
+            }
 
             if (e->isChord()) {
                 ++totalChordsFound;
@@ -727,6 +746,10 @@ void Selection::updateSelectedElements()
         for (ChordRest* cr : singleNoteChords) {
             appendChordRest(cr);
         }
+    }
+
+    for (Tuplet* tuplet : innerTuplets) {
+        appendTupletHierarchy(tuplet);
     }
 
     Fraction stick = tickStart();
