@@ -117,22 +117,6 @@ static ChordRest* chordOrRest(EngravingItem* el)
     return nullptr;
 }
 
-static Tuplet* topTupletInRange(Tuplet* currentTuplet, const Fraction& startTick, const Fraction& endTick)
-{
-    if (!currentTuplet || !currentTuplet->isInRange(startTick, endTick)) {
-        return nullptr;
-    }
-
-    while (Tuplet* nextTuplet = currentTuplet->tuplet()) {
-        if (!nextTuplet->isInRange(startTick, endTick)) {
-            break;
-        }
-        currentTuplet = nextTuplet;
-    }
-
-    return currentTuplet;
-}
-
 //---------------------------------------------------------
 //   getSelectedNote
 //---------------------------------------------------------
@@ -3572,6 +3556,102 @@ void Score::deleteAnnotationsFromRange(Segment* s1, Segment* s2, track_idx_t tra
     }
 }
 
+void Score::deleteRangeAtTrack(const track_idx_t track, Segment* startSeg, const Fraction& endTick,
+                               Tuplet* topTuplet)
+{
+    Fraction restStartTick = startSeg->tick();
+    Fraction restDuration;
+
+    for (Segment* s = startSeg; s && (s->tick() < endTick); s = s->next1()) {
+        EngravingItem* e = s->element(track);
+        if (!e) {
+            continue;
+        }
+
+        if (s->isBreathType()) {
+            deleteItem(e);
+            continue;
+        }
+
+        if (!s->isChordRestType()) {
+            // do not delete TimeSig/KeySig, it doesn't make sense to do it (except on full system)
+            if (!s->isTimeTickType() && !s->isTimeSigType() && !s->isKeySigType()
+                && !s->isType(SegmentType::BarLineType) /*covers all barLine types*/) {
+                undoRemoveElement(e);
+            }
+            continue;
+        }
+
+        if (e->isMeasureRepeat()) {
+            deleteItem(e);
+            continue;
+        }
+
+        ChordRest* cr1 = toChordRest(e);
+
+        // Find the top tuplet that contains this ChordRest, and isn't equal to topTuplet (topTuplet will have already been
+        // handled by the previous recursive call)
+        Tuplet* currentTuplet = cr1->tuplet();
+        if (currentTuplet && currentTuplet != topTuplet) {
+            while (currentTuplet->tuplet() && currentTuplet->tuplet() != topTuplet) {
+                currentTuplet = currentTuplet->tuplet();
+            }
+        } else {
+            currentTuplet = nullptr;
+        }
+
+        if (currentTuplet) {
+            // A tuplet is only selected when all of its contained elements are also selected. In this case we can call cmdDeleteTuplet to fully erase
+            // the tuplet and all of its contents. If a tuplet is not selected, we need to recursively call this method on the range of that tuplet...
+            if (currentTuplet->selected()) {
+                // add the duration of this tuplet to the rest duration
+                restDuration += currentTuplet->ticks();
+                cmdDeleteTuplet(currentTuplet, /*replaceWithRest*/ false);
+            } else {
+                // create a rest with the existing rest duration, reset
+                deleteRangeAtTrack(track, cr1->segment(), cr1->tick() + currentTuplet->actualTicks(), currentTuplet);
+                setRests(restStartTick, track, restDuration, /*useDots*/ false, topTuplet);
+                restStartTick += restDuration + currentTuplet->actualTicks();
+                restDuration = Fraction();
+            }
+            continue;
+        }
+
+        if (cr1->isRestFamily()) {
+            if (cr1->selected()) {
+                restDuration += cr1->ticks();
+                removeChordRest(cr1, true);
+            } else {
+                setRests(restStartTick, track, restDuration, /*useDots*/ true, topTuplet);
+                restStartTick += restDuration + cr1->ticks();
+                restDuration = Fraction();
+            }
+            continue;
+        }
+
+        bool foundDeselected = false;
+        for (Note* note : toChord(cr1)->notes()) {
+            if (!note->selected()) {
+                foundDeselected = true;
+                break;
+            }
+        }
+
+        if (!foundDeselected) {
+            restDuration += cr1->ticks();
+            removeChordRest(cr1, true);
+        } else {
+            setRests(restStartTick, track, restDuration, /*useDots*/ true, topTuplet);
+            restStartTick += restDuration + cr1->ticks();
+            restDuration = Fraction();
+        }
+    }
+
+    if (restDuration.isNotZero()) {
+        setRests(restStartTick, track, restDuration, /*useDots*/ true, topTuplet);
+    }
+}
+
 //---------------------------------------------------------
 //   deleteRange
 ///   Deletes elements in the given range that match the
@@ -3599,14 +3679,6 @@ std::vector<ChordRest*> Score::deleteRange(Segment* s1, Segment* s2, track_idx_t
     const Fraction startTick = s1->tick();
     const Fraction endTick = s2 ? s2->tick() : Fraction::max();
 
-    const Segment* firstCRSeg = s1->isChordRestType() ? s1 : s1->next1(SegmentType::ChordRest);
-    IF_ASSERT_FAILED(firstCRSeg) {
-        return crs;
-    }
-
-    const bool fullMeasure = firstCRSeg == firstCRSeg->measure()->first(SegmentType::ChordRest)
-                             && (!s2 || s2->isEndBarLineType());
-
     deleteOrShortenOutSpannersFromRange(startTick, endTick, track1, track2, filter);
     deleteAnnotationsFromRange(s1, s2, track1, track2, filter);
 
@@ -3614,100 +3686,7 @@ std::vector<ChordRest*> Score::deleteRange(Segment* s1, Segment* s2, track_idx_t
         if (!filter.canSelectVoice(track)) {
             continue;
         }
-
-        Fraction f;
-        Fraction tick = Fraction(-1, 1);
-        Tuplet* currentTuplet = nullptr;
-        for (Segment* s = s1; s && (s->tick() < endTick); s = s->next1()) {
-            if (s->element(track) && s->isBreathType()) {
-                deleteItem(s->element(track));
-                continue;
-            }
-
-            EngravingItem* e = s->element(track);
-            if (!e) {
-                continue;
-            }
-
-            if (!s->isChordRestType()) {
-                // do not delete TimeSig/KeySig, it doesn't make sense to do it (except on full system)
-                if (!s->isTimeTickType() && !s->isTimeSigType() && !s->isKeySigType()
-                    && !s->isType(SegmentType::BarLineType) /*covers all barLine types*/) {
-                    undoRemoveElement(e);
-                }
-                continue;
-            }
-
-            ChordRest* cr1 = toChordRest(e);
-            if (tick == Fraction(-1, 1)) {
-                // first ChordRest found:
-                const Fraction offset = cr1->rtick();
-                if (cr1->measure()->tick() >= s1->tick() && offset.isNotZero()) {
-                    f = offset;
-                    tick = s->measure()->tick();
-                } else {
-                    f = Fraction(0, 1);
-                    tick = s->tick();
-                }
-
-                currentTuplet = cr1->tuplet();
-                if (Tuplet* topTuplet = topTupletInRange(cr1->tuplet(), startTick, endTick)) {
-                    cmdDeleteTuplet(topTuplet, false);
-                    f += topTuplet->ticks();
-                    currentTuplet = topTuplet->tuplet();
-                    continue;
-                }
-            }
-
-            if (e->isMeasureRepeat()) {
-                deleteItem(e);
-                continue;
-            }
-
-            if (currentTuplet == cr1->tuplet()) {
-                removeChordRest(cr1, true);
-                f += cr1->ticks();
-                continue;
-            }
-
-            if (f.isValid() && !fullMeasure) { // Set rests for the previous tuplet we were dealing with
-                setRest(tick, track, f, false, currentTuplet);
-            }
-
-            if (Tuplet* topTuplet = topTupletInRange(cr1->tuplet(), startTick, fullMeasure ? Fraction::max() : endTick)) {
-                cmdDeleteTuplet(topTuplet, false);
-                tick = topTuplet->tick();
-                f = topTuplet->ticks();
-                currentTuplet = topTuplet->tuplet();
-                continue;
-            }
-
-            // Not deleting a complete tuplet
-            tick = cr1->tick();
-            currentTuplet = cr1->tuplet();
-            removeChordRest(cr1, true);
-            f = cr1->ticks();
-        }
-
-        if (!f.isValid() || f.isZero()) {
-            continue;
-        }
-
-        if (fullMeasure) {
-            // handle this as special case (fix broken measures):
-            const Staff* staff = Score::staff(track2staff(track));
-            for (const Measure* m = s1->measure(); m; m = m->nextMeasure()) {
-                const Fraction length = m->stretchedLen(staff);
-                Rest* r = setRest(m->tick(), track, length, false, nullptr);
-                crs.push_back(r);
-                if (s2 && m == s2->measure()) {
-                    break;
-                }
-            }
-        } else {
-            const std::vector<Rest*> rests = setRests(tick, track, f, false, currentTuplet);
-            crs.insert(crs.end(), rests.begin(), rests.end());
-        }
+        deleteRangeAtTrack(track, s1, endTick, /*currentTuplet*/ nullptr);
     }
 
     return crs;

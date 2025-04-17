@@ -1108,6 +1108,8 @@ private:
     void deleteAnnotationsFromRange(Segment* segStart, Segment* segEnd, track_idx_t trackStart, track_idx_t trackEnd,
                                     const SelectionFilter& filter);
 
+    void deleteRangeAtTrack(const track_idx_t track, Segment* startSeg, const Fraction& endTick, Tuplet* topTuplet);
+
     void update(bool resetCmdState, bool layoutAllParts = false);
 
     muse::ID newStaffId() const;
