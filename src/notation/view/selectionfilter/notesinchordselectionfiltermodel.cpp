@@ -175,25 +175,36 @@ NotesInChordSelectionFilterTypes NotesInChordSelectionFilterModel::typeForNoteId
 
 void NotesInChordSelectionFilterModel::updateTopNoteIdx()
 {
+    const INotationSelectionFilterPtr filter = currentNotationSelectionFilter();
+
     const INotationSelectionPtr selection = currentNotationInteraction() ? currentNotationInteraction()->selection() : nullptr;
-    if (!selection) {
+    const INotationSelectionRangePtr range = selection ? selection->range() : nullptr;
+    if (!filter || !range) {
         m_topNoteIdx = muse::nidx;
         return;
     }
 
     m_topNoteIdx = muse::nidx;
 
-    QSet<const Chord*> scannedChords;
-    for (const Note* note : selection->notes()) {
-        const Chord* chord = note->chord();
-        if (scannedChords.contains(chord)) {
-            continue;
+    const track_idx_t startTrack = staff2track(range->startStaffIndex());
+    const track_idx_t endTrack = staff2track(range->endStaffIndex());
+
+    Segment* startSeg = range->rangeStartSegment();
+    const Segment* endSeg = range->rangeEndSegment();
+
+    for (track_idx_t track = startTrack; track < endTrack; ++track) {
+        // TODO: canSelectVoice
+        for (Segment* seg = startSeg; seg != endSeg; seg = seg->next1MM()) {
+            const EngravingItem* e = seg->element(track);
+            if (!seg->enabled() || !e || !e->isChord()) {
+                continue;
+            }
+            const std::vector<Note*> notes = toChord(e)->notes();
+            const size_t currIdx = notes.size() - 1;
+            if (m_topNoteIdx == muse::nidx || currIdx > m_topNoteIdx) {
+                m_topNoteIdx = currIdx;
+            }
         }
-        const size_t currIdx = chord->notes().size() - 1;
-        if (m_topNoteIdx == muse::nidx || currIdx > m_topNoteIdx) {
-            m_topNoteIdx = currIdx;
-        }
-        scannedChords.insert(chord);
     }
 }
 
