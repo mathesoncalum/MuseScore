@@ -190,15 +190,15 @@ DropArea {
             // Defined as 1 in the spec, but causes some aliasing in practice...
             anchors.margins: 2 + swappableArea.border.width
 
-            // Can't simply use clip as this won't take into account radius...
-            layer.enabled: ui.isEffectsAllowed
-            layer.effect: EffectOpacityMask {
-                maskSource: Rectangle {
-                    width: padLoader.width
-                    height: padLoader.height
-                    radius: swappableArea.radius - padLoader.anchors.margins
-                }
-            }
+            // // Can't simply use clip as this won't take into account radius...
+            // layer.enabled: ui.isEffectsAllowed
+            // layer.effect: EffectOpacityMask {
+            //     maskSource: Rectangle {
+            //         width: padLoader.width
+            //         height: padLoader.height
+            //         radius: swappableArea.radius - padLoader.anchors.margins
+            //     }
+            // }
 
             sourceComponent: Boolean(root.padModel) ? padContentComponent : emptySlotComponent
 
