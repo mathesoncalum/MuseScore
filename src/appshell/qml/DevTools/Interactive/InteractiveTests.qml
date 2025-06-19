@@ -264,5 +264,16 @@ Rectangle {
             text: "Widget dialog close"
             onClicked: testModel.closeWidgetDialog()
         }
+
+        // DELETE THIS
+        FlatButton {
+            width: 200
+            navigation.panel: navPanel
+            navigation.row: 16
+            text: "Welcome dialog"
+            onClicked: {
+                api.launcher.open("muse://welcomedialog")
+            }
+        }
     }
 }
