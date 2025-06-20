@@ -244,14 +244,14 @@ void PercussionPanelModel::finishEditing(bool discardChanges)
 
     Drumset updatedDrumset = *m_padListModel->drumset();
 
-    for (int i = 0; i < m_padListModel->padList().size(); ++i) {
+    for (size_t i = 0; i < m_padListModel->numPads(); ++i) {
         const PercussionPanelPadModel* model = m_padListModel->padList().at(i);
         if (!model) {
             continue;
         }
 
-        const int row = i / m_padListModel->numColumns();
-        const int column = i % m_padListModel->numColumns();
+        const size_t row = i / m_padListModel->numColumns();
+        const size_t column = i % m_padListModel->numColumns();
 
         engraving::DrumInstrument& drum = updatedDrumset.drum(model->pitch());
 
@@ -627,7 +627,7 @@ void PercussionPanelModel::setColumns(size_t numColumns)
             continue;
         }
         mu::engraving::DrumInstrument& drum = updatedDrumset.drum(pitch);
-        const int index = drum.panelRow * updatedDrumset.percussionPanelColumns() + drum.panelColumn;
+        const size_t index = drum.panelRow * updatedDrumset.percussionPanelColumns() + drum.panelColumn;
         drum.panelRow = index / numColumns;
         drum.panelColumn = index % numColumns;
     }

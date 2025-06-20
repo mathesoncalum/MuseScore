@@ -43,8 +43,8 @@ class PercussionPanelPadListModel : public QAbstractListModel, public muse::Inje
 
     Q_OBJECT
 
-    Q_PROPERTY(int numColumns READ numColumns NOTIFY numColumnsChanged)
-    Q_PROPERTY(int numPads READ numPads NOTIFY numPadsChanged)
+    Q_PROPERTY(size_t numColumns READ numColumns NOTIFY numColumnsChanged)
+    Q_PROPERTY(size_t numPads READ numPads NOTIFY numPadsChanged)
 
 public:
     explicit PercussionPanelPadListModel(QObject* parent = nullptr);
@@ -68,7 +68,7 @@ public:
     bool hasActivePads() const { return m_drumset; }
 
     size_t numColumns() const { return m_drumset ? m_drumset->percussionPanelColumns() : DEFAULT_NUM_COLUMNS; }
-    int numPads() const { return m_padModels.count(); }
+    size_t numPads() const { return m_padModels.count(); }
 
     void setDrumset(const engraving::Drumset* drumset);
     const engraving::Drumset* drumset() const { return m_drumset; }
@@ -88,7 +88,7 @@ public:
 signals:
     void numPadsChanged();
     void numColumnsChanged();
-    void padFocusRequested(int padIndex); //! NOTE: This won't work if it is called immediately before a layoutChange
+    void padFocusRequested(size_t padIndex); //! NOTE: This won't work if it is called immediately before a layoutChange
 
 private:
     static constexpr size_t DEFAULT_NUM_COLUMNS = 8;
@@ -102,7 +102,7 @@ private:
     bool indexIsValid(int index) const;
 
     PercussionPanelPadModel* createPadModelForPitch(int pitch);
-    int createModelIndexForPitch(int pitch) const;
+    size_t createModelIndexForPitch(int pitch) const;
 
     int getModelIndexForPitch(int pitch) const;
 
@@ -111,7 +111,7 @@ private:
     muse::RetVal<muse::Val> openPadSwapDialog();
     void swapMidiNotesAndShortcuts(int fromIndex, int toIndex);
 
-    size_t numEmptySlotsAtRow(int row) const;
+    size_t numEmptySlotsAtRow(size_t row) const;
 
     engraving::Drumset* m_drumset = nullptr; //! NOTE: Pointer may be invalid, see PercussionPanelModel::setUpConnections
     QList<PercussionPanelPadModel*> m_padModels;

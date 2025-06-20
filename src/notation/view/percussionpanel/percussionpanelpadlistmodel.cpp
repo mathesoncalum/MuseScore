@@ -77,7 +77,7 @@ void PercussionPanelPadListModel::addEmptyRow(bool focusFirstInNewRow)
     emit numPadsChanged();
 
     if (focusFirstInNewRow) {
-        const int indexToFocus = numPads() - numColumns();
+        const size_t indexToFocus = numPads() - numColumns();
         emit padFocusRequested(indexToFocus);
     }
 }
@@ -168,7 +168,7 @@ mu::engraving::Drumset PercussionPanelPadListModel::constructDefaultLayout(const
     mu::engraving::Drumset defaultLayout = *m_drumset;
     defaultLayout.setPercussionPanelColumns(defaultDrumset.percussionPanelColumns());
 
-    int highestIndex = -1;
+    size_t highestIndex = muse::nidx;
     QList<int /*pitch*/> noTemplateFound;
 
     for (int pitch = 0; pitch < mu::engraving::DRUM_INSTRUMENTS; ++pitch) {
@@ -184,15 +184,15 @@ mu::engraving::Drumset PercussionPanelPadListModel::constructDefaultLayout(const
             continue;
         }
 
-        const int templateRow = defaultDrumset.drum(pitch).panelRow;
-        const int templateColumn = defaultDrumset.drum(pitch).panelColumn;
+        const size_t templateRow = defaultDrumset.drum(pitch).panelRow;
+        const size_t templateColumn = defaultDrumset.drum(pitch).panelColumn;
 
         defaultLayout.drum(pitch).panelRow = templateRow;
         defaultLayout.drum(pitch).panelColumn = templateColumn;
 
-        const int modelIndex = templateRow * numColumns() + templateColumn;
+        const size_t modelIndex = templateRow * numColumns() + templateColumn;
 
-        if (modelIndex > highestIndex) {
+        if (highestIndex == muse::nidx || modelIndex > highestIndex) {
             highestIndex = modelIndex;
         }
     }
@@ -272,8 +272,8 @@ void PercussionPanelPadListModel::load()
         return;
     }
 
-    QMap<int /*index*/, PercussionPanelPadModel*> modelsMap;
-    QMap<int /*index*/, PercussionPanelPadModel*> modelsToAppend;
+    QMap<size_t /*index*/, PercussionPanelPadModel*> modelsMap;
+    QMap<size_t /*index*/, PercussionPanelPadModel*> modelsToAppend;
 
     for (int pitch = 0; pitch < mu::engraving::DRUM_INSTRUMENTS; ++pitch) {
         if (!m_drumset->isValid(pitch)) {
@@ -281,7 +281,7 @@ void PercussionPanelPadListModel::load()
         }
 
         PercussionPanelPadModel* model = createPadModelForPitch(pitch);
-        const int modelIndex = createModelIndexForPitch(pitch);
+        const size_t modelIndex = createModelIndexForPitch(pitch);
 
         if (modelIndex < 0) {
             // Sometimes a drum won't have a defined row/column - e.g. if it was newly added through the customize kit
@@ -293,9 +293,9 @@ void PercussionPanelPadListModel::load()
         modelsMap.insert(modelIndex, model);
     }
 
-    int requiredSize = modelsMap.isEmpty() ? 0 : modelsMap.lastKey() + 1;
+    size_t requiredSize = modelsMap.isEmpty() ? 0 : modelsMap.lastKey() + 1;
 
-    for (int i = 0; i < modelsToAppend.size(); ++i) {
+    for (size_t i = 0; i < static_cast<size_t>(modelsToAppend.size()); ++i) {
         PercussionPanelPadModel* model = modelsToAppend.value(i);
         engraving::DrumInstrument& drum = m_drumset->drum(model->pitch());
         drum.panelRow = requiredSize / numColumns();
@@ -346,33 +346,33 @@ PercussionPanelPadModel* PercussionPanelPadListModel::createPadModelForPitch(int
     return model;
 }
 
-int PercussionPanelPadListModel::createModelIndexForPitch(int pitch) const
+size_t PercussionPanelPadListModel::createModelIndexForPitch(int pitch) const
 {
     IF_ASSERT_FAILED(m_drumset && m_drumset->isValid(pitch)) {
-        return -1;
+        return muse::nidx;
     }
 
-    const int panelRow = m_drumset->panelRow(pitch);
+    const size_t panelRow = m_drumset->panelRow(pitch);
     const size_t panelColumn = m_drumset->panelColumn(pitch);
 
     IF_ASSERT_FAILED(panelColumn < numColumns()) {
         LOGE() << "Percussion panel - column out of bounds for " << m_drumset->name(pitch);
-        return -1;
+        return muse::nidx;
     }
 
-    if (panelRow < 0 || panelColumn < 0) {
+    if (panelRow == muse::nidx || panelColumn == muse::nidx) {
         // No row/column was specified for this pitch...
-        return -1;
+        return muse::nidx;
     }
 
-    const int modelIndex = panelRow * numColumns() + panelColumn;
+    const size_t modelIndex = panelRow * numColumns() + panelColumn;
 
-    const PercussionPanelPadModel* existingModel = modelIndex < m_padModels.size() ? m_padModels.at(modelIndex) : nullptr;
+    const PercussionPanelPadModel* existingModel = modelIndex < numPads() ? m_padModels.at(modelIndex) : nullptr;
     IF_ASSERT_FAILED(!existingModel) {
         const int existingDrumPitch = existingModel->pitch();
         LOGE() << "Percussion panel - error when trying to load pad for " << m_drumset->name(pitch) << "; pad for "
                << m_drumset->name(existingDrumPitch) << " already exists at row " << panelRow << ", column " << panelColumn;
-        return -1;
+        return muse::nidx;
     }
 
     return modelIndex;
@@ -437,7 +437,7 @@ void PercussionPanelPadListModel::movePad(int fromIndex, int toIndex)
     emit layoutChanged();
 }
 
-size_t PercussionPanelPadListModel::numEmptySlotsAtRow(int row) const
+size_t PercussionPanelPadListModel::numEmptySlotsAtRow(size_t row) const
 {
     int count = 0;
     const size_t rowStartIdx = row * numColumns();

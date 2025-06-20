@@ -60,8 +60,8 @@ struct DrumInstrument {
     int line = 0;               ///< place notehead onto this line
     DirectionV stemDirection = DirectionV::AUTO;
 
-    int panelRow = -1;
-    int panelColumn = -1;
+    size_t panelRow = muse::nidx;
+    size_t panelColumn = muse::nidx;
 
     int voice = 0;
     String shortcut;
@@ -69,7 +69,7 @@ struct DrumInstrument {
 
     DrumInstrument() {}
     DrumInstrument(const String& n, NoteHeadGroup nh, int l, DirectionV d,
-                   int pr = -1, int pc = -1, int v = 0, String sc = String())
+                   size_t pr = muse::nidx, size_t pc = muse::nidx, int v = 0, String sc = String())
         : name(n), notehead(nh), line(l), stemDirection(d), panelRow(pr), panelColumn(pc), voice(v), shortcut(sc) {}
 
     void addVariant(DrumInstrumentVariant v) { variants.push_back(v); }
@@ -110,8 +110,8 @@ public:
     String translatedName(int pitch) const;
     String shortcut(int pitch) const { return m_drums[pitch].shortcut; }
     std::list<DrumInstrumentVariant> variants(int pitch) const { return m_drums[pitch].variants; }
-    int panelRow(int pitch) const { return m_drums[pitch].panelRow; }
-    int panelColumn(int pitch) const { return m_drums[pitch].panelColumn; }
+    size_t panelRow(int pitch) const { return m_drums[pitch].panelRow; }
+    size_t panelColumn(int pitch) const { return m_drums[pitch].panelColumn; }
 
     size_t percussionPanelColumns() const { return m_percussionPanelColumns; }
     void setPercussionPanelColumns(size_t columns) { m_percussionPanelColumns = columns; }
