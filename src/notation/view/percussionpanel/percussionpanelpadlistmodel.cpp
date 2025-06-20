@@ -102,8 +102,8 @@ void PercussionPanelPadListModel::deleteRow(int row)
 void PercussionPanelPadListModel::removeEmptyRows()
 {
     bool rowsRemoved = false;
-    const size_t lastRowIndex = numPads() / numColumns() - 1;
-    for (size_t i = lastRowIndex; i >= 0 && i <= lastRowIndex; --i) {
+    const int lastRowIndex = numPads() / numColumns() - 1;
+    for (int i = lastRowIndex; i >= 0 && i <= lastRowIndex; --i) {
         const size_t numRows = numPads() / numColumns();
         const bool rowIsEmpty = numEmptySlotsAtRow(i) == numColumns();
         if (rowIsEmpty && numRows > 1) { // never delete the first row
@@ -353,7 +353,7 @@ int PercussionPanelPadListModel::createModelIndexForPitch(int pitch) const
     }
 
     const int panelRow = m_drumset->panelRow(pitch);
-    const size_t panelColumn = m_drumset->panelColumn(pitch);
+    const int panelColumn = m_drumset->panelColumn(pitch);
 
     IF_ASSERT_FAILED(panelColumn < numColumns()) {
         LOGE() << "Percussion panel - column out of bounds for " << m_drumset->name(pitch);
@@ -437,7 +437,7 @@ void PercussionPanelPadListModel::movePad(int fromIndex, int toIndex)
     emit layoutChanged();
 }
 
-size_t PercussionPanelPadListModel::numEmptySlotsAtRow(int row) const
+int PercussionPanelPadListModel::numEmptySlotsAtRow(int row) const
 {
     int count = 0;
     const size_t rowStartIdx = row * numColumns();

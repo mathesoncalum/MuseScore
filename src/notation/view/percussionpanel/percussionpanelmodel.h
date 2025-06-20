@@ -136,7 +136,7 @@ private:
     Drumset standardDefaultDrumset() const;
     Drumset museSamplerDefaultDrumset() const;
 
-    void setColumns(size_t numColumns);
+    void setColumns(int numColumns);
 
     mu::engraving::InstrumentTrackId currentTrackId() const;
 

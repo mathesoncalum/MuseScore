@@ -67,7 +67,7 @@ public:
 
     bool hasActivePads() const { return m_drumset; }
 
-    size_t numColumns() const { return m_drumset ? m_drumset->percussionPanelColumns() : DEFAULT_NUM_COLUMNS; }
+    int numColumns() const { return m_drumset ?  static_cast<int>(m_drumset->percussionPanelColumns()) : DEFAULT_NUM_COLUMNS; }
     int numPads() const { return m_padModels.count(); }
 
     void setDrumset(const engraving::Drumset* drumset);
@@ -91,7 +91,7 @@ signals:
     void padFocusRequested(int padIndex); //! NOTE: This won't work if it is called immediately before a layoutChange
 
 private:
-    static constexpr size_t DEFAULT_NUM_COLUMNS = 8;
+    static constexpr int DEFAULT_NUM_COLUMNS = 8;
 
     enum Roles {
         PadModelRole = Qt::UserRole + 1,
@@ -111,7 +111,7 @@ private:
     muse::RetVal<muse::Val> openPadSwapDialog();
     void swapMidiNotesAndShortcuts(int fromIndex, int toIndex);
 
-    size_t numEmptySlotsAtRow(int row) const;
+    int numEmptySlotsAtRow(int row) const;
 
     engraving::Drumset* m_drumset = nullptr; //! NOTE: Pointer may be invalid, see PercussionPanelModel::setUpConnections
     QList<PercussionPanelPadModel*> m_padModels;

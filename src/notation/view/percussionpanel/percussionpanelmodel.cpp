@@ -212,7 +212,7 @@ void PercussionPanelModel::handleMenuItem(const QString& itemId)
     } else if (itemId.contains(SET_COLUMNS_CODE)) {
         //! NOTE: In this case, the last section of the itemId refers to the number of columns
         auto stringSection = itemId.section(u'-', -1, -1);
-        const size_t num = stringSection.toULongLong();
+        const int num = stringSection.toInt();
         setColumns(num);
     }
 }
@@ -598,7 +598,7 @@ Drumset PercussionPanelModel::museSamplerDefaultDrumset() const
     return defaultDrumset;
 }
 
-void PercussionPanelModel::setColumns(size_t numColumns)
+void PercussionPanelModel::setColumns(int numColumns)
 {
     IF_ASSERT_FAILED(numColumns > 0) {
         return;
@@ -627,7 +627,7 @@ void PercussionPanelModel::setColumns(size_t numColumns)
             continue;
         }
         mu::engraving::DrumInstrument& drum = updatedDrumset.drum(pitch);
-        const int index = drum.panelRow * updatedDrumset.percussionPanelColumns() + drum.panelColumn;
+        const int index = drum.panelRow *  static_cast<int>(updatedDrumset.percussionPanelColumns()) + drum.panelColumn;
         drum.panelRow = index / numColumns;
         drum.panelColumn = index % numColumns;
     }
