@@ -59,6 +59,12 @@ public:
     bool hasCompletedFirstLaunchSetup() const override;
     void setHasCompletedFirstLaunchSetup(bool has) override;
 
+    bool showWelcomeDialogOnStartup() const override;
+    void setShowWelcomeDialogOnStartup(bool show) override;
+
+    int lastWelcomeDialogIndexShown() const override;
+    void setLastWelcomeDialogIndexShown(int index) override;
+
     StartupModeType startupModeType() const override;
     void setStartupModeType(StartupModeType type) override;
     muse::async::Notification startupModeTypeChanged() const override;

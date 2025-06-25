@@ -40,6 +40,12 @@ public:
     virtual bool hasCompletedFirstLaunchSetup() const = 0;
     virtual void setHasCompletedFirstLaunchSetup(bool has) = 0;
 
+    virtual bool showWelcomeDialogOnStartup() const = 0;
+    virtual void setShowWelcomeDialogOnStartup(bool show) = 0;
+
+    virtual int lastWelcomeDialogIndexShown() const = 0;
+    virtual void setLastWelcomeDialogIndexShown(int index) = 0;
+
     virtual StartupModeType startupModeType() const = 0;
     virtual void setStartupModeType(StartupModeType type) = 0;
     virtual muse::async::Notification startupModeTypeChanged() const = 0;

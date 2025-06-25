@@ -39,6 +39,9 @@ static const std::string module_name("appshell");
 
 static const Settings::Key HAS_COMPLETED_FIRST_LAUNCH_SETUP(module_name, "application/hasCompletedFirstLaunchSetup");
 
+static const Settings::Key SHOW_WELCOME_DIALOG_KEY(module_name, "application/showWelcomeDialogOnStartup");
+static const Settings::Key LAST_WELCOME_DIALOG_INDEX_SHOWN(module_name, "application/lastWelcomeDialogIndexShown");
+
 static const Settings::Key STARTUP_MODE_TYPE(module_name, "application/startup/modeStart");
 static const Settings::Key STARTUP_SCORE_PATH(module_name, "application/startup/startScore");
 
@@ -62,6 +65,8 @@ static const std::string SESSION_RESOURCE_NAME("SESSION");
 void AppShellConfiguration::init()
 {
     settings()->setDefaultValue(HAS_COMPLETED_FIRST_LAUNCH_SETUP, Val(false));
+    settings()->setDefaultValue(SHOW_WELCOME_DIALOG_KEY, Val(true));
+    settings()->setDefaultValue(LAST_WELCOME_DIALOG_INDEX_SHOWN, Val(-1));
 
     settings()->setDefaultValue(STARTUP_MODE_TYPE, Val(StartupModeType::StartEmpty));
     settings()->valueChanged(STARTUP_MODE_TYPE).onReceive(this, [this](const Val&) {
@@ -88,6 +93,26 @@ bool AppShellConfiguration::hasCompletedFirstLaunchSetup() const
 void AppShellConfiguration::setHasCompletedFirstLaunchSetup(bool has)
 {
     settings()->setSharedValue(HAS_COMPLETED_FIRST_LAUNCH_SETUP, Val(has));
+}
+
+bool AppShellConfiguration::showWelcomeDialogOnStartup() const
+{
+    return settings()->value(SHOW_WELCOME_DIALOG_KEY).toBool();
+}
+
+void AppShellConfiguration::setShowWelcomeDialogOnStartup(bool show)
+{
+    settings()->setSharedValue(SHOW_WELCOME_DIALOG_KEY, Val(show));
+}
+
+int AppShellConfiguration::lastWelcomeDialogIndexShown() const
+{
+    return settings()->value(LAST_WELCOME_DIALOG_INDEX_SHOWN).toInt();
+}
+
+void AppShellConfiguration::setLastWelcomeDialogIndexShown(int index)
+{
+    settings()->setSharedValue(LAST_WELCOME_DIALOG_INDEX_SHOWN, Val(index));
 }
 
 StartupModeType AppShellConfiguration::startupModeType() const
