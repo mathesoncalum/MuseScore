@@ -69,7 +69,7 @@ void WelcomeDialogModel::init()
     m_items.emplaceBack(item3);
     m_items.emplaceBack(item4);
 
-    m_currentIndex = configuration()->lastWelcomeDialogIndexShown();
+    m_currentIndex = configuration()->welcomeDialogLastShownIndex();
     ++m_currentIndex;
     if (m_currentIndex >= count()) {
         // Cycle back to first item...
@@ -78,7 +78,7 @@ void WelcomeDialogModel::init()
     IF_ASSERT_FAILED(m_currentIndex >= 0) {
         m_currentIndex = 0;
     }
-    configuration()->setLastWelcomeDialogIndexShown(m_currentIndex);
+    configuration()->setWelcomeDialogLastShownIndex(m_currentIndex);
 
     emit itemsChanged();
     emit currentItemChanged();
@@ -98,7 +98,7 @@ void WelcomeDialogModel::nextItem()
         return;
     }
     ++m_currentIndex;
-    configuration()->setLastWelcomeDialogIndexShown(m_currentIndex);
+    configuration()->setWelcomeDialogLastShownIndex(m_currentIndex);
     emit currentItemChanged();
 }
 
@@ -108,17 +108,17 @@ void WelcomeDialogModel::prevItem()
         return;
     }
     --m_currentIndex;
-    configuration()->setLastWelcomeDialogIndexShown(m_currentIndex);
+    configuration()->setWelcomeDialogLastShownIndex(m_currentIndex);
     emit currentItemChanged();
 }
 
 bool WelcomeDialogModel::showOnStartup() const
 {
-    return configuration()->showWelcomeDialogOnStartup();
+    return configuration()->welcomeDialogShowOnStartup();
 }
 
 void WelcomeDialogModel::setShowOnStartup(bool show)
 {
-    configuration()->setShowWelcomeDialogOnStartup(show);
+    configuration()->setWelcomeDialogShowOnStartup(show);
     emit showOnStartupChanged();
 }

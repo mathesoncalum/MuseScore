@@ -30,8 +30,9 @@
 #include "actions/iactionsdispatcher.h"
 #include "multiinstances/imultiinstancesprovider.h"
 #include "../imusesoundsconfiguration.h"
-#include "../imusesoundscheckupdateservice.h"
+#include "appshell/iappshellconfiguration.h"
 
+#include "../imusesoundscheckupdateservice.h"
 #include "../imusesoundscheckupdatescenario.h"
 
 namespace mu::musesounds {
@@ -41,6 +42,7 @@ class MuseSoundsCheckUpdateScenario : public IMuseSoundsCheckUpdateScenario, pub
     muse::Inject<muse::actions::IActionsDispatcher> dispatcher = { this };
     muse::Inject<muse::mi::IMultiInstancesProvider> multiInstancesProvider = { this };
     muse::Inject<IMuseSoundsConfiguration> configuration = { this };
+    muse::Inject<mu::appshell::IAppShellConfiguration> appshellConfiguration;
 
     muse::Inject<IMuseSoundsCheckUpdateService> service = { this };
 

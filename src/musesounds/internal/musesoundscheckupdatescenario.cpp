@@ -46,9 +46,9 @@ static const TranslatableString DEFAULT_CANCEL_TITLE("musesounds", "No thanks");
 void MuseSoundsCheckUpdateScenario::delayedInit(const modularity::IModuleSetup::DelayedInitCompletedCallback& callback)
 {
     const auto onCheckForUpdateComplete = [this, callback](bool showingReleaseInfo){
-        // if (showingReleaseInfo) {
-        //     setBlockWelcomeDialog(true);
-        // }
+        if (showingReleaseInfo) {
+            appshellConfiguration()->setWelcomeDialogBlocked(true);
+        }
         callback();
     };
     if (service()->needCheckForUpdate() && multiInstancesProvider()->instances().size() == 1) {

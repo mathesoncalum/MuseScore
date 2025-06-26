@@ -147,10 +147,14 @@ bool StartupScenario::startupCompleted() const
 
 void StartupScenario::tryShowWelcomeDialog()
 {
-    // if (welcomeDialogBlocked) {
-    //     return;
-    // }
+    if (configuration()->welcomeDialogBlocked() || !configuration()->welcomeDialogShowOnStartup()
+        || !configuration()->hasCompletedFirstLaunchSetup()) {
+        return;
+    }
     interactive()->open(WELCOME_DIALOG_URI);
+
+    const std::string version = configuration()->museScoreVersion();
+    configuration()->setWelcomeDialogLastShownVersion(version);
 }
 
 StartupModeType StartupScenario::resolveStartupModeType() const

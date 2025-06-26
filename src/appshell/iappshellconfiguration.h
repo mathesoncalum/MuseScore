@@ -40,11 +40,17 @@ public:
     virtual bool hasCompletedFirstLaunchSetup() const = 0;
     virtual void setHasCompletedFirstLaunchSetup(bool has) = 0;
 
-    virtual bool showWelcomeDialogOnStartup() const = 0;
-    virtual void setShowWelcomeDialogOnStartup(bool show) = 0;
+    virtual bool welcomeDialogShowOnStartup() const = 0;
+    virtual void setWelcomeDialogShowOnStartup(bool show) = 0;
 
-    virtual int lastWelcomeDialogIndexShown() const = 0;
-    virtual void setLastWelcomeDialogIndexShown(int index) = 0;
+    virtual bool welcomeDialogBlocked() const = 0;
+    virtual void setWelcomeDialogBlocked(bool block) = 0;
+
+    virtual std::string welcomeDialogLastShownVersion() const = 0;
+    virtual void setWelcomeDialogLastShownVersion(const std::string& version) = 0;
+
+    virtual int welcomeDialogLastShownIndex() const = 0;
+    virtual void setWelcomeDialogLastShownIndex(int index) = 0;
 
     virtual StartupModeType startupModeType() const = 0;
     virtual void setStartupModeType(StartupModeType type) = 0;

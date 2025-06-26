@@ -59,11 +59,17 @@ public:
     bool hasCompletedFirstLaunchSetup() const override;
     void setHasCompletedFirstLaunchSetup(bool has) override;
 
-    bool showWelcomeDialogOnStartup() const override;
-    void setShowWelcomeDialogOnStartup(bool show) override;
+    bool welcomeDialogShowOnStartup() const override;
+    void setWelcomeDialogShowOnStartup(bool show) override;
 
-    int lastWelcomeDialogIndexShown() const override;
-    void setLastWelcomeDialogIndexShown(int index) override;
+    bool welcomeDialogBlocked() const override;
+    void setWelcomeDialogBlocked(bool block) override;
+
+    std::string welcomeDialogLastShownVersion() const override;
+    void setWelcomeDialogLastShownVersion(const std::string& version) override;
+
+    int welcomeDialogLastShownIndex() const override;
+    void setWelcomeDialogLastShownIndex(int index) override;
 
     StartupModeType startupModeType() const override;
     void setStartupModeType(StartupModeType type) override;
@@ -123,6 +129,9 @@ private:
 
     muse::async::Notification m_startupModeTypeChanged;
     muse::async::Notification m_startupScorePathChanged;
+
+    //! NOTE: Blocked for this session only...
+    bool m_welcomeDialogBlocked = false;
 };
 }
 
