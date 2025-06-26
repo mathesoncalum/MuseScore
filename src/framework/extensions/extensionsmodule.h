@@ -42,7 +42,7 @@ public:
     void resolveImports() override;
     void registerApi() override;
     void onInit(const IApplication::RunMode& mode) override;
-    void onDelayedInit() override;
+    void onDelayedInit(const DelayedInitCompletedCallback& callback) override;
 
 private:
 

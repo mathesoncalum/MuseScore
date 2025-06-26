@@ -67,7 +67,8 @@ void LearnModule::onInit(const IApplication::RunMode&)
     m_learnConfiguration->init();
 }
 
-void LearnModule::onDelayedInit()
+void LearnModule::onDelayedInit(const DelayedInitCompletedCallback& callback)
 {
     m_learnService->refreshPlaylists();
+    callback();
 }

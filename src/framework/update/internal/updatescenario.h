@@ -26,6 +26,7 @@
 #include "progress.h"
 
 #include "modularity/ioc.h"
+#include "modularity/imodulesetup.h"
 #include "iinteractive.h"
 #include "actions/iactionsdispatcher.h"
 #include "multiinstances/imultiinstancesprovider.h"
@@ -48,14 +49,16 @@ public:
     UpdateScenario(const modularity::ContextPtr& iocCtx)
         : Injectable(iocCtx) {}
 
-    void delayedInit();
+    void delayedInit(const modularity::IModuleSetup::DelayedInitCompletedCallback& callback);
 
     void checkForUpdate() override;
 
 private:
+    using CheckForUpdateCompleteCallback = std::function<void (/*showingReleaseInfo*/ bool)>;
+
     bool isCheckInProgress() const;
 
-    void doCheckForUpdate(bool manual);
+    void doCheckForUpdate(bool manual, const CheckForUpdateCompleteCallback& callback = nullptr);
     void th_checkForUpdate();
 
     void processUpdateResult(int errorCode);

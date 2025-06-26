@@ -31,7 +31,6 @@ namespace muse::modularity {
 class IModuleSetup
 {
 public:
-
     virtual ~IModuleSetup() {}
 
     virtual std::string moduleName() const = 0;
@@ -46,7 +45,10 @@ public:
     virtual void onPreInit(const IApplication::RunMode& mode) { (void)mode; }
     virtual void onInit(const IApplication::RunMode& mode) { (void)mode; }
     virtual void onAllInited(const IApplication::RunMode& mode) { (void)mode; }
-    virtual void onDelayedInit() {}
+
+    using DelayedInitCompletedCallback = std::function<void ()>;
+    virtual void onDelayedInit(const DelayedInitCompletedCallback& callback) { callback(); }
+
     virtual void onDeinit() {}
     virtual void onDestroy() {}
 

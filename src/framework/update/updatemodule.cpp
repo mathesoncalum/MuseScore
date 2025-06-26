@@ -102,7 +102,7 @@ void UpdateModule::onInit(const IApplication::RunMode& mode)
     m_actionController->init();
 }
 
-void UpdateModule::onDelayedInit()
+void UpdateModule::onDelayedInit(const DelayedInitCompletedCallback& callback)
 {
-    m_scenario->delayedInit();
+    m_scenario->delayedInit(callback);
 }

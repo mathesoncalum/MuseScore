@@ -140,10 +140,11 @@ void ExtensionsModule::onInit(const IApplication::RunMode& mode)
 #endif
 }
 
-void ExtensionsModule::onDelayedInit()
+void ExtensionsModule::onDelayedInit(const DelayedInitCompletedCallback& callback)
 {
     if (!m_extensionsLoaded) {
         m_provider->reloadExtensions();
         m_extensionsLoaded = true;
     }
+    callback();
 }
