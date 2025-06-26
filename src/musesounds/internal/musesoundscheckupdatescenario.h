@@ -25,6 +25,7 @@
 #include "progress.h"
 
 #include "modularity/ioc.h"
+#include "modularity/imodulesetup.h"
 #include "iinteractive.h"
 #include "actions/iactionsdispatcher.h"
 #include "multiinstances/imultiinstancesprovider.h"
@@ -47,18 +48,20 @@ public:
     MuseSoundsCheckUpdateScenario(const muse::modularity::ContextPtr& iocCtx)
         : Injectable(iocCtx) {}
 
-    void delayedInit();
+    void delayedInit(const muse::modularity::IModuleSetup::DelayedInitCompletedCallback& callback);
 
     bool hasUpdate() const override;
     muse::Ret showUpdate() override;
 
 private:
+    using CheckForUpdateCompleteCallback = std::function<void (/*showingReleaseInfo*/ bool)>;
+
     bool isCheckInProgress() const;
 
     bool shouldIgnoreUpdate(const muse::update::ReleaseInfo& info) const;
     void setIgnoredUpdate(const std::string& version);
 
-    void doCheckForUpdate(bool manual);
+    void doCheckForUpdate(bool manual, const CheckForUpdateCompleteCallback& callback = nullptr);
     void th_checkForUpdate();
 
     muse::Ret showReleaseInfo(const muse::update::ReleaseInfo& info);

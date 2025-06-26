@@ -227,9 +227,21 @@ void GuiApp::perform()
         // Setup modules: onDelayedInit
         // ====================================================
 
-        m_globalModule.onDelayedInit();
+        const auto delayedInitCompletedCallback = [this]() {
+            const size_t totalExpectedCallbacks = m_modules.size() + 1; // +1 for global module
+            static size_t callbacksReceived = 0;
+            IF_ASSERT_FAILED(callbacksReceived < totalExpectedCallbacks) {
+                return;
+            }
+            ++callbacksReceived;
+            if (callbacksReceived == totalExpectedCallbacks) {
+                startupScenario()->tryShowWelcomeDialog();
+            }
+        };
+
+        m_globalModule.onDelayedInit(delayedInitCompletedCallback);
         for (modularity::IModuleSetup* m : m_modules) {
-            m->onDelayedInit();
+            m->onDelayedInit(delayedInitCompletedCallback);
         }
 
         startupScenario()->runOnSplashScreen();

@@ -33,6 +33,7 @@ using namespace muse;
 using namespace muse::actions;
 
 static const muse::UriQuery FIRST_LAUNCH_SETUP_URI("musescore://firstLaunchSetup?floating=true");
+static const muse::UriQuery WELCOME_DIALOG_URI("musescore://welcomedialog");
 static const muse::Uri HOME_URI("musescore://home");
 static const muse::Uri NOTATION_URI("musescore://notation");
 
@@ -142,6 +143,14 @@ void StartupScenario::runAfterSplashScreen()
 bool StartupScenario::startupCompleted() const
 {
     return m_startupCompleted;
+}
+
+void StartupScenario::tryShowWelcomeDialog()
+{
+    // if (welcomeDialogBlocked) {
+    //     return;
+    // }
+    interactive()->open(WELCOME_DIALOG_URI);
 }
 
 StartupModeType StartupScenario::resolveStartupModeType() const

@@ -43,10 +43,18 @@ static const char* DEFAULT_IMAGE_URL = "qrc:/qml/MuseScore/MuseSounds/resources/
 static const TranslatableString DEFAULT_ACTION_TITLE("musesounds", "Take me to MuseHub");
 static const TranslatableString DEFAULT_CANCEL_TITLE("musesounds", "No thanks");
 
-void MuseSoundsCheckUpdateScenario::delayedInit()
+void MuseSoundsCheckUpdateScenario::delayedInit(const modularity::IModuleSetup::DelayedInitCompletedCallback& callback)
 {
+    const auto onCheckForUpdateComplete = [this, callback](bool showingReleaseInfo){
+        // if (showingReleaseInfo) {
+        //     setBlockWelcomeDialog(true);
+        // }
+        callback();
+    };
     if (service()->needCheckForUpdate() && multiInstancesProvider()->instances().size() == 1) {
-        doCheckForUpdate(false);
+        doCheckForUpdate(/*manual*/ false, onCheckForUpdateComplete);
+    } else {
+        onCheckForUpdateComplete(/*showingReleaseInfo*/ false);
     }
 }
 
@@ -94,16 +102,20 @@ void MuseSoundsCheckUpdateScenario::setIgnoredUpdate(const std::string& version)
     configuration()->setLastShownMuseSoundsReleaseVersion(version);
 }
 
-void MuseSoundsCheckUpdateScenario::doCheckForUpdate(bool manual)
+void MuseSoundsCheckUpdateScenario::doCheckForUpdate(bool manual, const CheckForUpdateCompleteCallback& callback)
 {
     m_checkProgressChannel = std::make_shared<Progress>();
     m_checkProgressChannel->started().onNotify(this, [this]() {
         m_checkInProgress = true;
     });
 
-    m_checkProgressChannel->finished().onReceive(this, [this, manual](const ProgressResult& res) {
+    m_checkProgressChannel->finished().onReceive(this, [this, manual, callback](const ProgressResult& res) {
         DEFER {
             m_checkInProgress = false;
+            if (callback) {
+                //! NOTE: In non-manual cases, the release info is delayed until ProjectActionsController::doFinishOpenProject
+                callback(/*showingReleaseInfo*/ hasUpdate());
+            }
         };
 
         if (!res.ret) {

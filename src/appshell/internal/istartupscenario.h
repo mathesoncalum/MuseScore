@@ -44,6 +44,8 @@ public:
     virtual void runOnSplashScreen() = 0;
     virtual void runAfterSplashScreen() = 0;
     virtual bool startupCompleted() const = 0;
+
+    virtual void tryShowWelcomeDialog() = 0;
 };
 }
 

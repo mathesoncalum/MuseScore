@@ -38,12 +38,20 @@ using namespace muse;
 using namespace muse::update;
 using namespace muse::actions;
 
-void UpdateScenario::delayedInit()
+void UpdateScenario::delayedInit(const modularity::IModuleSetup::DelayedInitCompletedCallback& callback)
 {
+    const auto onCheckForUpdateComplete = [this, callback](bool showingReleaseInfo){
+        // if (showingReleaseInfo) {
+        //     setBlockWelcomeDialog(true);
+        // }
+        callback();
+    };
     if (configuration()->needCheckForUpdate() && multiInstancesProvider()->instances().size() == 1) {
-        QTimer::singleShot(AUTO_CHECK_UPDATE_INTERVAL, [this]() {
-            doCheckForUpdate(false);
+        QTimer::singleShot(AUTO_CHECK_UPDATE_INTERVAL, [this, onCheckForUpdateComplete]() {
+            doCheckForUpdate(/*manual*/ false, onCheckForUpdateComplete);
         });
+    } else {
+        onCheckForUpdateComplete(/*showingReleaseInfo*/ false);
     }
 }
 
@@ -61,19 +69,21 @@ bool UpdateScenario::isCheckInProgress() const
     return m_checkInProgress;
 }
 
-void UpdateScenario::doCheckForUpdate(bool manual)
+void UpdateScenario::doCheckForUpdate(bool manual, const CheckForUpdateCompleteCallback& callback)
 {
     m_checkProgressChannel = std::make_shared<Progress>();
     m_checkProgressChannel->started().onNotify(this, [this]() {
         m_checkInProgress = true;
     });
 
-    m_checkProgressChannel->finished().onReceive(this, [this, manual](const ProgressResult& res) {
+    m_checkProgressChannel->finished().onReceive(this, [this, manual, callback](const ProgressResult& res) {
+        bool showingReleaseInfo = false;
         DEFER {
             m_checkInProgress = false;
+            callback(showingReleaseInfo);
         };
 
-        bool noUpdate = res.ret.code() == static_cast<int>(Err::NoUpdate);
+        const bool noUpdate = res.ret.code() == static_cast<int>(Err::NoUpdate);
         if (!noUpdate && !res.ret) {
             LOGE() << "Unable to check for update, error: " << res.ret.toString();
 
@@ -84,9 +94,9 @@ void UpdateScenario::doCheckForUpdate(bool manual)
             return;
         }
 
-        ReleaseInfo info = releaseInfoFromValMap(res.val.toMap());
+        const ReleaseInfo info = releaseInfoFromValMap(res.val.toMap());
         if (!manual) {
-            bool shouldIgnoreUpdate = info.version == configuration()->skippedReleaseVersion();
+            const bool shouldIgnoreUpdate = info.version == configuration()->skippedReleaseVersion();
             if (noUpdate || shouldIgnoreUpdate) {
                 return;
             }
@@ -95,6 +105,7 @@ void UpdateScenario::doCheckForUpdate(bool manual)
             return;
         }
 
+        showingReleaseInfo = true;
         showReleaseInfo(info);
     });
 

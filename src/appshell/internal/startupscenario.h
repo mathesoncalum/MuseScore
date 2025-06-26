@@ -62,6 +62,8 @@ public:
     void runAfterSplashScreen() override;
     bool startupCompleted() const override;
 
+    void tryShowWelcomeDialog() override;
+
 private:
     void onStartupPageOpened(StartupModeType modeType);
 
