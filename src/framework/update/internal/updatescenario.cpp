@@ -40,8 +40,7 @@ using namespace muse::actions;
 
 void UpdateScenario::delayedInit(const modularity::IModuleSetup::DelayedInitCompletedCallback& callback)
 {
-    const auto onCheckForUpdateComplete = [this, callback](bool showingReleaseInfo){
-        // TODO: Block the welcome dialog...
+    const auto onCheckForUpdateComplete = [this, callback](bool){
         callback();
     };
     if (configuration()->needCheckForUpdate() && multiInstancesProvider()->instances().size() == 1) {
