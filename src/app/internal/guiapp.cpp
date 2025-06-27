@@ -227,6 +227,12 @@ void GuiApp::perform()
         // Setup modules: onDelayedInit
         // ====================================================
 
+        const Version welcomeDialogLastShownVersion(appshellConfiguration()->welcomeDialogLastShownVersion());
+        if (welcomeDialogLastShownVersion < BaseApplication::appVersion()) {
+            appshellConfiguration()->setWelcomeDialogShowOnStartup(true); // override user preference
+            appshellConfiguration()->setWelcomeDialogLastShownIndex(-1); // reset
+        }
+
         const auto delayedInitCompletedCallback = [this]() {
             const size_t totalExpectedCallbacks = m_modules.size() + 1; // +1 for global module
             static size_t callbacksReceived = 0;
@@ -235,7 +241,7 @@ void GuiApp::perform()
             }
             ++callbacksReceived;
             if (callbacksReceived == totalExpectedCallbacks) {
-                // TODO: Try to show welcome dialog...
+                onAllDelayedInitsCompleted();
             }
         };
 
@@ -344,4 +350,9 @@ void GuiApp::applyCommandLineOptions(const CmdOptions& options)
     if (options.app.loggerLevel) {
         m_globalModule.setLoggerLevel(options.app.loggerLevel.value());
     }
+}
+
+void GuiApp::onAllDelayedInitsCompleted()
+{
+    startupScenario()->tryShowWelcomeDialog();
 }

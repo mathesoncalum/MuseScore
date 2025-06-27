@@ -62,6 +62,8 @@ public:
     void runAfterSplashScreen() override;
     bool startupCompleted() const override;
 
+    void tryShowWelcomeDialog() override;
+
 private:
     void onStartupPageOpened(StartupModeType modeType);
 
@@ -73,9 +75,13 @@ private:
     void restoreLastSession();
     void removeProjectsUnsavedChanges(const muse::io::paths_t& projectsPaths);
 
+    void doShowWelcomeDialog();
+
     std::string m_startupTypeStr;
     project::ProjectFile m_startupScoreFile;
+
     bool m_startupCompleted = false;
+    bool m_welcomeDialogQueued = false;
 };
 }
 

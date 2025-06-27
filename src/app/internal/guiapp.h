@@ -36,6 +36,7 @@ public:
 
 private:
     void applyCommandLineOptions(const CmdOptions& options);
+    void onAllDelayedInitsCompleted();
 
     CmdOptions m_options;
 

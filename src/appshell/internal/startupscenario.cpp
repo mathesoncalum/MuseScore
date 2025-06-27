@@ -33,6 +33,7 @@ using namespace muse;
 using namespace muse::actions;
 
 static const muse::UriQuery FIRST_LAUNCH_SETUP_URI("musescore://firstLaunchSetup?floating=true");
+static const muse::UriQuery WELCOME_DIALOG_URI("musescore://welcomedialog");
 static const muse::Uri HOME_URI("musescore://home");
 static const muse::Uri NOTATION_URI("musescore://notation");
 
@@ -133,6 +134,9 @@ void StartupScenario::runAfterSplashScreen()
             muse::async::Channel<Uri> mut = opened;
             mut.resetOnReceive(this);
             m_startupCompleted = true;
+            if (m_welcomeDialogQueued) {
+                doShowWelcomeDialog();
+            }
         });
     });
 
@@ -142,6 +146,31 @@ void StartupScenario::runAfterSplashScreen()
 bool StartupScenario::startupCompleted() const
 {
     return m_startupCompleted;
+}
+
+void StartupScenario::tryShowWelcomeDialog()
+{
+    if (configuration()->welcomeDialogBlocked() || !configuration()->welcomeDialogShowOnStartup()
+        || !configuration()->hasCompletedFirstLaunchSetup()) {
+        return;
+    }
+    if (!m_startupCompleted) {
+        m_welcomeDialogQueued = true;
+    } else {
+        doShowWelcomeDialog();
+    }
+}
+
+void StartupScenario::doShowWelcomeDialog()
+{
+    if (m_welcomeDialogQueued) {
+        m_welcomeDialogQueued = false;
+    }
+
+    interactive()->open(WELCOME_DIALOG_URI);
+
+    const std::string version = configuration()->museScoreVersion();
+    configuration()->setWelcomeDialogLastShownVersion(version);
 }
 
 StartupModeType StartupScenario::resolveStartupModeType() const

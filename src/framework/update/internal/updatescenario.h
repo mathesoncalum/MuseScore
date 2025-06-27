@@ -31,6 +31,8 @@
 #include "actions/iactionsdispatcher.h"
 #include "multiinstances/imultiinstancesprovider.h"
 #include "../iupdateconfiguration.h"
+#include "appshell/iappshellconfiguration.h"
+
 #include "../iappupdateservice.h"
 
 #include "../iupdatescenario.h"
@@ -42,6 +44,7 @@ class UpdateScenario : public IUpdateScenario, public Injectable, public async::
     Inject<actions::IActionsDispatcher> dispatcher = { this };
     Inject<mi::IMultiInstancesProvider> multiInstancesProvider = { this };
     Inject<IUpdateConfiguration> configuration = { this };
+    muse::Inject<mu::appshell::IAppShellConfiguration> appshellConfiguration;
 
     Inject<IAppUpdateService> service = { this };
 
