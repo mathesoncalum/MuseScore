@@ -85,8 +85,21 @@ void StartupScenario::setStartupScoreFile(const std::optional<project::ProjectFi
     m_startupScoreFile = file ? file.value() : project::ProjectFile();
 }
 
+void StartupScenario::checkForUpdates()
+{
+    if (appUpdateScenario()) {
+        appUpdateScenario()->checkForUpdate(/*manual*/ false);
+    }
+
+    if (museSoundsUpdateScenario()) {
+        museSoundsUpdateScenario()->checkForUpdate(/*manual*/ false);
+    }
+}
+
 void StartupScenario::runOnSplashScreen()
 {
+    checkForUpdates();
+
     if (registerAudioPluginsScenario()) {
         //! NOTE Registering plugins shows a window (dialog) before the main window is shown.
         //! After closing it, the application may in a state where there are no open windows,
