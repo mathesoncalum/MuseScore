@@ -23,6 +23,7 @@
 
 using namespace muse::update;
 
-void UpdateScenarioStub::checkForUpdate()
+muse::async::Promise<muse::Ret> UpdateScenarioStub::checkForUpdate()
 {
+    return muse::async::Promise<muse::Ret>::dummy_result();
 }
