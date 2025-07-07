@@ -23,8 +23,9 @@
 
 using namespace mu::musesounds;
 
-void MuseSoundsCheckUpdateScenarioStub::checkForUpdate(bool)
+muse::async::Promise<muse::Ret> MuseSoundsCheckUpdateScenarioStub::checkForUpdate(bool)
 {
+    return muse::async::Promise<muse::Ret>::dummy_result();
 }
 
 bool MuseSoundsCheckUpdateScenarioStub::hasUpdate() const
