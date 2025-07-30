@@ -485,6 +485,18 @@ void SystemLayout::layoutSystemLockIndicators(System* system, LayoutContext& ctx
     TLayout::layoutSystemLockIndicator(lockIndicator, lockIndicator->mutldata());
 }
 
+void SystemLayout::layoutStaffVisibilityIndicators(System* system, LayoutContext& ctx)
+{
+    UNUSED(ctx);
+
+    StaffVisibilityIndicator* svi = system->staffVisibilityIndicator();
+    IF_ASSERT_FAILED(svi) {
+        return;
+    }
+
+    TLayout::layoutStaffVisibilityIndicator(svi, svi->mutldata());
+}
+
 //---------------------------------------------------------
 //   getNextSystem
 //---------------------------------------------------------

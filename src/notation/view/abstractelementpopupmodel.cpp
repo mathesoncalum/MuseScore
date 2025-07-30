@@ -34,6 +34,7 @@ static const QMap<mu::engraving::ElementType, PopupModelType> ELEMENT_POPUP_TYPE
     { mu::engraving::ElementType::STRING_TUNINGS, PopupModelType::TYPE_STRING_TUNINGS },
     { mu::engraving::ElementType::SOUND_FLAG, PopupModelType::TYPE_SOUND_FLAG },
     { mu::engraving::ElementType::DYNAMIC, PopupModelType::TYPE_DYNAMIC },
+    { mu::engraving::ElementType::STAFF_VISIBILITY_INDICATOR, PopupModelType::TYPE_STAFF_VISIBILITY },
     { mu::engraving::ElementType::TEXT, PopupModelType::TYPE_TEXT },
     { mu::engraving::ElementType::STAFF_TEXT, PopupModelType::TYPE_TEXT },
     { mu::engraving::ElementType::SYSTEM_TEXT, PopupModelType::TYPE_TEXT },

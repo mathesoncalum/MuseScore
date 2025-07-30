@@ -407,6 +407,10 @@ void TLayout::layoutItem(EngravingItem* item, LayoutContext& ctx)
     case ElementType::STAFFTYPE_CHANGE:
         layoutStaffTypeChange(item_cast<const StaffTypeChange*>(item), static_cast<StaffTypeChange::LayoutData*>(ldata), ctx.conf());
         break;
+    case ElementType::STAFF_VISIBILITY_INDICATOR:
+        layoutStaffVisibilityIndicator(item_cast<const StaffVisibilityIndicator*>(item),
+                                       static_cast<StaffVisibilityIndicator::LayoutData*>(ldata));
+        break;
     case ElementType::SOUND_FLAG:
         layoutSoundFlag(item_cast<const SoundFlag*>(item), static_cast<SoundFlag::LayoutData*>(ldata));
         break;
@@ -5416,6 +5420,47 @@ void TLayout::layoutStaffTypeChange(const StaffTypeChange* item, StaffTypeChange
     } else {
         ldata->setPos(0.0, 0.0);
     }
+}
+
+void TLayout::layoutStaffVisibilityIndicator(const StaffVisibilityIndicator* item, StaffVisibilityIndicator::LayoutData* ldata)
+{
+    if (MScore::testMode) {
+        // Don't layout in test mode because these are essentially UI elements,
+        // and they need to know about the Icon font, which isn't available in test mode.
+        return;
+    }
+
+    Shape shape;
+
+    FontMetrics metrics(item->font());
+    RectF iconRect = metrics.boundingRect(item->iconCode());
+    shape.add(iconRect, item);
+    ldata->setShape(shape);
+
+    double spatium = item->spatium();
+
+    const MeasureBase* endMB = item->system()->last();
+    double x = endMB->x() + endMB->width();
+    x -= iconRect.right() + 0.5 * spatium;
+
+    double xOffset = endMB->x() + endMB->width();
+    for (const EngravingItem* el : endMB->el()) {
+        if (el->isLayoutBreak()) {
+            xOffset = std::min(xOffset, endMB->x() + el->x() + el->ldata()->bbox().left() - spatium);
+        }
+    }
+
+    for (const SystemLockIndicator* sl : item->system()->lockIndicators()) {
+        // TODO: Rough spacing here
+        xOffset -= (sl->ldata()->bbox().width() * 2) - spatium;
+    }
+
+    x = std::min(x, xOffset - iconRect.right());
+
+    ldata->setPos(PointF(x, -2.5 * spatium));
+
+    // Ensure it goes behind notation and LayoutBreak
+    const_cast<StaffVisibilityIndicator*>(item)->setZ(-100);
 }
 
 void TLayout::layoutStem(const Stem* item, Stem::LayoutData* ldata, const LayoutConfiguration& conf)

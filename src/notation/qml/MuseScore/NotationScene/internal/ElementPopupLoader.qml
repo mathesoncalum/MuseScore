@@ -53,6 +53,7 @@ Item {
             case Notation.TYPE_HARP_DIAGRAM: return harpPedalComp
             case Notation.TYPE_CAPO: return capoComp
             case Notation.TYPE_STRING_TUNINGS: return stringTuningsComp
+            case Notation.TYPE_STAFF_VISIBILITY: return staffVisibilityComp
             case Notation.TYPE_SOUND_FLAG: return soundFlagComp
             case Notation.TYPE_DYNAMIC: return dynamicComp
             case Notation.TYPE_TEXT: return textStyleComp
@@ -148,6 +149,12 @@ Item {
     Component {
         id: stringTuningsComp
         StringTuningsPopup {
+        }
+    }
+
+    Component {
+        id: staffVisibilityComp
+        StaffVisibilityPopup {
         }
     }
 

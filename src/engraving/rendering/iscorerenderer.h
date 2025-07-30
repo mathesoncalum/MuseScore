@@ -81,6 +81,7 @@ class SlurSegment;
 class SlurTie;
 class Spacer;
 class StaffText;
+class StaffVisibilityIndicator;
 class Stem;
 class SystemLockIndicator;
 
@@ -153,6 +154,7 @@ public:
                                    SlurTie*,
                                    Spacer*,
                                    StaffText*,
+                                   StaffVisibilityIndicator*,
                                    Stem*,
                                    SystemLockIndicator*,
                                    TextBase*,

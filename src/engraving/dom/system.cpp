@@ -48,6 +48,7 @@
 #include "spacer.h"
 #include "spanner.h"
 #include "staff.h"
+#include "staffvisibilityindicator.h"
 #include "system.h"
 #include "systemdivider.h"
 
@@ -108,12 +109,13 @@ void SysStaff::restoreLayout()
 System::System(Page* parent)
     : EngravingItem(ElementType::SYSTEM, parent)
 {
+    m_staffVisibilityIndicator = Factory::createStaffVisibilityIndicator(this);
+    m_staffVisibilityIndicator->setParent(this);
 }
 
 //---------------------------------------------------------
 //   ~System
 //---------------------------------------------------------
-
 System::~System()
 {
     for (SpannerSegment* ss : spannerSegments()) {
@@ -131,6 +133,7 @@ System::~System()
     muse::DeleteAll(m_lockIndicators);
     delete m_systemDividerLeft;
     delete m_systemDividerRight;
+    delete m_staffVisibilityIndicator;
 }
 
 #ifndef ENGRAVING_NO_ACCESSIBILITY
@@ -687,6 +690,8 @@ void System::scanElements(void* data, void (* func)(void*, EngravingItem*), bool
     for (auto i : m_lockIndicators) {
         func(data, i);
     }
+
+    func(data, m_staffVisibilityIndicator);
 
     for (const SysStaff* st : m_staves) {
         if (all || st->show()) {

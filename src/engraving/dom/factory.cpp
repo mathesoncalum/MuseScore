@@ -92,6 +92,7 @@
 #include "staffstate.h"
 #include "stafftext.h"
 #include "stafftypechange.h"
+#include "staffvisibilityindicator.h"
 #include "stem.h"
 #include "stemslash.h"
 #include "sticking.h"
@@ -778,6 +779,15 @@ PlayTechAnnotation* Factory::createPlayTechAnnotation(Segment * parent, PlayingT
 CREATE_ITEM_IMPL(Capo, ElementType::CAPO, Segment, isAccessibleEnabled)
 
 CREATE_ITEM_IMPL(TimeTickAnchor, ElementType::TIME_TICK_ANCHOR, Segment, isAccessibleEnabled)
+
+StaffVisibilityIndicator* Factory::createStaffVisibilityIndicator(System * parent, bool isAccessibleEnabled)
+{
+    StaffVisibilityIndicator* svi = new StaffVisibilityIndicator(parent);
+    svi->setAccessibleEnabled(isAccessibleEnabled);
+    return svi;
+}
+
+COPY_ITEM_IMPL(StaffVisibilityIndicator)
 
 SystemLockIndicator* Factory::createSystemLockIndicator(System * parent, const SystemLock * lock, bool isAccessibleEnabled)
 {

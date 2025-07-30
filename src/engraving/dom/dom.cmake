@@ -290,6 +290,8 @@ set(DOM_SRC
     ${CMAKE_CURRENT_LIST_DIR}/splitMeasure.cpp
     ${CMAKE_CURRENT_LIST_DIR}/staff.cpp
     ${CMAKE_CURRENT_LIST_DIR}/staff.h
+    ${CMAKE_CURRENT_LIST_DIR}/staffvisibilityindicator.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/staffvisibilityindicator.h
     ${CMAKE_CURRENT_LIST_DIR}/stafflines.cpp
     ${CMAKE_CURRENT_LIST_DIR}/stafflines.h
     ${CMAKE_CURRENT_LIST_DIR}/staffstate.cpp

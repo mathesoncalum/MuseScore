@@ -96,6 +96,8 @@
 #include "../../dom/systemtext.h"
 #include "../../dom/soundflag.h"
 
+#include "../../dom/staffvisibilityindicator.h"
+
 #include "../../dom/tapping.h"
 #include "../../dom/textbase.h"
 #include "../../dom/tempotext.h"
@@ -324,6 +326,7 @@ public:
     static void layoutStaffState(const StaffState* item, StaffState::LayoutData* ldata);
     static void layoutStaffText(const StaffText* item, StaffText::LayoutData* ldata);
     static void layoutStaffTypeChange(const StaffTypeChange* item, StaffTypeChange::LayoutData* ldata, const LayoutConfiguration& conf);
+    static void layoutStaffVisibilityIndicator(const StaffVisibilityIndicator* item, StaffVisibilityIndicator::LayoutData* ldata);
     static void layoutStem(const Stem* item, Stem::LayoutData* ldata, const LayoutConfiguration& conf);
     static void layoutStemSlash(const StemSlash* item, StemSlash::LayoutData* ldata, const LayoutConfiguration& conf);
     static void layoutSticking(const Sticking* item, Sticking::LayoutData* ldata);

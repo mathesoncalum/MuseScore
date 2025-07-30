@@ -36,6 +36,7 @@ class InstrumentName;
 class MeasureBase;
 class Page;
 class SpannerSegment;
+class StaffVisibilityIndicator;
 class SystemLock;
 
 //---------------------------------------------------------
@@ -211,6 +212,8 @@ public:
     void addLockIndicator(SystemLockIndicator* sli);
     void deleteLockIndicators();
 
+    StaffVisibilityIndicator* staffVisibilityIndicator() const { return m_staffVisibilityIndicator; }
+
 private:
     friend class Factory;
 
@@ -229,6 +232,8 @@ private:
     std::vector<Bracket*> m_brackets;
     std::list<SpannerSegment*> m_spannerSegments;
     std::vector<SystemLockIndicator*> m_lockIndicators;
+
+    StaffVisibilityIndicator* m_staffVisibilityIndicator = nullptr;
 
     double m_leftMargin = 0.0;      // left margin for instrument name, brackets etc.
     mutable bool m_fixedDownDistance = false;

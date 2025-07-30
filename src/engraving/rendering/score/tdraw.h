@@ -130,6 +130,7 @@ class StaffLines;
 class StaffState;
 class StaffText;
 class StaffTypeChange;
+class StaffVisibilityIndicator;
 class Stem;
 class StemSlash;
 class Sticking;
@@ -281,6 +282,7 @@ private:
     static void draw(const StaffState* item, muse::draw::Painter* painter);
     static void draw(const StaffText* item, muse::draw::Painter* painter);
     static void draw(const StaffTypeChange* item, muse::draw::Painter* painter);
+    static void draw(const StaffVisibilityIndicator* item, muse::draw::Painter* painter);
     static void draw(const Stem* item, muse::draw::Painter* painter);
     static void draw(const StemSlash* item, muse::draw::Painter* painter);
     static void draw(const Sticking* item, muse::draw::Painter* painter);
