@@ -111,21 +111,32 @@ void GuiApp::perform()
     SplashScreen* splashScreen = nullptr;
 #endif
 
+    LOGD() << "CALUM - entering onInit loop";
+
     // ====================================================
     // Setup modules: onInit
     // ====================================================
     m_globalModule.onInit(runMode);
     for (modularity::IModuleSetup* m : m_modules) {
+        LOGD() << "CALUM - about to call onInit on: << " << m->moduleName();
         m->onInit(runMode);
+        LOGD() << "CALUM - onInit success";
     }
+
+    LOGD() << "CALUM - done onInit for all modules";
+    LOGD() << "CALUM - entering onAllInited loop";
 
     // ====================================================
     // Setup modules: onAllInited
     // ====================================================
     m_globalModule.onAllInited(runMode);
     for (modularity::IModuleSetup* m : m_modules) {
+        LOGD() << "CALUM - about to call onAllInited on: << " << m->moduleName();
         m->onAllInited(runMode);
+        LOGD() << "CALUM - onAllInited success";
     }
+
+    LOGD() << "CALUM - done onAllInited for all modules";
 
     // ====================================================
     // Setup modules: onStartApp (on next event loop)
