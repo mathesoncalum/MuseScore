@@ -130,19 +130,19 @@ void PaletteCompat::migrateOldPaletteCellIfNeeded(PaletteCell* cell, Score* pale
     }
 
     if (item->isPedal()) {
-        Pedal* newPedal = Factory::createPedal(paletteScore->dummy());
-        Pedal* oldPedal = toPedal(item);
+        // Pedal* newPedal = Factory::createPedal(paletteScore->dummy());
+        // Pedal* oldPedal = toPedal(item);
 
-        newPedal->setLen(oldPedal->frontSegment()->pos2().x());
-        newPedal->setLineVisible(oldPedal->lineVisible());
-        newPedal->setBeginHookType(oldPedal->beginHookType());
-        newPedal->setEndHookType(oldPedal->endHookType());
+        // newPedal->setLen(oldPedal->frontSegment()->pos2().x());
+        // newPedal->setLineVisible(oldPedal->lineVisible());
+        // newPedal->setBeginHookType(oldPedal->beginHookType());
+        // newPedal->setEndHookType(oldPedal->endHookType());
 
-        newPedal->setBeginText(newPedal->propertyDefault(Pid::BEGIN_TEXT).value<String>());
-        newPedal->setContinueText(newPedal->propertyDefault(Pid::CONTINUE_TEXT).value<String>());
-        newPedal->setEndText(newPedal->propertyDefault(Pid::END_TEXT).value<String>());
+        // newPedal->setBeginText(newPedal->propertyDefault(Pid::BEGIN_TEXT).value<String>());
+        // newPedal->setContinueText(newPedal->propertyDefault(Pid::CONTINUE_TEXT).value<String>());
+        // newPedal->setEndText(newPedal->propertyDefault(Pid::END_TEXT).value<String>());
 
-        cell->element.reset(newPedal);
+        // cell->element.reset(newPedal);
         return;
     }
 
