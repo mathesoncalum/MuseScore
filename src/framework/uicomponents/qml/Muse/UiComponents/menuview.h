@@ -35,14 +35,14 @@ class MenuView : public PopupView
     Q_PROPERTY(int contentWidth READ contentWidth WRITE setContentWidth NOTIFY contentWidthChanged)
     Q_PROPERTY(int contentHeight READ contentHeight WRITE setContentHeight NOTIFY contentHeightChanged)
 
+    Q_PROPERTY(int viewVerticalMargin READ viewVerticalMargin CONSTANT)
     Q_PROPERTY(Qt::AlignmentFlag cascadeAlign READ cascadeAlign WRITE setCascadeAlign NOTIFY cascadeAlignChanged)
 
 public:
     explicit MenuView(QQuickItem* parent = nullptr);
     ~MenuView() override = default;
 
-    Q_INVOKABLE int viewVerticalMargin() const;
-
+    int viewVerticalMargin() const;
     Qt::AlignmentFlag cascadeAlign() const;
 
     int contentWidth() const;
