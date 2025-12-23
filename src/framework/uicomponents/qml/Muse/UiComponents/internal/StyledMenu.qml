@@ -67,7 +67,7 @@ MenuView {
         //ui.sleep(1000)
 
         root.contentWidth = root.menuMetrics.itemWidth
-        root.contentHeight = listView.height + (root.viewVerticalMargin() * 2)
+        root.contentHeight = listView.height + (root.viewVerticalMargin * 2)
 
         // for debuging
         // ui.sleep(1000)
@@ -263,10 +263,8 @@ MenuView {
             id: viewColumn
 
             anchors.fill: parent
-
-            // TODO: Make property...
-            anchors.topMargin: root.viewVerticalMargin()
-            anchors.bottomMargin: root.viewVerticalMargin()
+            anchors.topMargin: root.viewVerticalMargin
+            anchors.bottomMargin: root.viewVerticalMargin
 
             StyledListView {
                 id: listView
