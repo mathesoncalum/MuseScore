@@ -67,7 +67,7 @@ MenuView {
         //ui.sleep(1000)
 
         root.contentWidth = root.menuMetrics.itemWidth
-        root.contentHeight = listView.actualHeight
+        root.contentHeight = listView.height + (root.viewVerticalMargin() * 2)
 
         // for debuging
         // ui.sleep(1000)
@@ -259,159 +259,164 @@ MenuView {
                 }
             })
         }
-
-        StyledListView {
-            id: listView
-
-            readonly property int actualHeight: {
-                //! NOTE: Due to the fact that this has a dynamic delegate, the height calculation occurs
-                // with an error (by default, the delegate height is taken as the menu item height). Let's
-                // manually calculate the height of the content...
-                var separatorCount = 0
-                for (let i = 0; i < model.length; i++) {
-                    let item = Boolean(model.get) ? model.get(i).itemRole : model[i]
-                    if (!Boolean(item.title)) {
-                        separatorCount++
-                    }
-                }
-
-                var itemHeight = 0
-                for(var child in listView.contentItem.children) {
-                    itemHeight = Math.max(itemHeight, listView.contentItem.children[child].height)
-                }
-
-                const totalItemsHeight = itemHeight * (model.length - separatorCount)
-                const totalSeparatorHeight = prv.separatorHeight * separatorCount
-
-                const anchorItemHeight = root.anchorGeometry().height
-
-                return Math.min(totalItemsHeight + totalSeparatorHeight + (prv.viewVerticalMargin * 2),
-                                anchorItemHeight - root.padding * 2)
-            }
+        Column {
+            id: viewColumn
 
             anchors.fill: parent
-            anchors.topMargin: prv.viewVerticalMargin
-            anchors.bottomMargin: prv.viewVerticalMargin
 
-            spacing: 0
-            interactive: contentHeight > root.height
-            arrowControlsAvailable: true
+            // TODO: Make property...
+            anchors.topMargin: root.viewVerticalMargin()
+            anchors.bottomMargin: root.viewVerticalMargin()
 
-            QtObject {
-                id: prv
+            StyledListView {
+                id: listView
 
-                readonly property int separatorHeight: 1
-                readonly property int viewVerticalMargin: root.viewVerticalMargin()
+                height: {
+                    //! NOTE: Due to the fact that this has a dynamic delegate, the height calculation occurs
+                    // with an error (by default, the delegate height is taken as the menu item height). Let's
+                    // manually calculate the height of the content...
+                    var separatorCount = 0
+                    for (let i = 0; i < model.length; i++) {
+                        let item = Boolean(model.get) ? model.get(i).itemRole : model[i]
+                        if (!Boolean(item.title)) {
+                            separatorCount++
+                        }
+                    }
 
-                function focusOnFirstEnabled() {
-                    for (var i = 0; i < listView.count; ++i) {
-                        var loader = listView.itemAtIndex(i)
-                        if (loader && !loader.isSeparator && loader.item && loader.item.enabled) {
-                            loader.item.navigation.requestActive()
+                    var itemHeight = 0
+                    for(var child in listView.contentItem.children) {
+                        itemHeight = Math.max(itemHeight, listView.contentItem.children[child].height)
+                    }
+
+                    const totalItemsHeight = itemHeight * (model.length - separatorCount)
+                    const totalSeparatorHeight = prv.separatorHeight * separatorCount
+
+                    const anchorItemHeight = root.anchorGeometry().height
+
+                    return Math.min(totalItemsHeight + totalSeparatorHeight, anchorItemHeight - root.padding * 2)
+                }
+
+                width: parent.width
+
+                spacing: 0
+                interactive: contentHeight > root.height
+                arrowControlsAvailable: true
+
+                QtObject {
+                    id: prv
+
+                    readonly property int separatorHeight: 1
+
+                    function focusOnFirstEnabled() {
+                        for (var i = 0; i < listView.count; ++i) {
+                            var loader = listView.itemAtIndex(i)
+                            if (loader && !loader.isSeparator && loader.item && loader.item.enabled) {
+                                loader.item.navigation.requestActive()
+                                return true
+                            }
+                        }
+
+                        return false
+                    }
+
+                    function focusOnSelected() {
+                        var item = selectedItem()
+                        if (Boolean(item)) {
+                            item.navigation.requestActive()
                             return true
                         }
+
+                        return false
                     }
 
-                    return false
-                }
-
-                function focusOnSelected() {
-                    var item = selectedItem()
-                    if (Boolean(item)) {
-                        item.navigation.requestActive()
-                        return true
-                    }
-
-                    return false
-                }
-
-                function selectedItem() {
-                    for (var i = 0; i < listView.count; ++i) {
-                        var loader = listView.itemAtIndex(i)
-                        if (loader && !loader.isSeparator && loader.item && loader.item.isSelected) {
-                            return loader.item
-                        }
-                    }
-
-                    return null
-                }
-            }
-
-            delegate: Loader {
-                id: loader
-
-                required property var model
-                required property int index
-
-                readonly property var modelData: Boolean(root.model.get) ? model.itemRole : model.modelData
-                readonly property bool isSeparator: !(modelData?.title)
-
-                sourceComponent: isSeparator ? separatorComp : menuItemComp
-
-                Component {
-                    id: menuItemComp
-
-                    StyledMenuItem {
-                        id: item
-                        width: root.menuMetrics?.itemWidth ?? 0
-
-                        modelData: loader.modelData
-
-                        menuAnchorItem: root.anchorItem
-                        parentWindow: root.window
-
-                        navigation.panel: content.navigationPanel
-                        navigation.row: loader.index
-
-                        iconAndCheckMarkMode: root.menuMetrics?.iconAndCheckMarkMode || StyledMenuItem.None
-
-                        reserveSpaceForShortcutsOrSubmenuIndicator: Boolean(root.menuMetrics) ?
-                                                                        (root.menuMetrics.hasItemsWithShortcut || root.menuMetrics.hasItemsWithSubmenu) : false
-
-                        padding: root.padding
-
-                        subMenuShowed: root.subMenuLoader.isMenuOpened && root.subMenuLoader.parent === item
-
-                        onOpenSubMenuRequested: function(byHover) {
-                            if (!hasSubMenu) {
-                                if (byHover) {
-                                    root.subMenuLoader.close()
-                                }
-
-                                return
+                    function selectedItem() {
+                        for (var i = 0; i < listView.count; ++i) {
+                            var loader = listView.itemAtIndex(i)
+                            if (loader && !loader.isSeparator && loader.item && loader.item.isSelected) {
+                                return loader.item
                             }
+                        }
 
-                            if (!byHover) {
-                                if (subMenuShowed) {
-                                    root.subMenuLoader.close()
+                        return null
+                    }
+                }
+
+                delegate: Loader {
+                    id: loader
+
+                    required property var model
+                    required property int index
+
+                    readonly property var modelData: Boolean(root.model.get) ? model.itemRole : model.modelData
+                    readonly property bool isSeparator: !(modelData?.title)
+
+                    sourceComponent: isSeparator ? separatorComp : menuItemComp
+
+                    Component {
+                        id: menuItemComp
+
+                        StyledMenuItem {
+                            id: item
+                            width: root.menuMetrics?.itemWidth ?? 0
+
+                            modelData: loader.modelData
+
+                            menuAnchorItem: root.anchorItem
+                            parentWindow: root.window
+
+                            navigation.panel: content.navigationPanel
+                            navigation.row: loader.index
+
+                            iconAndCheckMarkMode: root.menuMetrics?.iconAndCheckMarkMode || StyledMenuItem.None
+
+                            reserveSpaceForShortcutsOrSubmenuIndicator: Boolean(root.menuMetrics) ?
+                                                                            (root.menuMetrics.hasItemsWithShortcut || root.menuMetrics.hasItemsWithSubmenu) : false
+
+                            padding: root.padding
+
+                            subMenuShowed: root.subMenuLoader.isMenuOpened && root.subMenuLoader.parent === item
+
+                            onOpenSubMenuRequested: function(byHover) {
+                                if (!hasSubMenu) {
+                                    if (byHover) {
+                                        root.subMenuLoader.close()
+                                    }
+
                                     return
                                 }
+
+                                if (!byHover) {
+                                    if (subMenuShowed) {
+                                        root.subMenuLoader.close()
+                                        return
+                                    }
+                                }
+
+                                root.subMenuLoader.parent = item
+                                root.subMenuLoader.open(subMenuItems)
                             }
 
-                            root.subMenuLoader.parent = item
-                            root.subMenuLoader.open(subMenuItems)
-                        }
+                            onCloseSubMenuRequested: {
+                                root.subMenuLoader.close()
+                            }
 
-                        onCloseSubMenuRequested: {
-                            root.subMenuLoader.close()
-                        }
+                            onHandleMenuItem: function(itemId) {
+                                // NOTE: reset view state
+                                listView.update()
 
-                        onHandleMenuItem: function(itemId) {
-                            // NOTE: reset view state
-                            listView.update()
-
-                            root.handleMenuItem(itemId)
+                                root.handleMenuItem(itemId)
+                            }
                         }
                     }
-                }
 
-                Component {
-                    id: separatorComp
+                    Component {
+                        id: separatorComp
 
-                    Rectangle {
-                        width: root.menuMetrics?.itemWidth ?? 0
-                        height: prv.separatorHeight
-                        color: ui.theme.strokeColor
+                        Rectangle {
+                            width: root.menuMetrics?.itemWidth ?? 0
+                            height: prv.separatorHeight
+                            color: ui.theme.strokeColor
+                        }
                     }
                 }
             }
