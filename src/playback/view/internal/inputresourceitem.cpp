@@ -81,42 +81,7 @@ void InputResourceItem::requestAvailableResources()
     playback()->availableInputResources()
     .onResolve(this, [this](const AudioResourceMetaList& availableResources) {
         updateAvailableResources(availableResources);
-
-        QVariantList result;
-
-        if (!isBlank()) {
-            QString currentResourceId = QString::fromStdString(m_currentInputParams.resourceMeta.id);
-
-            result << buildMenuItem(makeMenuResourceItemId(m_currentInputParams.resourceMeta.type, currentResourceId),
-                                    title(),
-                                    true /*checked*/);
-
-            result << buildSeparator();
-        }
-
-        auto museResourcesSearch = m_availableResourceMap.find(AudioResourceType::MuseSamplerSoundPack);
-        if (museResourcesSearch != m_availableResourceMap.end()) {
-            result << buildMuseMenuItem(museResourcesSearch->second);
-
-            result << buildSeparator();
-        }
-
-        auto vstResourcesSearch = m_availableResourceMap.find(AudioResourceType::VstPlugin);
-        if (vstResourcesSearch != m_availableResourceMap.end()) {
-            result << buildVstMenuItem(vstResourcesSearch->second);
-
-            result << buildSeparator();
-        }
-
-        auto sfResourcesSearch = m_availableResourceMap.find(AudioResourceType::FluidSoundfont);
-        if (sfResourcesSearch != m_availableResourceMap.end()) {
-            result << buildSoundFontsMenuItem(sfResourcesSearch->second);
-        }
-
-        result << buildSeparator();
-        result << buildExternalLinkMenuItem(GET_MORE_SOUNDS_ID, muse::qtrc("playback", "Get more sounds"));
-
-        emit availableResourceListResolved(result);
+        emit resourceMenuChanged(getFlyoutMenu());
     })
     .onReject(this, [](const int errCode, const std::string& errText) {
         LOGE() << "Unable to resolve available output resources"
@@ -206,6 +171,142 @@ bool InputResourceItem::isActive() const
 bool InputResourceItem::hasNativeEditorSupport() const
 {
     return m_currentInputParams.resourceMeta.hasNativeEditorSupport;
+}
+
+QVariantList InputResourceItem::getFlyoutMenu() const
+{
+    QVariantList result;
+    IF_ASSERT_FAILED(!m_availableResourceMap.empty()) {
+        return result;
+    }
+
+    if (!isBlank()) {
+        QString currentResourceId = QString::fromStdString(m_currentInputParams.resourceMeta.id);
+
+        result << buildMenuItem(makeMenuResourceItemId(m_currentInputParams.resourceMeta.type, currentResourceId),
+                                title(),
+                                true /*checked*/);
+
+        result << buildSeparator();
+    }
+
+    auto museResourcesSearch = m_availableResourceMap.find(AudioResourceType::MuseSamplerSoundPack);
+    if (museResourcesSearch != m_availableResourceMap.end()) {
+        result << buildMuseMenuItem(museResourcesSearch->second);
+
+        result << buildSeparator();
+    }
+
+    auto vstResourcesSearch = m_availableResourceMap.find(AudioResourceType::VstPlugin);
+    if (vstResourcesSearch != m_availableResourceMap.end()) {
+        result << buildVstMenuItem(vstResourcesSearch->second);
+
+        result << buildSeparator();
+    }
+
+    auto sfResourcesSearch = m_availableResourceMap.find(AudioResourceType::FluidSoundfont);
+    if (sfResourcesSearch != m_availableResourceMap.end()) {
+        result << buildSoundFontsMenuItem(sfResourcesSearch->second);
+    }
+
+    result << buildSeparator();
+    result << buildExternalLinkMenuItem(GET_MORE_SOUNDS_ID, muse::qtrc("playback", "Get more sounds"));
+
+    return result;
+}
+
+QVariantList InputResourceItem::getFilteredMenu(const QString& filterText) const
+{
+    QVariantList result;
+    IF_ASSERT_FAILED(!m_availableResourceMap.empty()) {
+        return result;
+    }
+
+    const QString& normalisedSearch = filterText.toLower();
+
+    auto museResourcesSearch = m_availableResourceMap.find(AudioResourceType::MuseSamplerSoundPack);
+    if (museResourcesSearch != m_availableResourceMap.end()) {
+        // Vendor -> Pack -> Category -> Instruments
+        using Instruments = std::vector<std::pair<std::string /*id*/, String /*name*/> >;
+        using CategoryMap = std::map<String, Instruments>;
+        using PackMap = std::map<String, CategoryMap>;
+        using VendorMap = std::map<String, PackMap>;
+
+        for (const auto& [_, metaList] : museResourcesSearch->second) {
+            VendorMap vendorMap;
+
+            for (const AudioResourceMeta& resourceMeta : metaList) {
+                const muse::String& vendorName = resourceMeta.attributeVal(u"museVendorName");
+                const muse::String& pack = resourceMeta.attributeVal(u"musePack");
+                const muse::String& category = resourceMeta.attributeVal(u"museCategory");
+                const muse::String& name = resourceMeta.attributeVal(u"museName");
+
+                vendorMap[vendorName][pack][category].emplace_back(std::make_pair(resourceMeta.id, name));
+            }
+
+            for (const auto& [vendorName, packs] : vendorMap) {
+                for (const auto& [packName, categories] : packs) {
+                    QVariantList subItems;
+                    for (const auto& [categoryName, instruments] : categories) {
+                        for (const auto& [instId, instName] : instruments) {
+                            const QString& itemTitle = packName.toQString() + " - " + instName.toQString();
+                            const QString& normalisedTitle = itemTitle.toLower();
+                            if (!normalisedTitle.contains(normalisedSearch)) {
+                                continue;
+                            }
+
+                            const QString& qInstId = QString::fromStdString(instId);
+                            const QString& itemId = makeMenuResourceItemId(AudioResourceType::MuseSamplerSoundPack, qInstId);
+                            const bool checked = m_currentInputParams.resourceMeta.id == instId;
+
+                            subItems << buildMenuItem(itemId, itemTitle, checked);
+                        }
+                    }
+                    if (subItems.empty()) {
+                        continue;
+                    }
+                    if (!result.empty()) {
+                        result << buildSeparator();
+                    }
+                    result << subItems;
+                }
+            }
+        }
+    }
+
+    auto vstResourcesSearch = m_availableResourceMap.find(AudioResourceType::VstPlugin);
+    if (vstResourcesSearch != m_availableResourceMap.end()) {
+        for (const auto& pair : vstResourcesSearch->second) {
+            QVariantList subItems;
+            for (const AudioResourceMeta& resourceMeta : pair.second) {
+                const QString& vendorName = QString::fromStdString(resourceMeta.vendor);
+                const QString& resourceId = QString::fromStdString(resourceMeta.id);
+                const QString& itemTitle = vendorName + " - " + resourceId;
+                const QString& normalisedTitle = itemTitle.toLower();
+                if (!normalisedTitle.contains(normalisedSearch)) {
+                    continue;
+                }
+                const QString& itemId = makeMenuResourceItemId(AudioResourceType::VstPlugin, resourceId);
+                const bool checked = m_currentInputParams.resourceMeta.id == resourceId;
+                subItems << buildMenuItem(itemId, itemTitle, checked);
+            }
+            if (subItems.empty()) {
+                continue;
+            }
+            if (!result.empty()) {
+                result << buildSeparator();
+            }
+            result << subItems;
+        }
+    }
+
+    auto sfResourcesSearch = m_availableResourceMap.find(AudioResourceType::FluidSoundfont);
+    if (sfResourcesSearch != m_availableResourceMap.end()) {
+        // TODO: This is very complicated - before moving onto this we should try to reduce
+        // the repetition we already have...
+    }
+
+    return result;
 }
 
 QVariantMap InputResourceItem::buildMuseMenuItem(const ResourceByVendorMap& resourcesByVendor) const

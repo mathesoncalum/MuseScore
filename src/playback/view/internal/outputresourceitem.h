@@ -77,6 +77,9 @@ signals:
     void fxParamsChanged();
 
 private:
+    QVariantList getFlyoutMenu() const override;
+    QVariantList getFilteredMenu(const QString& filterText) const override;
+
     void updateCurrentFxParams(const muse::audio::AudioResourceMeta& newMeta);
     void updateAvailableFxVendorsMap(const muse::audio::AudioResourceMetaList& availableFxResources);
 

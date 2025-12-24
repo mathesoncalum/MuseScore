@@ -32,12 +32,16 @@ MenuView {
 
     property alias model: listView.model
 
+    property alias isSearchable: searchColumn.visible
+
     property int preferredAlign: Qt.AlignRight // Left, HCenter, Right
     required property bool hasSiblingMenus
 
     signal handleMenuItem(string itemId)
     signal openPrevMenu()
     signal openNextMenu()
+
+    signal searchTextChanged(string searchText)
 
     property alias width: content.width
     property alias height: content.height
@@ -66,8 +70,10 @@ MenuView {
         // for debuging
         //ui.sleep(1000)
 
+        const searchHeight = root.isSearchable ? (searchColumn.height + root.viewVerticalMargin) : 0
+
         root.contentWidth = root.menuMetrics.itemWidth
-        root.contentHeight = listView.height + (root.viewVerticalMargin * 2)
+        root.contentHeight = listView.height + searchHeight + (root.viewVerticalMargin * 2)
 
         // for debuging
         // ui.sleep(1000)
@@ -263,12 +269,40 @@ MenuView {
             id: viewColumn
 
             anchors.fill: parent
-            anchors.topMargin: root.viewVerticalMargin
             anchors.bottomMargin: root.viewVerticalMargin
+            anchors.topMargin: root.viewVerticalMargin
+
+            Column {
+                id: searchColumn
+
+                width: parent.width
+                spacing: root.viewVerticalMargin
+
+                SearchField {
+                    id: searchField
+
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                        leftMargin: root.viewVerticalMargin
+                        rightMargin: root.viewVerticalMargin
+                    }
+
+                    onSearchTextChanged: {
+                        root.searchTextChanged(searchField.searchText)
+                    }
+                }
+
+                SeparatorLine {
+                    id: searchSeparator
+                    width: parent.width
+                }
+            }
 
             StyledListView {
                 id: listView
 
+                // TODO: Getting "length is undefined" error here...
                 height: {
                     //! NOTE: Due to the fact that this has a dynamic delegate, the height calculation occurs
                     // with an error (by default, the delegate height is taken as the menu item height). Let's

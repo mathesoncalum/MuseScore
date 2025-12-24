@@ -31,6 +31,7 @@ Loader {
     id: loader
 
     signal handleMenuItem(string itemId)
+    signal searchTextChanged(string searchText)
     signal openPrevMenu()
     signal openNextMenu()
     signal opened()
@@ -39,6 +40,7 @@ Loader {
     property StyledMenu menu: loader.item as StyledMenu
     property Item menuAnchorItem: null
     property bool hasSiblingMenus: false
+    property bool isSearchable: false
     property var parentWindow: null
 
     property alias isMenuOpened: loader.active
@@ -63,6 +65,8 @@ Loader {
     sourceComponent: StyledMenu {
         id: itemMenu
 
+        isSearchable: loader.isSearchable
+
         openPolicies: PopupView.NoActivateFocus
         focusPolicies: PopupView.NoFocus
 
@@ -73,6 +77,10 @@ Loader {
         onHandleMenuItem: function(itemId) {
             itemMenu.close()
             Qt.callLater(loader.handleMenuItem, itemId)
+        }
+
+        onSearchTextChanged: function(searchText) {
+            loader.searchTextChanged(searchText)
         }
 
         onOpenPrevMenu: {
