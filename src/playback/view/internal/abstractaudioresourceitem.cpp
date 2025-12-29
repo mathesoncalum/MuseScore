@@ -57,6 +57,18 @@ bool AbstractAudioResourceItem::isActive() const
     return false;
 }
 
+void AbstractAudioResourceItem::handleSearchText(const QString& searchText)
+{
+    const QVariantList menu = searchText.isEmpty() ? getFlyoutMenu() : getFilteredMenu(searchText);
+    emit resourceMenuChanged(menu);
+}
+
+QVariantList AbstractAudioResourceItem::getFilteredMenu(const QString& filterText) const
+{
+    Q_UNUSED(filterText);
+    return QVariantList();
+}
+
 QVariantMap AbstractAudioResourceItem::buildMenuItem(const QString& itemId,
                                                      const QString& title,
                                                      const bool checked,
