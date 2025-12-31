@@ -23,6 +23,7 @@
 #include "menuview.h"
 
 #include "log.h"
+#include "defer.h"
 
 using namespace muse::uicomponents;
 
@@ -90,11 +91,21 @@ void MenuView::updateGeometry()
         viewRect.moveTopLeft(m_globalPos);
     };
 
+    DEFER {
+        // remove padding for arrow
+        movePos(m_globalPos.x() - padding(), m_globalPos.y());
+        updateContentPosition();
+    };
+
     const QQuickItem* parentMenuContentItem = this->parentMenuContentItem();
     bool isCascade = parentMenuContentItem != nullptr;
 
     if (isCascade) {
         movePos(parentTopLeft.x() + parent->width(), m_globalPos.y() - parent->height() - viewMargins());
+    }
+
+    if (placementPolicies().testFlag(PlacementPolicy::IgnoreFit)) {
+        return;
     }
 
     if (viewRect.left() < anchorRect.left()) {
@@ -130,11 +141,6 @@ void MenuView::updateGeometry()
             movePos(m_globalPos.x() - (viewRect.right() - anchorRect.right()) + padding() * 2, m_globalPos.y());
         }
     }
-
-    // remove padding for arrow
-    movePos(m_globalPos.x() - padding(), m_globalPos.y());
-
-    updateContentPosition();
 }
 
 void MenuView::updateContentPosition()

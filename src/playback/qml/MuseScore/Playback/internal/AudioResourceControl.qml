@@ -325,10 +325,18 @@ Item {
                 StyledMenuLoader {
                     id: menuLoader
 
+                    placementPolicies: PopupView.IgnoreFit
+                    isSearchable: true
+
                     onHandleMenuItem: function(itemId) {
                         if (root.resourceItemModel) {
                             Qt.callLater(root.resourceItemModel.handleMenuItem, itemId)
                         }
+                    }
+
+                    onHandleSearchText: function(searchText) {
+                        // TODO: PLACEHOLDER
+                        console.log("Search text: " + searchText)
                     }
 
                     onOpened: {
