@@ -81,42 +81,7 @@ void InputResourceItem::requestAvailableResources()
     playback()->availableInputResources()
     .onResolve(this, [this](const AudioResourceMetaList& availableResources) {
         updateAvailableResources(availableResources);
-
-        QVariantList result;
-
-        if (!isBlank()) {
-            QString currentResourceId = QString::fromStdString(m_currentInputParams.resourceMeta.id);
-
-            result << buildMenuItem(makeMenuResourceItemId(m_currentInputParams.resourceMeta.type, currentResourceId),
-                                    title(),
-                                    true /*checked*/);
-
-            result << buildSeparator();
-        }
-
-        auto museResourcesSearch = m_availableResourceMap.find(AudioResourceType::MuseSamplerSoundPack);
-        if (museResourcesSearch != m_availableResourceMap.end()) {
-            result << buildMuseMenuItem(museResourcesSearch->second);
-
-            result << buildSeparator();
-        }
-
-        auto vstResourcesSearch = m_availableResourceMap.find(AudioResourceType::VstPlugin);
-        if (vstResourcesSearch != m_availableResourceMap.end()) {
-            result << buildVstMenuItem(vstResourcesSearch->second);
-
-            result << buildSeparator();
-        }
-
-        auto sfResourcesSearch = m_availableResourceMap.find(AudioResourceType::FluidSoundfont);
-        if (sfResourcesSearch != m_availableResourceMap.end()) {
-            result << buildSoundFontsMenuItem(sfResourcesSearch->second);
-        }
-
-        result << buildSeparator();
-        result << buildExternalLinkMenuItem(GET_MORE_SOUNDS_ID, muse::qtrc("playback", "Get more sounds"));
-
-        emit availableResourceListResolved(result);
+        emit resourceListChanged(buildResourceList());
     })
     .onReject(this, [](const int errCode, const std::string& errText) {
         LOGE() << "Unable to resolve available output resources"
@@ -206,6 +171,48 @@ bool InputResourceItem::isActive() const
 bool InputResourceItem::hasNativeEditorSupport() const
 {
     return m_currentInputParams.resourceMeta.hasNativeEditorSupport;
+}
+
+QVariantList InputResourceItem::buildResourceList(const QString& filterText) const
+{
+    QVariantList result;
+    if (!filterText.isEmpty()) { // TODO: This is a placeholder
+        return result;
+    }
+
+    if (!isBlank()) {
+        QString currentResourceId = QString::fromStdString(m_currentInputParams.resourceMeta.id);
+
+        result << buildMenuItem(makeMenuResourceItemId(m_currentInputParams.resourceMeta.type, currentResourceId),
+                                title(),
+                                true /*checked*/);
+
+        result << buildSeparator();
+    }
+
+    auto museResourcesSearch = m_availableResourceMap.find(AudioResourceType::MuseSamplerSoundPack);
+    if (museResourcesSearch != m_availableResourceMap.end()) {
+        result << buildMuseMenuItem(museResourcesSearch->second);
+
+        result << buildSeparator();
+    }
+
+    auto vstResourcesSearch = m_availableResourceMap.find(AudioResourceType::VstPlugin);
+    if (vstResourcesSearch != m_availableResourceMap.end()) {
+        result << buildVstMenuItem(vstResourcesSearch->second);
+
+        result << buildSeparator();
+    }
+
+    auto sfResourcesSearch = m_availableResourceMap.find(AudioResourceType::FluidSoundfont);
+    if (sfResourcesSearch != m_availableResourceMap.end()) {
+        result << buildSoundFontsMenuItem(sfResourcesSearch->second);
+    }
+
+    result << buildSeparator();
+    result << buildExternalLinkMenuItem(GET_MORE_SOUNDS_ID, muse::qtrc("playback", "Get more sounds"));
+
+    return result;
 }
 
 QVariantMap InputResourceItem::buildMuseMenuItem(const ResourceByVendorMap& resourcesByVendor) const

@@ -335,8 +335,9 @@ Item {
                     }
 
                     onHandleSearchText: function(searchText) {
-                        // TODO: PLACEHOLDER
-                        console.log("Search text: " + searchText)
+                        if (root.resourceItemModel) {
+                            root.resourceItemModel.handleSearchText(searchText)
+                        }
                     }
 
                     onOpened: {
@@ -350,12 +351,21 @@ Item {
 
                 Connections {
                     target: root.resourceItemModel
-                    function onAvailableResourceListResolved(resources) {
-                        menuLoader.toggleOpened(resources)
+
+                    function onResourceListChanged(resources) {
+                        if (menuLoader.isMenuOpened) {
+                            menuLoader.update(resources)
+                        } else {
+                            menuLoader.open(resources)
+                        }
                     }
                 }
 
                 onClicked: {
+                    if (menuLoader.isMenuOpened) {
+                        menuLoader.close()
+                        return
+                    }
                     if (root.resourceItemModel) {
                         root.resourceItemModel.requestAvailableResources()
                     }
