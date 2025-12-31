@@ -176,41 +176,64 @@ bool InputResourceItem::hasNativeEditorSupport() const
 QVariantList InputResourceItem::buildResourceList(const QString& filterText) const
 {
     QVariantList result;
-    if (!filterText.isEmpty()) { // TODO: This is a placeholder
-        return result;
-    }
 
-    if (!isBlank()) {
+    const bool buildingFlyoutMenu = filterText.isEmpty();
+    if (buildingFlyoutMenu && !isBlank()) {
         QString currentResourceId = QString::fromStdString(m_currentInputParams.resourceMeta.id);
 
         result << buildMenuItem(makeMenuResourceItemId(m_currentInputParams.resourceMeta.type, currentResourceId),
-                                title(),
-                                true /*checked*/);
-
-        result << buildSeparator();
+                                title(), true /*checked*/);
     }
 
     auto museResourcesSearch = m_availableResourceMap.find(AudioResourceType::MuseSamplerSoundPack);
     if (museResourcesSearch != m_availableResourceMap.end()) {
-        result << buildMuseMenuItem(museResourcesSearch->second);
-
-        result << buildSeparator();
+        if (buildingFlyoutMenu) {
+            result << buildSeparator();
+            result << buildMuseMenuItem(museResourcesSearch->second);
+        } else {
+            const QVariantList& museList = buildMuseFilteredList(museResourcesSearch->second, filterText);
+            if (!museList.empty() && !result.empty()) {
+                result << buildSeparator();
+            }
+            result << museList;
+        }
     }
 
     auto vstResourcesSearch = m_availableResourceMap.find(AudioResourceType::VstPlugin);
     if (vstResourcesSearch != m_availableResourceMap.end()) {
-        result << buildVstMenuItem(vstResourcesSearch->second);
-
-        result << buildSeparator();
+        if (buildingFlyoutMenu) {
+            result << buildSeparator();
+            result << buildVstMenuItem(vstResourcesSearch->second);
+        } else {
+            const QVariantList& vstList = buildVstFilteredList(vstResourcesSearch->second, filterText);
+            if (!vstList.empty() && !result.empty()) {
+                result << buildSeparator();
+            }
+            result << vstList;
+        }
     }
 
     auto sfResourcesSearch = m_availableResourceMap.find(AudioResourceType::FluidSoundfont);
     if (sfResourcesSearch != m_availableResourceMap.end()) {
-        result << buildSoundFontsMenuItem(sfResourcesSearch->second);
+        if (buildingFlyoutMenu) {
+            result << buildSeparator();
+            result << buildSoundFontsMenuItem(sfResourcesSearch->second);
+        } else {
+            const QVariantList& sfList = buildSoundFontsFilteredList(sfResourcesSearch->second, filterText);
+            if (!sfList.empty() && !result.empty()) {
+                result << buildSeparator();
+            }
+            result << sfList;
+        }
     }
 
-    result << buildSeparator();
-    result << buildExternalLinkMenuItem(GET_MORE_SOUNDS_ID, muse::qtrc("playback", "Get more sounds"));
+    if (buildingFlyoutMenu) {
+        result << buildSeparator();
+    }
+
+    if (buildingFlyoutMenu || result.empty()) {
+        result << buildExternalLinkMenuItem(GET_MORE_SOUNDS_ID, muse::qtrc("playback", "Get more sounds"));
+    }
 
     return result;
 }
@@ -220,11 +243,6 @@ QVariantMap InputResourceItem::buildMuseMenuItem(const ResourceByVendorMap& reso
     QVariantList subItemsByType;
 
     // Vendor -> Pack -> Category -> Instruments
-    using Instruments = std::vector<std::pair<std::string /*id*/, String /*name*/> >;
-    using CategoryMap = std::map<String, Instruments>;
-    using PackMap = std::map<String, CategoryMap>;
-    using VendorMap = std::map<String, PackMap>;
-
     for (const auto& [_, metaList] : resourcesByVendor) {
         VendorMap vendorMap;
 
@@ -303,6 +321,11 @@ QVariantMap InputResourceItem::buildMuseMenuItem(const ResourceByVendorMap& reso
                          subItemsByType);
 }
 
+QVariantList InputResourceItem::buildMuseFilteredList(const ResourceByVendorMap& resourcesByVendor, const QString& filterText) const
+{
+    return QVariantList(); // TODO: This
+}
+
 QVariantMap InputResourceItem::buildVstMenuItem(const ResourceByVendorMap& resourcesByVendor) const
 {
     QVariantList subItemsByType;
@@ -328,6 +351,11 @@ QVariantMap InputResourceItem::buildVstMenuItem(const ResourceByVendorMap& resou
                          VST_MENU_ITEM_ID,
                          m_currentInputParams.resourceMeta.type == AudioResourceType::VstPlugin,
                          subItemsByType);
+}
+
+QVariantList InputResourceItem::buildVstFilteredList(const ResourceByVendorMap& resourcesByVendor, const QString& filterText) const
+{
+    return QVariantList(); // TODO: This
 }
 
 QVariantMap InputResourceItem::buildSoundFontsMenuItem(const ResourceByVendorMap& resourcesByVendor) const
@@ -388,6 +416,11 @@ QVariantMap InputResourceItem::buildSoundFontsMenuItem(const ResourceByVendorMap
                          muse::qtrc("playback", "SoundFonts"),
                          m_currentInputParams.resourceMeta.type == AudioResourceType::FluidSoundfont,
                          soundFontItems);
+}
+
+QVariantList InputResourceItem::buildSoundFontsFilteredList(const ResourceByVendorMap& resourcesByVendor, const QString& filterText) const
+{
+    return QVariantList(); // TODO: This
 }
 
 QVariantMap InputResourceItem::buildMsBasicMenuItem(const AudioResourceMetaList& availableResources, bool isCurrentSoundFont,

@@ -70,18 +70,28 @@ signals:
 
 private:
     using ResourceByVendorMap = std::map<muse::audio::AudioResourceVendor, muse::audio::AudioResourceMetaList>;
+    using Instruments = std::vector<std::pair<std::string /*id*/, muse::String /*name*/> >;
+    using CategoryMap = std::map<muse::String, Instruments>;
+    using PackMap = std::map<muse::String, CategoryMap>;
+    using VendorMap = std::map<muse::String, PackMap>;
+
+    void updateAvailableResources(const muse::audio::AudioResourceMetaList& availableResources);
 
     QVariantList buildResourceList(const QString& filterText = QString()) const override;
 
     QVariantMap buildMuseMenuItem(const ResourceByVendorMap& resourcesByVendor) const;
+    QVariantList buildMuseFilteredList(const ResourceByVendorMap& resourcesByVendor, const QString& filterText) const;
+
     QVariantMap buildVstMenuItem(const ResourceByVendorMap& resourcesByVendor) const;
+    QVariantList buildVstFilteredList(const ResourceByVendorMap& resourcesByVendor, const QString& filterText) const;
+
     QVariantMap buildSoundFontsMenuItem(const ResourceByVendorMap& resourcesByVendor) const;
     QVariantMap buildMsBasicMenuItem(const muse::audio::AudioResourceMetaList& availableResources, bool isCurrentSoundFont,
                                      const std::optional<muse::midi::Program>& currentPreset) const;
     QVariantMap buildSoundFontMenuItem(const muse::String& soundFont, const muse::audio::AudioResourceMetaList& availableResources,
                                        bool isCurrentSoundFont, const std::optional<muse::midi::Program>& currentPreset) const;
 
-    void updateAvailableResources(const muse::audio::AudioResourceMetaList& availableResources);
+    QVariantList buildSoundFontsFilteredList(const ResourceByVendorMap& resourcesByVendor, const QString& filterText) const;
 
     std::map<muse::audio::AudioResourceType, ResourceByVendorMap > m_availableResourceMap;
     muse::audio::AudioInputParams m_currentInputParams;

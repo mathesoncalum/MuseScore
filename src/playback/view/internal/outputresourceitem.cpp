@@ -125,26 +125,26 @@ void OutputResourceItem::setIsActive(bool newIsActive)
 QVariantList OutputResourceItem::buildResourceList(const QString& filterText) const
 {
     QVariantList result;
-    if (!filterText.isEmpty()) { // TODO: This is a placeholder
-        return result;
-    }
 
-    if (!isBlank()) {
-        const QString& currentResourceId = QString::fromStdString(m_currentFxParams.resourceMeta.id);
-        result << buildMenuItem(currentResourceId,
-                                currentResourceId,
-                                true /*checked*/);
+    const bool buildingFlyoutMenu = filterText.isEmpty();
+    if (buildingFlyoutMenu) {
+        if (!isBlank()) {
+            const QString& currentResourceId = QString::fromStdString(m_currentFxParams.resourceMeta.id);
+            result << buildMenuItem(currentResourceId,
+                                    currentResourceId,
+                                    true /*checked*/);
 
-        result << buildSeparator();
-    }
+            result << buildSeparator();
+        }
 
-    // add "no fx" item
-    result << buildMenuItem(NO_FX_MENU_ITEM_ID(),
-                            NO_FX_MENU_ITEM_ID(),
-                            m_currentFxParams.resourceMeta.id.empty());
+        // add "no fx" item
+        result << buildMenuItem(NO_FX_MENU_ITEM_ID(),
+                                NO_FX_MENU_ITEM_ID(),
+                                m_currentFxParams.resourceMeta.id.empty());
 
-    if (!m_fxByVendorMap.empty()) {
-        result << buildSeparator();
+        if (!m_fxByVendorMap.empty()) {
+            result << buildSeparator();
+        }
     }
 
     for (const auto& pair : m_fxByVendorMap) {
@@ -154,19 +154,34 @@ QVariantList OutputResourceItem::buildResourceList(const QString& filterText) co
 
         for (const AudioResourceMeta& fxResourceMeta : pair.second) {
             const QString& resourceId = QString::fromStdString(fxResourceMeta.id);
-            subItems << buildMenuItem(resourceId,
-                                      resourceId,
-                                      m_currentFxParams.resourceMeta.id == fxResourceMeta.id);
+            const QString& resourceTitle = buildingFlyoutMenu ? resourceId : vendor + " - " + resourceId;
+            const bool resourceChecked = m_currentFxParams.resourceMeta.id == fxResourceMeta.id;
+
+            const QVariantMap& menuItem = buildMenuItem(resourceId, resourceTitle, resourceChecked);
+            if (buildingFlyoutMenu || resourceTitle.contains(filterText, Qt::CaseInsensitive)) {
+                subItems << menuItem;
+            }
         }
 
-        result << buildMenuItem(vendor,
-                                vendor,
-                                m_currentFxParams.resourceMeta.vendor == pair.first,
-                                subItems);
+        const bool vendorChecked = m_currentFxParams.resourceMeta.vendor == pair.first;
+        if (buildingFlyoutMenu) {
+            result << buildMenuItem(vendor, vendor, vendorChecked, subItems);
+            continue;
+        }
+
+        if (!result.empty()) {
+            result << buildSeparator();
+        }
+        result << subItems;
     }
 
-    result << buildSeparator();
-    result << buildExternalLinkMenuItem(GET_MORE_EFFECTS, muse::qtrc("playback", "Get more effects"));
+    if (buildingFlyoutMenu) {
+        result << buildSeparator();
+    }
+
+    if (buildingFlyoutMenu || result.empty()) {
+        result << buildExternalLinkMenuItem(GET_MORE_EFFECTS, muse::qtrc("playback", "Get more effects"));
+    }
 
     return result;
 }
