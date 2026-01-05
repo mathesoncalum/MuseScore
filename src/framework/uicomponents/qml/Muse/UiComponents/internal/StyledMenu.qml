@@ -289,6 +289,9 @@ MenuView {
             SearchField {
                 id: searchField
 
+                navigation.panel: content.navigationPanel
+                navigation.row: 0
+
                 anchors {
                     left: parent.left
                     right: parent.right
@@ -419,7 +422,7 @@ MenuView {
                         parentWindow: root.window
 
                         navigation.panel: content.navigationPanel
-                        navigation.row: loader.index
+                        navigation.row: root.isSearchable ? loader.index + 1 : loader.index
 
                         iconAndCheckMarkMode: root.menuMetrics?.iconAndCheckMarkMode || StyledMenuItem.None
 
