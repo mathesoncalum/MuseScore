@@ -42,6 +42,12 @@ void AbstractAudioResourceItem::doRequestToLaunchNativeEditorView()
     QTimer::singleShot(EXPLICIT_DELAY_MSECS, this, &AbstractAudioResourceItem::nativeEditorViewLaunchRequested);
 }
 
+void AbstractAudioResourceItem::handleSearchText(const QString& searchText)
+{
+    const QVariantList& list = buildResourceList(searchText);
+    emit resourceListChanged(list);
+}
+
 QString AbstractAudioResourceItem::title() const
 {
     return "";
@@ -55,6 +61,12 @@ bool AbstractAudioResourceItem::isBlank() const
 bool AbstractAudioResourceItem::isActive() const
 {
     return false;
+}
+
+QVariantList AbstractAudioResourceItem::buildResourceList(const QString& filterText) const
+{
+    Q_UNUSED(filterText);
+    return QVariantList();
 }
 
 QVariantMap AbstractAudioResourceItem::buildMenuItem(const QString& itemId,

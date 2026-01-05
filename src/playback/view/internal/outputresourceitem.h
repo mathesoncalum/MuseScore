@@ -77,6 +77,8 @@ signals:
     void fxParamsChanged();
 
 private:
+    QVariantList buildResourceList(const QString& filterText = QString()) const override;
+
     void updateCurrentFxParams(const muse::audio::AudioResourceMeta& newMeta);
     void updateAvailableFxVendorsMap(const muse::audio::AudioResourceMetaList& availableFxResources);
 

@@ -49,6 +49,8 @@ public:
     virtual Q_INVOKABLE void requestAvailableResources() {}
     virtual Q_INVOKABLE void handleMenuItem(const QString& menuItemId) { Q_UNUSED(menuItemId) }
 
+    Q_INVOKABLE void handleSearchText(const QString& searchText);
+
     virtual QString title() const;
     virtual bool isBlank() const;
     virtual bool isActive() const;
@@ -65,9 +67,11 @@ signals:
 
     void nativeEditorViewLaunchRequested();
     void nativeEditorViewCloseRequested();
-    void availableResourceListResolved(const QVariantList& resources);
+    void resourceListChanged(const QVariantList& resources);
 
 protected:
+    virtual QVariantList buildResourceList(const QString& filterText = QString()) const;
+
     QVariantMap buildMenuItem(const QString& itemId, const QString& title, const bool checked,
                               const QVariantList& subItems = QVariantList()) const;
 
