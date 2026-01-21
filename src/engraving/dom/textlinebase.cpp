@@ -265,6 +265,7 @@ PropertyValue TextLineBase::getProperty(Pid id) const
         return _beginFontFamily;
     case Pid::BEGIN_FONT_SIZE:
         return _beginFontSize;
+    case Pid::FONT_STYLE: // (for example)
     case Pid::BEGIN_FONT_STYLE:
         return int(_beginFontStyle);
     case Pid::BEGIN_TEXT_OFFSET:

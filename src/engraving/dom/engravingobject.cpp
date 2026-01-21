@@ -458,6 +458,8 @@ void EngravingObject::undoChangeProperty(Pid id, const PropertyValue& v, Propert
             e->setOffsetChanged(false);
         }
     } else if (id == Pid::TEXT_STYLE) {
+        // [C.M] Even if you can get this far with begin text, you run into a problem here...
+
         //
         // change a list of properties
         //

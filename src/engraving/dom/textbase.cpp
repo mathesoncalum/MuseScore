@@ -3368,10 +3368,14 @@ void TextBase::undoChangeProperty(Pid id, const PropertyValue& v, PropertyFlags 
         Pid::TEXT_SCRIPT_ALIGN
     };
 
+    // [C.M] All hell breaks loose here...
     if (!muse::contains(CHARACTER_SPECIFIC_PROPERTIES, id)) {
+        // [C.M] Continue/end text style will go this way...
         EngravingItem::undoChangeProperty(id, v, ps);
         return;
     }
+
+    // [C.M] FONT_STYLE (begin style) will go this way...
 
     score()->undo(new ChangeTextProperties(m_cursor, id, v, ps));
 
