@@ -80,8 +80,7 @@ class TextSettingsModel : public AbstractInspectorModel
     muse::Inject<muse::actions::IActionsDispatcher> dispatcher = { this };
 
 public:
-    explicit TextSettingsModel(QObject* parent, const muse::modularity::ContextPtr& iocCtx, IElementRepositoryService* repository,
-                               bool isTextLineText);
+    explicit TextSettingsModel(QObject* parent, const muse::modularity::ContextPtr& iocCtx, IElementRepositoryService* repository);
 
     Q_INVOKABLE void insertSpecialCharacters();
     Q_INVOKABLE void showStaffTextProperties();
@@ -187,8 +186,6 @@ private:
     void propertyResetCallback(const mu::engraving::Pid propertyId);
 
     void loadProperties(const mu::engraving::PropertyIdSet& propertyIdSet);
-
-    bool isTextLineText() const;
 
     PropertyItem* m_fontFamily = nullptr;
     PropertyItem* m_fontStyle = nullptr;
