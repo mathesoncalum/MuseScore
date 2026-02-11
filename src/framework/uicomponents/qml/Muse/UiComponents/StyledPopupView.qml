@@ -65,6 +65,14 @@ PopupView {
         content.focus = false
     }
 
+    onWidthChanged: {
+        Qt.callLater(root.repositionWindowIfNeed)
+    }
+
+    onHeightChanged: {
+        Qt.callLater(root.repositionWindowIfNeed)
+    }
+
     contentItem: PopupContent {
         id: content
 
