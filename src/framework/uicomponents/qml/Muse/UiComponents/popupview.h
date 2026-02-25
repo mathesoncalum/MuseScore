@@ -147,6 +147,7 @@ protected:
 
     void initCloseController();
 
+    QScreen* resolveScreen() const override;
     void updateGeometry() override;
     virtual void updateContentPosition();
 

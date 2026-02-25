@@ -337,6 +337,13 @@ void PopupView::repositionWindowIfNeed()
     m_globalPos = QPoint();
 }
 
+QScreen* PopupView::resolveScreen() const
+{
+    const QWindow* anchorWindow = m_anchorItem ? m_anchorItem->window() : nullptr;
+    QScreen* anchorScreen = anchorWindow ? anchorWindow->screen() : nullptr;
+    return anchorScreen ? anchorScreen : WindowView::resolveScreen();
+}
+
 void PopupView::updateGeometry()
 {
     const QQuickItem* parent = parentItem();

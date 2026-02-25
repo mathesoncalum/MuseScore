@@ -186,7 +186,7 @@ protected:
     void setParentWindow(QWindow* window);
     void resolveParentWindow();
 
-    QScreen* resolveScreen() const;
+    virtual QScreen* resolveScreen() const;
     QRect currentScreenGeometry() const;
     virtual void updateGeometry() = 0;
     virtual QRect viewGeometry() const;
