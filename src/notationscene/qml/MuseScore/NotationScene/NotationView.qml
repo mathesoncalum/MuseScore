@@ -348,4 +348,9 @@ FocusScope {
             }
         }
     }
+
+    CanvasPainterTest {
+        id: test
+        anchors.fill: parent
+    }
 }

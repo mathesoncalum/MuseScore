@@ -36,6 +36,8 @@ qt_add_qml_module(notationscene_qml
         abstractelementpopupmodel.h
         abstractnotationpaintview.cpp
         abstractnotationpaintview.h
+        canvaspaintertest.h
+        canvaspaintertest.cpp
         continuouspanel.cpp
         continuouspanel.h
         editgridsizedialogmodel.cpp
@@ -313,8 +315,12 @@ target_include_directories(notationscene_qml PRIVATE
     styledialog
 )
 
+# find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)
+
 target_link_libraries(notationscene_qml PRIVATE
     muse::uicomponents_qml
+    Qt6::CanvasPainter
+    # Qt6::GuiPrivate
 )
 
 if(MUE_BUILD_NOTATIONSCENE_TESTS)
