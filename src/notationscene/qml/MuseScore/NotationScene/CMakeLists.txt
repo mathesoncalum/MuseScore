@@ -86,6 +86,8 @@ qt_add_qml_module(notationscene_qml
         noteinputbarmodel.h
         noteinputcursor.cpp
         noteinputcursor.h
+        paintnodetest.h
+        paintnodetest.cpp
         paintedengravingitem.cpp
         paintedengravingitem.h
         partlistmodel.cpp

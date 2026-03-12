@@ -348,4 +348,9 @@ FocusScope {
             }
         }
     }
+
+    PaintNodeTest {
+        id: test
+        anchors.fill: parent
+    }
 }
