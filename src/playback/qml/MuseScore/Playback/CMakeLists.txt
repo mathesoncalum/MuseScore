@@ -20,12 +20,16 @@
 
 muse_create_qml_module(playback_qml FOR playback)
 
+target_link_libraries(playback_qml PRIVATE Qt6::CanvasPainter)
+
 qt_add_qml_module(playback_qml
     URI MuseScore.Playback
     VERSION 1.0
     SOURCES
         abstractaudioresourceitem.cpp
         abstractaudioresourceitem.h
+        automationcanvas.cpp
+        automationcanvas.h
         auxsenditem.cpp
         auxsenditem.h
         inputresourceitem.cpp

@@ -224,6 +224,18 @@ FocusScope {
                         notationViewRect: Qt.rect(notationView.x, notationView.y, notationView.width, notationView.height)
                         notationViewMatrix: notationView.matrix
                     }
+
+                    Loader {
+                        id: automationCanvasLoader
+
+                        active: notationView.automationMode
+                        anchors.fill: notationView
+
+                        sourceComponent: AutomationCanvas {
+                            id: automationCanvas
+                            viewMatrix: notationView.matrix
+                        }
+                    }
                 }
 
                 onPinchToZoom: function(scale, pos) {
