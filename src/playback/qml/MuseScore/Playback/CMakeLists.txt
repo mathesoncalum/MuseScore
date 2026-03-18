@@ -26,6 +26,8 @@ qt_add_qml_module(playback_qml
     SOURCES
         abstractaudioresourceitem.cpp
         abstractaudioresourceitem.h
+        automationoverlay.cpp
+        automationoverlay.h
         auxsenditem.cpp
         auxsenditem.h
         inputresourceitem.cpp
