@@ -13,6 +13,8 @@
 #include <algorithm>
 #include <cmath>
 
+using namespace muse::uicomponents;
+
 namespace {
 constexpr double MOVE_THRESHOLD = 3.0;
 constexpr double EPSILON = 1e-12;
@@ -984,6 +986,8 @@ void Polyline::paint(QPainter* painter)
 
     painter->setRenderHint(QPainter::Antialiasing, antialiasing());
 
+    // [C.M.] TODO:
+    /*
     // draw background overlay
     {
         QColor overlay = uiConfiguration()->currentTheme().extra["black_color"].value<QColor>();
@@ -993,6 +997,7 @@ void Polyline::paint(QPainter* painter)
         painter->setBrush(overlay);
         painter->drawRect(boundingRect());
     }
+    */
 
     // draw polyline
     {

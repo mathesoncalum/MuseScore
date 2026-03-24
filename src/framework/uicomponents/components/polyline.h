@@ -17,6 +17,7 @@
 
 // NOTE: all of fooN() function are normalized, returning 0..1 values
 
+namespace muse::uicomponents {
 struct GhostPoint {
     QPointF point;
     qreal distToSegment = 1e18;
@@ -247,3 +248,4 @@ private:
     QPointF m_activePointPx;
     qreal m_activePointValue = 0.0;
 };
+}
