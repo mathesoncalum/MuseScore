@@ -23,6 +23,8 @@ muse_create_module(muse_uicomponents ALIAS muse::uicomponents)
 target_sources(muse_uicomponents PRIVATE
     uicomponentsmodule.cpp
     uicomponentsmodule.h
+    components/polyline.cpp
+    components/polyline.h
     view/modelutils.h
     view/topleveldialog.cpp
     view/topleveldialog.h
