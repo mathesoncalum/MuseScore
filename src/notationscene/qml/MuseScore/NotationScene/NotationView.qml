@@ -220,6 +220,15 @@ FocusScope {
                         }
                     }
 
+                    Loader {
+                        active: notationView.automationMode
+                        anchors.fill: notationView
+
+                        sourceComponent: AutomationOverlay {
+                            viewMatrix: notationView.matrix
+                        }
+                    }
+
                     NotationRegionsBeingProcessedView {
                         notationViewRect: Qt.rect(notationView.x, notationView.y, notationView.width, notationView.height)
                         notationViewMatrix: notationView.matrix
