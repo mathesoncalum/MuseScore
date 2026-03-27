@@ -49,6 +49,7 @@ class Polyline : public QQuickPaintedItem, public muse::async::Asyncable, public
 
     Q_PROPERTY(QColor lineColor READ lineColor WRITE setLineColor NOTIFY lineColorChanged)
     Q_PROPERTY(qreal lineWidth READ lineWidth WRITE setLineWidth NOTIFY lineWidthChanged)
+    Q_PROPERTY(bool drawBackground READ drawBackground WRITE setDrawBackground NOTIFY drawBackgroundChanged)
     Q_PROPERTY(qreal baselineN READ baselineN WRITE setBaselineN NOTIFY baselineNChanged)
     Q_PROPERTY(qreal pointRadius READ pointRadius WRITE setPointRadius NOTIFY pointRadiusChanged)
     Q_PROPERTY(qreal ghostPointRadius READ ghostPointRadius WRITE setGhostPointRadius NOTIFY ghostPointRadiusChanged)
@@ -95,6 +96,9 @@ public:
 
     qreal lineWidth() const;
     void setLineWidth(qreal);
+
+    bool drawBackground() const;
+    void setDrawBackground(bool);
 
     qreal baselineN() const;
     void setBaselineN(qreal);
@@ -158,6 +162,7 @@ public:
 signals:
     void lineColorChanged();
     void lineWidthChanged();
+    void drawBackgroundChanged();
     void baselineNChanged();
     void pointRadiusChanged();
     void ghostPointRadiusChanged();
@@ -251,6 +256,8 @@ private:
     qreal m_ySplitNormalized = 1.0;
     qreal m_ySplitValue = 1.0;
     bool m_yAxisInverse = true;
+
+    bool m_drawBackground = true;
 
     bool m_hoveredOnLine = false;
     QPointF m_hoverPx;
