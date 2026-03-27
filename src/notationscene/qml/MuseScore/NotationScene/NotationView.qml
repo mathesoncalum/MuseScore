@@ -221,11 +221,31 @@ FocusScope {
                     }
 
                     Loader {
+                        id: automationOverlayLoader
+
                         active: notationView.automationMode
                         anchors.fill: notationView
 
                         sourceComponent: AutomationOverlay {
+                            id: automationOverlay
+
                             viewMatrix: notationView.matrix
+
+                            Connections {
+                                target: automationOverlayLoader
+                                function onLoaded() {
+                                    const data = notationView.automationLinesData
+                                    automationOverlay.initAutomationLinesData(data)
+                                }
+                            }
+
+                            Connections {
+                                target: notationView
+                                function onAutomationLinesDataChanged() {
+                                    const data = notationView.automationLinesData
+                                    automationOverlay.initAutomationLinesData(data)
+                                }
+                            }
                         }
                     }
 

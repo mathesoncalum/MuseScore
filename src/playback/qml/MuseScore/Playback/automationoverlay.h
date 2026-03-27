@@ -23,10 +23,13 @@
 #pragma once
 
 #include <QQmlEngine>
-#include "uicomponents/qml/Muse/UiComponents/quickpaintedview.h"
+
+namespace muse::uicomponents {
+class Polyline;
+}
 
 namespace mu::playback { // TODO: Is it cohesive here? Maybe it also belongs in muse::uicomponents
-class AutomationOverlay : public muse::uicomponents::QuickPaintedView
+class AutomationOverlay : public QQuickItem
 {
     Q_OBJECT
     Q_PROPERTY(QVariant viewMatrix READ viewMatrix WRITE setViewMatrix NOTIFY viewMatrixChanged)
@@ -34,10 +37,9 @@ class AutomationOverlay : public muse::uicomponents::QuickPaintedView
 
 public:
     explicit AutomationOverlay(QQuickItem* parent = nullptr);
+    Q_INVOKABLE void initAutomationLinesData(const QVariant& automationLinesData);
 
 protected:
-    void paint(QPainter* painter) override;
-
     QVariant viewMatrix() const;
     void setViewMatrix(const QVariant& matrix);
 
@@ -45,6 +47,17 @@ signals:
     void viewMatrixChanged();
 
 private:
+    struct AutomationLineData {
+        QVariantMap rawLineDataMap;
+        muse::uicomponents::Polyline* polyline = nullptr;
+    };
+
+    bool lineIndexIsValid(size_t index) const;
+
+    void updatePolylinesGeometry(size_t firstIndex, size_t lastIndex);
+    void updateAllPolylinesGeometry() { updatePolylinesGeometry(0, m_automationLinesData.size() - 1); }
+
     QTransform m_viewMatrix;
+    std::vector<AutomationLineData> m_automationLinesData;
 };
 }
