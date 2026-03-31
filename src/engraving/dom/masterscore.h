@@ -169,6 +169,7 @@ public:
     void initAndAddExcerpt(Excerpt*, bool);
     void initExcerpt(Excerpt*);
     void initEmptyExcerpt(Excerpt*);
+    void initAutomation(); // TODO: Placeholder?
 
     void setPlaybackScore(Score*);
     Score* playbackScore() { return m_playbackScore; }
