@@ -46,7 +46,7 @@ Loader {
 
         Connections {
             target: root
-            function onAutomationLinesDataChanged() {
+            function onLinesDataChanged() {
                 automationOverlay.initAutomationLinesData(root.linesData)
             }
         }
