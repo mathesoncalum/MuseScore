@@ -1,0 +1,17 @@
+name: PR Labeler
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  label-community:
+    runs-on: ubuntu-slim
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Check PR author
+        if: github.event.pull_request.user.login != 'user1' && github.event.pull_request.user.login != 'user2'
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} --add-label "community PR"
+        env:
+          GH_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
