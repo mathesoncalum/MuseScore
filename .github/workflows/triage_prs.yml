@@ -1,10 +1,9 @@
 name: PR Triager
 on:
-  pull_request:
+  pull_request_target:
     types: [opened]
 
 permissions:
-  issues: write
   pull-requests: read
   contents: read
 
@@ -17,7 +16,7 @@ jobs:
         id: check_author
         run: |
           PR_AUTHOR="${{ github.event.pull_request.user.login }}"
-          if ! grep -qx "  - $PR_AUTHOR" .github/team_members.yml; then
+          if ! grep -Fqxi "  - $PR_AUTHOR" .github/team_members.yml; then
             echo "should_add=true" >> $GITHUB_OUTPUT
           fi
       - name: "Add community PR to triaging project"
