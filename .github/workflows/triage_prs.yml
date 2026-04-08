@@ -1,4 +1,4 @@
-name: PR Triager
+name: PR Triager Test
 on:
   pull_request:
     types: [opened]
