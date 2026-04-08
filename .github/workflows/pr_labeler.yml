@@ -9,9 +9,12 @@ jobs:
     permissions:
       pull-requests: write
     steps:
+      - uses: actions/checkout@v4
       - name: Check PR author
-        if: github.event.pull_request.user.login != 'user1' && github.event.pull_request.user.login != 'user2'
         run: |
-          gh pr edit ${{ github.event.pull_request.number }} --add-label "community PR"
+          PR_AUTHOR="${{ github.event.pull_request.user.login }}"
+          if ! grep -qx "  - $PR_AUTHOR" .github/team_members.yml; then
+            gh pr edit ${{ github.event.pull_request.number }} --add-label "community PR"
+          fi
         env:
-          GH_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
+          GH_TOKEN: ${{ github.token }}
