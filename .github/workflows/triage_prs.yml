@@ -1,0 +1,28 @@
+name: PR Triager
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  issues: write
+  pull-requests: read
+  contents: read
+
+jobs:
+  add_to_projects:
+    runs-on: ubuntu-slim
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check PR author
+        id: check_author
+        run: |
+          PR_AUTHOR="${{ github.event.pull_request.user.login }}"
+          if ! grep -qx "  - $PR_AUTHOR" .github/team_members.yml; then
+            echo "should_add=true" >> $GITHUB_OUTPUT
+          fi
+      - name: "Add community PR to triaging project"
+        if: steps.check_author.outputs.should_add == 'true'
+        uses: actions/add-to-project@main
+        with:
+          project-url: https://github.com/orgs/musescore/projects/117
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
