@@ -30,9 +30,12 @@
 
 #include "context/iglobalcontext.h"
 #include "async/asyncable.h"
+#include "ui/iuiconfiguration.h"
+#include "ui/iuicontextconfiguration.h"
 #include "notation/notationtypes.h"
 #include "notation/inotationconfiguration.h"
 #include "notation/inotationcontextconfiguration.h"
+#include "engraving/iengravingconfiguration.h"
 #include "engraving/automation/automationdata.h"
 #include "engraving/automation/automationtypes.h"
 
@@ -44,8 +47,11 @@ namespace mu::notation {
 class NotationAutomationController : public muse::Contextable, public muse::async::Asyncable
 {
     muse::ContextInject<mu::context::IGlobalContext> globalContext = { this };
+    muse::ContextInject<muse::ui::IUiContextConfiguration> uiContextConfiguration = { this };
+    muse::GlobalInject<muse::ui::IUiConfiguration> uiConfiguration;
     muse::GlobalInject<INotationConfiguration> notationConfiguration;
     muse::ContextInject<INotationContextConfiguration> notationContextConfiguration = { this };
+    muse::GlobalInject<mu::engraving::IEngravingConfiguration> engravingConfiguration;
 
 public:
     NotationAutomationController(QQuickItem* linesParent, const muse::modularity::ContextPtr& iocCtx);
@@ -108,9 +114,12 @@ private:
     QVector<PointData> pointsDataInStaff(const muse::ID& staff, const muse::RectF& sysStaffCanvasRect, int startTick, int endTick) const;
 
     void applyPolylineStyle(muse::uicomponents::PolylinePlot* polyline) const;
-    void applyPolylineSizes(muse::uicomponents::PolylinePlot* polyline) const;
+    void applyPolylineColors(muse::uicomponents::PolylinePlot* polyline) const;
+
+    QColor inversionRelativeColor(const muse::ui::ThemeStyleKey& key) const;
 
     void updatePolylinesGeometry();
+    void updatePolylinesColors();
     void onCurrentNotationChanged();
     void rebuildAllPolylines();
 
