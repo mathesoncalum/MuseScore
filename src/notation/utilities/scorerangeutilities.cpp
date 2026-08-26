@@ -22,6 +22,7 @@
 
 #include "scorerangeutilities.h"
 
+#include "engraving/dom/box.h"
 #include "engraving/dom/measure.h"
 #include "engraving/dom/page.h"
 #include "engraving/dom/score.h"
@@ -34,15 +35,16 @@ using namespace mu::engraving;
 
 std::vector<muse::RectF> ScoreRangeUtilities::boundingArea(const Score* score,
                                                            const Segment* startSegment, const Segment* endSegment,
-                                                           staff_idx_t startStaffIndex, staff_idx_t endStaffIndex)
+                                                           staff_idx_t startStaffIndex, staff_idx_t endStaffIndex,
+                                                           const engraving::Box* startBox, const engraving::Box* endBox)
 {
-    if (!startSegment || !endSegment || startSegment->tick() > endSegment->tick()) {
+    if (!score || !startSegment || !endSegment || startSegment->tick() > endSegment->tick()) {
         return {};
     }
 
     std::vector<RectF> result;
 
-    const std::vector<RangeSection> sections = splitRangeBySections(startSegment, endSegment);
+    const std::vector<RangeSection> sections = splitRangeBySections(score, startSegment, endSegment, startBox, endBox);
 
     for (const RangeSection& section : sections) {
         const staff_idx_t firstStaff = firstVisibleStaffIdx(score, section.system, startStaffIndex);
@@ -73,13 +75,25 @@ std::vector<muse::RectF> ScoreRangeUtilities::boundingArea(const Score* score,
             bottomY += 0.5 * diff;
         }
 
-        double x1 = section.startSegment->pagePos().x();
-        const double x2 = section.endSegment->pageBoundingRect().right();
+        double x1 = 0.0;
+        if (section.startBox) {
+            x1 = section.startBox->pageBoundingRect().left();
+        } else {
+            x1 = section.startSegment->pagePos().x();
+        }
+
+        double x2 = 0.0;
+        if (section.endBox) {
+            x2 = section.endBox->pageBoundingRect().right();
+        } else {
+            x2 = section.endSegment->pageBoundingRect().right();
+        }
+
         const int padding = 0.5 * scoreFirstStaff->spatium(startSegment->tick());
         const double y1 = topY + segmentFirstStaff->y() + section.startSegment->pagePos().y() - padding;
         const double y2 = bottomY + segmentLastStaff->y() + section.endSegment->pagePos().y() + padding;
 
-        if (section.startSegment->measure()->firstEnabled() == section.startSegment) {
+        if (!section.startBox && section.startSegment->measure()->firstEnabled() == section.startSegment) {
             x1 = section.startSegment->measure()->pagePos().x();
         }
 
@@ -91,13 +105,77 @@ std::vector<muse::RectF> ScoreRangeUtilities::boundingArea(const Score* score,
 }
 
 std::vector<ScoreRangeUtilities::RangeSection> ScoreRangeUtilities::splitRangeBySections(
-    const Segment* rangeStartSegment,
-    const Segment* rangeEndSegment)
+    const Score* score,
+    const Segment* rangeStartSegment, const Segment* rangeEndSegment,
+    const Box* startBox, const Box* endBox)
 {
     std::vector<RangeSection> sections;
 
     const Segment* startSegment = rangeStartSegment;
     const Fraction rangeEndTick = rangeEndSegment->tick();
+
+    const Box* currentStartBox = startBox; // the Box at current section start (if any)...
+
+    const auto boxAt = [score](const Segment* seg, bool first) -> const Box* {
+        const Box* box = nullptr;
+        for (MeasureBase* mb : score->measureBasesAtTick(seg->tick())) {
+            if (!mb->isBox() || mb->system() != seg->system()) {
+                continue;
+            }
+            box = toBox(mb);
+            if (first) {
+                break;
+            }
+        }
+        return box;
+    };
+
+    // A Box shares its tick with the measure which follows it, so the range's start/end Box may belong
+    // to the system before/after the one we're currently working on...
+    const auto boxOnSystem = [](const Box* box, const System* system) -> const Box* {
+        return box && box->system() == system ? box : nullptr;
+    };
+
+    // The range's start/end Box can exist on a system which the segment loop below never visits (e.g. a range that starts
+    // with a Box at the end of a system, or a range that ends at a Box at the start of a system). This lambda constructs
+    // range sections for these cases...
+    const auto addBoxOnlySection = [&sections, rangeStartSegment, rangeEndSegment](const Box* box, bool boxIsRangeStart) {
+        const System* system = box->system();
+        if (!system) {
+            return;
+        }
+
+        // A Box holds no segments, so borrow the nearest segment on its system for the section's vertical extent...
+        const Segment* seg = boxIsRangeStart ? rangeStartSegment : rangeEndSegment;
+        while (seg && seg->system() != system) {
+            seg = boxIsRangeStart ? seg->prev1MMenabled() : seg->next1MMenabled();
+        }
+
+        if (!seg) {
+            return;
+        }
+
+        // Collect the run of Boxes extending from box towards the range's music...
+        const Box* oppositeEndBox = box;
+        for (const MeasureBase* mb = boxIsRangeStart ? box->next() : box->prev();
+             mb && mb->isBox() && mb->system() == system;
+             mb = boxIsRangeStart ? mb->next() : mb->prev()) {
+            oppositeEndBox = toBox(mb);
+        }
+
+        RangeSection section;
+        section.system = system;
+        section.startSegment = seg;
+        section.endSegment = seg;
+        section.startBox = boxIsRangeStart ? box : oppositeEndBox;
+        section.endBox = boxIsRangeStart ? oppositeEndBox : box;
+
+        sections.push_back(section);
+    };
+
+    if (startBox && startBox->system() != rangeStartSegment->system()) {
+        addBoxOnlySection(startBox, /*boxIsRangeStart*/ true);
+    }
 
     for (const Segment* segment = startSegment; segment && segment != rangeEndSegment && segment->tick() < rangeEndTick;) {
         const System* currentSegmentSystem = segment->measure()->system();
@@ -112,6 +190,9 @@ std::vector<ScoreRangeUtilities::RangeSection> ScoreRangeUtilities::splitRangeBy
             section.system = currentSegmentSystem;
             section.startSegment = startSegment;
             section.endSegment = segment;
+
+            section.startBox = boxOnSystem(currentStartBox, currentSegmentSystem);
+            section.endBox = boxOnSystem(endBox, currentSegmentSystem);
 
             sections.push_back(section);
             break;
@@ -128,17 +209,34 @@ std::vector<ScoreRangeUtilities::RangeSection> ScoreRangeUtilities::splitRangeBy
             }
         }
 
-        if (nextSegmentSystem != currentSegmentSystem || nextSegment->tick() >= rangeEndTick) {
+        const bool nextIsNewSystem = nextSegmentSystem != currentSegmentSystem;
+        const bool nextIsOutOfRange = nextSegment->tick() >= rangeEndTick;
+        if (nextIsNewSystem || nextIsOutOfRange) {
             RangeSection section;
             section.system = currentSegmentSystem;
             section.startSegment = startSegment;
             section.endSegment = segment;
 
+            section.startBox = boxOnSystem(currentStartBox, currentSegmentSystem);
+            section.endBox = nextIsOutOfRange
+                              ? boxOnSystem(endBox, currentSegmentSystem)
+                              : boxAt(segment, /*first*/ false);
             sections.push_back(section);
+
             startSegment = nextSegment;
+
+            if (nextIsNewSystem) {
+                // next segment is in a new system - look for a Box at start...
+                currentStartBox = boxAt(nextSegment, /*first*/ true);
+            }
         }
 
         segment = nextSegment;
+    }
+
+    // sections.back() is the system the range's music ended on, so the end Box is beyond the loop's reach if it isn't there...
+    if (endBox && !sections.empty() && endBox->system() != sections.back().system) {
+        addBoxOnlySection(endBox, /*boxIsRangeStart*/ false);
     }
 
     return sections;

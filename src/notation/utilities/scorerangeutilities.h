@@ -27,6 +27,7 @@
 #include "engraving/types/types.h"
 
 namespace mu::engraving {
+class Box;
 class Score;
 class Segment;
 class System;
@@ -38,17 +39,21 @@ class ScoreRangeUtilities
 public:
     static std::vector<muse::RectF> boundingArea(
         const engraving::Score* score, const engraving::Segment* startSegment, const engraving::Segment* endSegment,
-        engraving::staff_idx_t startStaffIndex, engraving::staff_idx_t endStaffIndex);
+        engraving::staff_idx_t startStaffIndex, engraving::staff_idx_t endStaffIndex, const engraving::Box* startBox = nullptr,
+        const engraving::Box* endBox = nullptr);
 
 private:
     struct RangeSection {
         const engraving::System* system = nullptr;
         const engraving::Segment* startSegment = nullptr;
         const engraving::Segment* endSegment = nullptr;
+        const engraving::Box* startBox = nullptr;
+        const engraving::Box* endBox = nullptr;
     };
 
     static std::vector<RangeSection> splitRangeBySections(
-        const engraving::Segment* rangeStartSegment, const engraving::Segment* rangeEndSegment);
+        const engraving::Score* score, const engraving::Segment* rangeStartSegment, const engraving::Segment* rangeEndSegment,
+        const engraving::Box* startBox, const engraving::Box* endBox);
 
     static engraving::staff_idx_t firstVisibleStaffIdx(
         const engraving::Score* score, const engraving::System* system, engraving::staff_idx_t startStaffIndex);
