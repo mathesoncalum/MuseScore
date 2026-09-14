@@ -157,7 +157,7 @@ void TremoloRenderer::doRender(const EngravingItem* item, const mpe::Articulatio
     };
 
     TremoloAdapter tremolo = TremoloAdapter(chord);
-    IF_ASSERT_FAILED(tremolo.hasTremolo()) {
+    if (!tremolo.hasTremolo()) {
         return;
     }
 

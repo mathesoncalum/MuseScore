@@ -67,7 +67,7 @@ void ParenthesisLayout::layoutChordParentheses(const Chord* chord, const LayoutC
         Parenthesis* rightParen = parenNotesInfo.rightParen;
 
         if (!(leftParen || rightParen)) {
-            return;
+            continue;
         }
         if (leftParen) {
             layoutParenthesis(leftParen, leftParen->mutldata(), ctx);
@@ -406,8 +406,6 @@ void ParenthesisLayout::setChordValues(Parenthesis* item, Parenthesis::LayoutDat
 
     ldata->setMag(chord->mag());
 
-    Shape notesShape;
-
     std::vector<Note*> notes;
 
     for (const auto& p : chord->noteParens()) {
@@ -417,10 +415,22 @@ void ParenthesisLayout::setChordValues(Parenthesis* item, Parenthesis::LayoutDat
         }
     }
 
-    assert(!notes.empty());
+    Shape notesShape;
+    size_t validNoteCount = 0;
 
     for (const Note* note : notes) {
+        // Note pointers may be invalid - e.g. if the note couldn't be resolved when reading the paren group
+        if (!note) {
+            continue;
+        }
         notesShape.add(getNoteShape(note, item).translated(note->pos()));
+        ++validNoteCount;
+    }
+
+    // Don't draw parentheses which surround nothing
+    ldata->setIsSkipDraw(validNoteCount == 0);
+    if (validNoteCount == 0) {
+        return;
     }
 
     const StaffType* st = chord->staffType();
@@ -517,7 +527,7 @@ Shape ParenthesisLayout::getNoteShape(const Note* note, Parenthesis* paren)
 {
     Shape noteShape = note->shape();
     noteShape.remove_if([paren](ShapeElement& s) {
-        return s.item() == paren || s.item()->isBend() || s.item()->isParenthesis() || s.item()->isAccidental() || s.item()->isNoteDot() || s.item()->isLaissezVibSegment();
+        return !s.item() || s.item() == paren || s.item()->isBend() || s.item()->isParenthesis() || s.item()->isAccidental() || s.item()->isNoteDot() || s.item()->isLaissezVibSegment();
     });
 
     return noteShape;

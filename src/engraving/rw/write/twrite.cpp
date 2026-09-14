@@ -1033,16 +1033,57 @@ void TWrite::write(const Chord* item, XmlWriter& xml, WriteContext& ctx)
     }
     writeProperty(item, xml, Pid::STEM_DIRECTION);
 
+    std::vector<const Note*> writtenNotes;
     for (size_t noteIdx = 0; noteIdx < noteCount; ++noteIdx) {
         if (!ctx.canWriteNoteIdx(noteIdx, noteCount)) {
             continue;
         }
         const Note* note = item->notes().at(noteIdx);
         write(note, xml, ctx);
+        writtenNotes.push_back(note);
     }
 
     // Write parens
+    // Note EIDs are only usable if they've actually been written (see writeItemEid)
+    const bool writingEids = !ctx.configuration()->doNotSaveEIDsForBackCompat() && !item->score()->isPaletteScore()
+                             && !ctx.clipboardmode();
+
+    auto canReferenceNote = [&writtenNotes, writingEids](const Note* note) {
+        if (!writingEids || !note || !note->eid().isValid()) {
+            return false;
+        }
+        for (const Note* writtenNote : writtenNotes) {
+            if (writtenNote == note) {
+                return true;
+            }
+        }
+        return false;
+    };
+
     for (const NoteParenthesisInfo& parenPair : item->noteParens()) {
+        if (!parenPair.leftParen || !parenPair.rightParen) {
+            continue;
+        }
+
+        // Generated parentheses are recreated during layout, so must not be written
+        if (parenPair.leftParen->generated() || parenPair.rightParen->generated()) {
+            continue;
+        }
+
+        // Notes are referenced by EID. If any of them can't be referenced (e.g. filtered out of the
+        // selection, or EIDs aren't being written at all) the group would be read back with missing notes
+        bool canReferenceAllNotes = !parenPair.notes.empty();
+        for (const Note* note : parenPair.notes) {
+            if (!canReferenceNote(note)) {
+                canReferenceAllNotes = false;
+                break;
+            }
+        }
+
+        if (!canReferenceAllNotes) {
+            continue;
+        }
+
         xml.startElement("NoteParenGroup");
         write(parenPair.leftParen, xml, ctx);
         write(parenPair.rightParen, xml, ctx);

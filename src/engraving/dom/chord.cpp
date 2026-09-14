@@ -699,6 +699,10 @@ void Chord::remove(EngravingItem* e)
         } else {
             LOGD("Chord::remove() note %p not found!", e);
         }
+        // Don't leave dangling pointers in the parenthesis groups
+        for (NoteParenthesisInfo& parenInfo : m_noteParens) {
+            muse::remove(parenInfo.notes, note);
+        }
         if (voice() && measure() && note->visible()) {
             measure()->checkMultiVoices(staffIdx());
         }
@@ -1259,8 +1263,12 @@ void Chord::scanElements(std::function<void(EngravingItem*)> func)
     }
 
     for (auto& p : m_noteParens) {
-        p.leftParen->scanElements(func);
-        p.rightParen->scanElements(func);
+        if (p.leftParen) {
+            p.leftParen->scanElements(func);
+        }
+        if (p.rightParen) {
+            p.rightParen->scanElements(func);
+        }
     }
     ChordRest::scanElements(func);
 }

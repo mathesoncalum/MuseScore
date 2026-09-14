@@ -3855,7 +3855,11 @@ void TRead::readNoteParenGroup(Chord* ch, XmlReader& e, ReadContext& ctx)
                 if (noteTag == "NoteEID") {
                     EID noteEid = EID::fromStdString(e.readAsciiText());
                     Note* note = toNote(eidRegister->itemFromEID(noteEid));
-                    parenInfo.notes.push_back(note);
+                    if (note) {
+                        parenInfo.notes.push_back(note);
+                    } else {
+                        LOGE() << "Parenthesis group references a note which isn't in this score";
+                    }
                 } else {
                     e.unknown();
                 }
@@ -3863,6 +3867,17 @@ void TRead::readNoteParenGroup(Chord* ch, XmlReader& e, ReadContext& ctx)
         } else {
             e.unknown();
         }
+    }
+
+    if (!parenInfo.leftParen || !parenInfo.rightParen || parenInfo.notes.empty()) {
+        // Incomplete group - discard it rather than leaving parentheses which surround nothing
+        if (parenInfo.leftParen) {
+            ctx.score()->deleteLater(parenInfo.leftParen);
+        }
+        if (parenInfo.rightParen) {
+            ctx.score()->deleteLater(parenInfo.rightParen);
+        }
+        return;
     }
 
     ch->noteParens().push_back(parenInfo);

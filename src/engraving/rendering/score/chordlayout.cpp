@@ -3411,10 +3411,10 @@ void ChordLayout::fillShape(const Chord* item, ChordRest::LayoutData* ldata)
         Parenthesis* leftParen = parenInfo.leftParen;
         Parenthesis* rightParen = parenInfo.rightParen;
 
-        if (leftParen) {
+        if (leftParen && leftParen->addToSkyline()) {
             shape.add(leftParen->shape().translate(leftParen->pos()));
         }
-        if (rightParen) {
+        if (rightParen && rightParen->addToSkyline()) {
             shape.add(rightParen->shape().translate(rightParen->pos()));
         }
     }

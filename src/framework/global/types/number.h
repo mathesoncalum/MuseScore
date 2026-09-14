@@ -51,7 +51,7 @@ inline T check_valid(T v, T def = T())
     } else {
         bool valid = !std::isnan(v) && !std::isinf(v);
         if (!valid) {
-            assert(!std::isnan(v) && !std::isinf(v));
+            // assert(!std::isnan(v) && !std::isinf(v));
             return def;
         }
         return v;
