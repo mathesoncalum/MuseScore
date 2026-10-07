@@ -341,6 +341,7 @@ void NotationAutomationController::init()
             rebuildAllPolylines();
         }
         m_currentlyEditedPolyline = nullptr;
+        m_previewingNewPoint = false;
     }, Asyncable::Mode::SetReplace /* FIXME */);
 
     notationConfiguration()->currentAutomationTypeChanged().onNotify(this, [this]() {
@@ -499,6 +500,7 @@ muse::uicomponents::PolylinePlot* NotationAutomationController::createPolylineFo
                      [this, key, polyline, system, staffCanvasRect](qreal x, qreal y, bool completed) {
         if (completed) {
             m_currentlyEditedPolyline = nullptr;
+            m_previewingNewPoint = false;
             requestAddPoint(key, x, y);
             return;
         }
@@ -927,6 +929,7 @@ void NotationAutomationController::processPendingChanges()
 void NotationAutomationController::rebuildAllPolylines()
 {
     m_currentlyEditedPolyline = nullptr;
+    m_previewingNewPoint = false;
 
     // TODO: More efficient if we don't clear/recreate the polylines every time...
     for (const auto& [staff, polylines] : m_stavesToLinesMap) {
